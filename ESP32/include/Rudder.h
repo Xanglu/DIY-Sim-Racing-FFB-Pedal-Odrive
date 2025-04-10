@@ -1,5 +1,5 @@
 #pragma once
-
+#define Rudder_timeout 1500
 #include "DiyActivePedal_types.h"
 #include "MovingAverageFilter.h"
 MovingAverageFilter averagefilter_rudder(50);

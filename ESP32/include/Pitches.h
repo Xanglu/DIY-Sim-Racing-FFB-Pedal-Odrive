@@ -96,3 +96,9 @@ int melody_victory_theme[] = {
 double melody_durations_Victory_theme[] = {
   12, 12, 12, 4, 4, 4, 12, 12, 12, 2
 };
+int melody_Rudder_Initialized_theme[] = {
+  NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5, 0, NOTE_A4, NOTE_G4, NOTE_F4, NOTE_E4, NOTE_C4, NOTE_C4
+};
+double melody_Rudder_Initialized_theme_duration[] = {
+  12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 6
+};

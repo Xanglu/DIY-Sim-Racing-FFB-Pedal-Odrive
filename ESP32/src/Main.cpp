@@ -1212,12 +1212,13 @@ void pedalUpdateTask( void * pvParameters )
           //wait 3s for the initializing
           //Serial.print("Rudder initializing...");
           //Serial.println(Rudder_initialzing_time_Now-Rudder_initialized_time);
-          if( (Rudder_initialzing_time_Now-Rudder_initialized_time)> 3000 )
+          if( (Rudder_initialzing_time_Now-Rudder_initialized_time)> Rudder_timeout )
           {
             Rudder_initializing=false;
             moveSlowlyToPosition_b=false;
             Serial.println("Rudder initialized");
             Rudder_initialized_time=0;
+            Buzzer.play_melody_tone(melody_Rudder_Initialized_theme, sizeof(melody_Rudder_Initialized_theme)/sizeof(melody_Rudder_Initialized_theme[0]),melody_Rudder_Initialized_theme_duration);
           }
         }
         
