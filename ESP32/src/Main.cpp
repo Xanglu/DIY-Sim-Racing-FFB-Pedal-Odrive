@@ -108,6 +108,7 @@ bool splineDebug_b = false;
 
 
 #include "ABSOscillation.h"
+#include "Rudder.h"
 ABSOscillation absOscillation;
 RPMOscillation _RPMOscillation;
 BitePointOscillation _BitePointOscillation;
@@ -1199,11 +1200,28 @@ void pedalUpdateTask( void * pvParameters )
         moveSlowlyToPosition_b=true;
         //Serial.println("moving to center");
       }
-      if(Rudder_initializing && (Rudder_real_poisiton<51 && Rudder_real_poisiton>49))
+      if(Rudder_initializing && (Rudder_real_poisiton<52 && Rudder_real_poisiton>48))
       {
-        Rudder_initializing=false;
-        moveSlowlyToPosition_b=false;
-        Serial.println("initialized disable move slow");
+        if(Rudder_initialized_time==0)
+        {
+          Rudder_initialized_time=millis();
+        }
+        else
+        {
+          unsigned long Rudder_initialzing_time_Now = millis();
+          //wait 3s for the initializing
+          //Serial.print("Rudder initializing...");
+          //Serial.println(Rudder_initialzing_time_Now-Rudder_initialized_time);
+          if( (Rudder_initialzing_time_Now-Rudder_initialized_time)> 3000 )
+          {
+            Rudder_initializing=false;
+            moveSlowlyToPosition_b=false;
+            Serial.println("Rudder initialized");
+            Rudder_initialized_time=0;
+          }
+        }
+        
+
       }
     }
     if(Rudder_deinitializing)
@@ -1215,7 +1233,7 @@ void pedalUpdateTask( void * pvParameters )
     {
       Rudder_deinitializing=false;
       moveSlowlyToPosition_b=false;
-      Serial.println("deinitialized disable move slow");
+      Serial.println("Rudder deinitialized");
     }
     #endif
 
@@ -2371,8 +2389,8 @@ void ESPNOW_SyncTask( void * pvParameters )
         #endif
         ESPNOW_BootIntoDownloadMode = false;
       }
-      //rudder sync
-      if(dap_calculationVariables_st.Rudder_status)
+      //rudder sync after rudder done initializing
+      if(dap_calculationVariables_st.Rudder_status && !Rudder_initializing)
       {              
         dap_calculationVariables_st.current_pedal_position_ratio=((float)(dap_calculationVariables_st.current_pedal_position-dap_calculationVariables_st.stepperPosMin_default))/((float)dap_calculationVariables_st.stepperPosRange_default);
         dap_rudder_sending.payloadRudderState_.pedal_position_ratio=dap_calculationVariables_st.current_pedal_position_ratio;

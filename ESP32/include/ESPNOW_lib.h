@@ -4,6 +4,7 @@
 #include "ESPNowW.h"
 #include "DiyActivePedal_types.h"
 //#define ESPNow_debug
+
 uint8_t esp_master[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x31};
 //uint8_t esp_master[] = {0xdc, 0xda, 0x0c, 0x22, 0x8f, 0xd8}; // S3
 //uint8_t esp_master[] = {0x48, 0x27, 0xe2, 0x59, 0x48, 0xc0}; // S2 mini
@@ -36,6 +37,8 @@ bool Rudder_initializing = false;
 bool Rudder_deinitializing = false;
 bool ESPNOW_BootIntoDownloadMode = false;
 bool Get_Rudder_action_b=false;
+unsigned long Rudder_initialized_time=0;
+
 DAP_Rudder_st dap_rudder_receiving;
 DAP_Rudder_st dap_rudder_sending;
 /*
