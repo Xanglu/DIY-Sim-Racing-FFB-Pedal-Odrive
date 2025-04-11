@@ -99,9 +99,9 @@ double melody_durations_Victory_theme[] = {
 
 
 int melody_Airship_theme[] = {
-  NOTE_C5, NOTE_F5, NOTE_G5, NOTE_AS5, NOTE_A5, NOTE_G5, NOTE_F5, NOTE_A5, NOTE_G5, NOTE_C5, NOTE_D5, NOTE_DS5, NOTE_C5
+  NOTE_C5, NOTE_F5, NOTE_G5, NOTE_AS5, NOTE_A5, NOTE_G5, NOTE_F5, NOTE_A5, NOTE_G5/*, NOTE_C5, NOTE_D5, NOTE_DS5, NOTE_C5*/
 };
 
 double melody_Airship_theme_duration[] = {
-  12, 12, 12, 12, 24, 24, 24, 24, 12, 24, 24, 8, 1.8
+  8, 8, 8, 8, 16, 16, 16, 16, 8/*, 16, 16, 4, 2*/
 };
