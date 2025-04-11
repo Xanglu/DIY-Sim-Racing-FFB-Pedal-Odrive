@@ -1218,7 +1218,9 @@ void pedalUpdateTask( void * pvParameters )
             moveSlowlyToPosition_b=false;
             Serial.println("Rudder initialized");
             Rudder_initialized_time=0;
-            Buzzer.play_melody_tone(melody_Rudder_Initialized_theme, sizeof(melody_Rudder_Initialized_theme)/sizeof(melody_Rudder_Initialized_theme[0]),melody_Rudder_Initialized_theme_duration);
+            #ifdef USING_BUZZER
+              Buzzer.play_melody_tone(melody_Airship_theme, sizeof(melody_Airship_theme)/sizeof(melody_Airship_theme[0]),melody_Airship_theme_duration);
+            #endif
           }
         }
         

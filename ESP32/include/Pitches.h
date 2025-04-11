@@ -96,9 +96,12 @@ int melody_victory_theme[] = {
 double melody_durations_Victory_theme[] = {
   12, 12, 12, 4, 4, 4, 12, 12, 12, 2
 };
-int melody_Rudder_Initialized_theme[] = {
-  NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5, 0, NOTE_A4, NOTE_G4, NOTE_F4, NOTE_E4, NOTE_C4, NOTE_C4
+
+
+int melody_Airship_theme[] = {
+  NOTE_C5, NOTE_F5, NOTE_G5, NOTE_AS5, NOTE_A5, NOTE_G5, NOTE_F5, NOTE_A5, NOTE_G5, NOTE_C5, NOTE_D5, NOTE_DS5, NOTE_C5
 };
-double melody_Rudder_Initialized_theme_duration[] = {
-  12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 6
+
+double melody_Airship_theme_duration[] = {
+  12, 12, 12, 12, 24, 24, 24, 24, 12, 24, 24, 8, 1.8
 };
