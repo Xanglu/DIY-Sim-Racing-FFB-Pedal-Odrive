@@ -374,7 +374,8 @@ namespace User.PluginSdkDemo
                                                     writer.Write("servoPosEsp_InSteps, ");
                                                     writer.Write("servoCurrent_InPercent, ");
                                                     writer.Write("servoVoltage_InV, ");
-                                                    writer.Write("angleSensorOutput");
+                                                    writer.Write("angleSensorOutput, ");
+                                                    writer.Write("brakeResistorState_b");
                                                     writer.Write("\n");
                                                 }
 
@@ -405,6 +406,8 @@ namespace User.PluginSdkDemo
                                                 writer.Write(((float)pedalState_ext_read_st.payloadPedalExtendedState_.servo_voltage_0p1V_i16) / 10.0);
                                                 writer.Write(", ");
                                                 writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.angleSensorOutput_ui16);
+                                                writer.Write(", ");
+                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.brakeResistorState_b);
                                                 writer.Write("\n");
                                             }
                                         }
