@@ -1,4 +1,4 @@
-#define BRIDGE_FIRMWARE_VERSION "0.90.01"
+#define BRIDGE_FIRMWARE_VERSION "0.90.02"
 #if PCB_VERSION==5
 	#define BRIDGE_BOARD   "Bridge_FANATEC"
 #endif
