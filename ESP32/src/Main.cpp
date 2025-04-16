@@ -889,7 +889,6 @@ float Position_Next_Prev = 0.0f;
 DAP_config_st dap_config_pedalUpdateTask_st;
 //void loop()
 
-bool brakeResistorState = false;
 void pedalUpdateTask( void * pvParameters )
 {
 
@@ -1469,6 +1468,7 @@ void pedalUpdateTask( void * pvParameters )
         //dap_state_extended_st.payloadPedalState_Extended_.servoPositionTarget_i16 = stepper->getCurrentPositionFromMin();
         dap_state_extended_st.payloadPedalState_Extended_.servoPositionTarget_i16 = stepper->getCurrentPosition() - stepper->getMinPosition();
         dap_state_extended_st.payloadPedalState_Extended_.angleSensorOutput_ui16 = angleReading_ui16;
+        dap_state_extended_st.payloadPedalState_Extended_.brakeResistorState_b = stepper->getBrakeResistorState();
         dap_state_extended_st.payLoadHeader_.PedalTag=dap_config_pedalUpdateTask_st.payLoadPedalConfig_.pedal_type;
         dap_state_extended_st.payLoadHeader_.payloadType = DAP_PAYLOAD_TYPE_STATE_EXTENDED;
         dap_state_extended_st.payLoadHeader_.version = DAP_VERSION_CONFIG;

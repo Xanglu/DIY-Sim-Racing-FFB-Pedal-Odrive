@@ -39,6 +39,9 @@ static SemaphoreHandle_t semaphore_getSetCorrectedServoPos = xSemaphoreCreateMut
 static float servoBusVoltageParameterized_fl32 = SERVO_MAX_VOLTAGE_IN_V_36V;
 static bool servoBusVoltageParameterized_b = true;
 
+
+
+
 FastAccelStepperEngine& stepperEngine() {
   static FastAccelStepperEngine myEngine = FastAccelStepperEngine();   // this is a factory and manager for all stepper instances
 
@@ -770,10 +773,12 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 				if ( ( stepper_cl->getServosVoltage() > ((servoBusVoltageParameterized_fl32 + 4.0f)*10.0f) ) && (brakeResistorUpTime_i64 < BRAKE_RESISTOR_DEACTIVATION_TIME_IN_MS) )
 				{
 					digitalWrite(BRAKE_RESISTOR_PIN, HIGH);
+					stepper_cl->brakeResistorState_b = true;
 				}
 				else
 				{
 					digitalWrite(BRAKE_RESISTOR_PIN, LOW);
+					stepper_cl->brakeResistorState_b = false;
 					time_brakeResistorLastPassive = timeNow_isv57SerialCommunicationTask_l;
 				}
 			#endif
@@ -1027,11 +1032,18 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 			// De-activate brake resistor once servo communication is lost to prevent resistor damage
 			#ifdef BRAKE_RESISTOR_PIN
 				digitalWrite(BRAKE_RESISTOR_PIN, LOW);
+				stepper_cl->brakeResistorState_b = false;
 			#endif
 		}
 
 
 	}
+}
+
+
+bool StepperWithLimits::getBrakeResistorState()
+{
+	return brakeResistorState_b;
 }
 
 

@@ -49,6 +49,7 @@ private:
 	int32_t servoPos_local_corrected_i32 = 0;
 
 	uint32_t stepsPerMotorRev_u32 = 3200u;
+	bool brakeResistorState_b = false;
 
 	
 
@@ -97,5 +98,6 @@ public:
 
 
 	static void servoCommunicationTask( void * pvParameters );
+	bool getBrakeResistorState();
 
 };

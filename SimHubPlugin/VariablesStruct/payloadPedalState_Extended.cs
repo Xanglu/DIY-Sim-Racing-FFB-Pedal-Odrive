@@ -21,5 +21,6 @@ namespace User.PluginSdkDemo
         public UInt16 angleSensorOutput_ui16;
         public Int16 servo_voltage_0p1V_i16;
         public Int16 servo_current_percent_i16;
+        public byte brakeResistorState_b;
     };
 }
