@@ -372,6 +372,7 @@ namespace User.PluginSdkDemo
                                                     writer.Write("forceVelocity_InKgPerSec, ");
                                                     writer.Write("servoPos_InSteps, ");
                                                     writer.Write("servoPosEsp_InSteps, ");
+                                                    writer.Write("servoPosError_InSteps, ");
                                                     writer.Write("servoCurrent_InPercent, ");
                                                     writer.Write("servoVoltage_InV, ");
                                                     writer.Write("angleSensorOutput, ");
@@ -400,6 +401,8 @@ namespace User.PluginSdkDemo
                                                 writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servoPosition_i16);
                                                 writer.Write(", ");
                                                 writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servoPositionTarget_i16);
+                                                writer.Write(", ");
+                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servo_position_error_i16);
                                                 writer.Write(", ");
                                                 writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servo_current_percent_i16);
                                                 writer.Write(", ");

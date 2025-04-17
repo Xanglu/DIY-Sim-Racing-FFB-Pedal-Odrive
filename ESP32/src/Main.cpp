@@ -1462,6 +1462,7 @@ void pedalUpdateTask( void * pvParameters )
         dap_state_extended_st.payloadPedalState_Extended_.servoPosition_i16 = stepper->getServosInternalPositionCorrected()- stepper->getMinPosition();
         dap_state_extended_st.payloadPedalState_Extended_.servo_voltage_0p1V =  stepper->getServosVoltage();
         dap_state_extended_st.payloadPedalState_Extended_.servo_current_percent_i16 = stepper->getServosCurrent();
+        dap_state_extended_st.payloadPedalState_Extended_.servo_position_error_i16 = stepper->getServosPosError();
         
 
 

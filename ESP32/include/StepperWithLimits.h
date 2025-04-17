@@ -87,6 +87,7 @@ public:
 	int32_t getServosVoltage();
 	int32_t getServosCurrent();
 	int32_t getServosPos();
+	int32_t getServosPosError();
 	bool getLifelineSignal();
 	
 	void configSteplossRecovAndCrashDetection(uint8_t flags_u8);

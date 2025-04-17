@@ -592,6 +592,12 @@ int32_t StepperWithLimits::getServosPos()
 	return isv57.getPosFromMin();
 }
 
+int32_t StepperWithLimits::getServosPosError()
+{
+	//return isv57.servo_pos_given_p;
+	return isv57.servo_pos_error_p;
+}
+
 
 
 void StepperWithLimits::setServosInternalPositionCorrected(int32_t posCorrected_i32)
@@ -1044,6 +1050,7 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 bool StepperWithLimits::getBrakeResistorState()
 {
 	return brakeResistorState_b;
+	//return true;
 }
 
 
