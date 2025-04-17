@@ -473,7 +473,7 @@ namespace User.PluginSdkDemo
                         {
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.lengthPedal_b = 220;
                         }
-                        if (dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.lengthPedal_d == 0)
+                        if (dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.lengthPedal_d < 0)
                         {
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.lengthPedal_d = 60;
                         }
@@ -1050,7 +1050,7 @@ namespace User.PluginSdkDemo
                         {
                             dap_config_st_rudder.payloadPedalConfig_.lengthPedal_b = 220;
                         }
-                        if (dap_config_st_rudder.payloadPedalConfig_.lengthPedal_d == 0)
+                        if (dap_config_st_rudder.payloadPedalConfig_.lengthPedal_d < 0)
                         {
                             dap_config_st_rudder.payloadPedalConfig_.lengthPedal_d = 60;
                         }

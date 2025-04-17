@@ -770,6 +770,9 @@ namespace User.PluginSdkDemo.UIFunction
             TextBlock_Warning.Text += "\nE=" + Math.Round(((angle_beta_max - min_angle_2) / Math.PI * 180));
             double Force_calculated = dap_config_st.payloadPedalConfig_.maxForce * (Math.Cos(angle_beta_max - min_angle_2) / Math.Sin(angle_gamma)) * od / b;
             double Servo_max_force = 1.1 * 2 * Math.PI / (double)(dap_config_st.payloadPedalConfig_.spindlePitch_mmPerRev_u8 / 1000.0) * 0.83 / 9.8;
+            double servoMaxForceCorrectionFactor_d = 1.6;
+            Servo_max_force *= servoMaxForceCorrectionFactor_d; // We empirically identified that the max pedal force typically is 1.6 times the value given by the formula above.
+
             c_hort_max = c_hor + dap_config_st.payloadPedalConfig_.lengthPedal_travel;
             oc_max = Math.Sqrt((c_hort_max) * (c_hort_max) + c_vert * c_vert);
             min_angle_1 = Math.Acos((b * b + oc_max * oc_max - a * a) / (2 * b * oc_max));
