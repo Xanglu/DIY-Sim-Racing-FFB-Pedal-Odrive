@@ -267,7 +267,7 @@ namespace User.PluginSdkDemo.UIFunction
         {
             profile_select = (uint)ProfileTab.SelectedIndex;
             calculation.profile_index = profile_select;
-            Profile_change(profile_select);
+            //Profile_change(profile_select);
             //Plugin.Settings.table_selected = (uint)MyTab.SelectedIndex;
             // update the sliders & serial port selection accordingly
             calculation.Update_Profile_Checkbox_b = true;

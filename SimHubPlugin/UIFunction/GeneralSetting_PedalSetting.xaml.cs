@@ -333,7 +333,7 @@ namespace User.PluginSdkDemo.UIFunction
         private void CheckBox_InvertMotorDir_Unchecked(object sender, RoutedEventArgs e)
         {
             var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.invertMotorDirection_u8 = (byte)1;
+            tmp.payloadPedalConfig_.invertMotorDirection_u8 = (byte)0;
             dap_config_st = tmp;
             ConfigChangedEvent(dap_config_st);
         }

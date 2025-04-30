@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 
 namespace User.PluginSdkDemo.UIFunction
@@ -79,20 +80,19 @@ namespace User.PluginSdkDemo.UIFunction
         {
             try
             {
-                if (Settings.ABS_enable_flag[Settings.table_selected] == 1)
+                if (Settings != null)
                 {
-                    checkbox_enable_ABS.IsChecked = true;
-                    checkbox_enable_ABS.Content = "ABS/TC Effect Enabled";
-                }
-                else
-                {
-                    checkbox_enable_ABS.IsChecked = false;
-                    checkbox_enable_ABS.Content = "ABS/TC Effect Disabled";
+                    if (checkbox_enable_ABS != null)
+                    {
+                        checkbox_enable_ABS.IsChecked = (Settings.ABS_enable_flag[Settings.table_selected] == 1);
+                    }
                 }
             }
-            catch
+            catch(Exception caughtEx)
             {
-
+                string errorMessage = caughtEx.Message;
+                System.Windows.MessageBox.Show(errorMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                
             }
         }
         private static void OnSettingsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -102,19 +102,12 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 try
                 {
-                    if (newData.ABS_enable_flag[newData.table_selected] == 1)
-                    {
-                        control.checkbox_enable_ABS.IsChecked = true;
-                        control.checkbox_enable_ABS.Content = "ABS/TC Effect Enabled";
-                    }
-                    else
-                    {
-                        control.checkbox_enable_ABS.IsChecked = false;
-                        control.checkbox_enable_ABS.Content = "ABS/TC Effect Disabled";
-                    }
+                   control.updateUI();
                 }
-                catch
+                catch (Exception caughtEx)
                 {
+                    string errorMessage = caughtEx.Message;
+                    System.Windows.MessageBox.Show(errorMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 }
             }
