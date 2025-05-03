@@ -1338,6 +1338,8 @@ namespace User.PluginSdkDemo
             pluginManager.SetPropertyValue("PedalErrorCode", this.GetType(), PedalErrorCode);
             pluginManager.SetPropertyValue("FlightRudder_G", this.GetType(), Rudder_G_last_value);
             pluginManager.SetPropertyValue("FlightRudder_Wind_Force", this.GetType(), Rudder_Wind_Force_last_value);
+            this.AttachDelegate("CustomEffectTirggerReading1", () => CV1_value);
+            this.AttachDelegate("CustomEffectTirggerReading2", () => CV2_value);
         }
 
 
@@ -1454,6 +1456,7 @@ namespace User.PluginSdkDemo
             pluginManager.AddProperty("PedalErrorCode", this.GetType(), PedalErrorCode);
             pluginManager.AddProperty("FlightRudder_G", this.GetType(), Rudder_G_last_value);
             pluginManager.AddProperty("FlightRudder_Wind_Force", this.GetType(), Rudder_Wind_Force_last_value);
+
             for (uint pedali=0; pedali < 3; pedali++)
             {
                 Action_currentTime[pedali] = new DateTime();
