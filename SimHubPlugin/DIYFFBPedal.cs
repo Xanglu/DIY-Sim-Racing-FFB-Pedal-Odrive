@@ -1340,6 +1340,8 @@ namespace User.PluginSdkDemo
             pluginManager.SetPropertyValue("FlightRudder_Wind_Force", this.GetType(), Rudder_Wind_Force_last_value);
             this.AttachDelegate("CustomEffectTirggerReading1", () => CV1_value);
             this.AttachDelegate("CustomEffectTirggerReading2", () => CV2_value);
+            this.AttachDelegate("WheelSlipEffectReading", () => WS_value);
+            this.AttachDelegate("RoadImpactEffectReading", () => Road_impact_value);
         }
 
 
