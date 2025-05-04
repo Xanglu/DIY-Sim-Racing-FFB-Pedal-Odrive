@@ -1093,5 +1093,40 @@ namespace User.PluginSdkDemo
         {
             TextBox_serialMonitor_bridge.Clear();
         }
+
+        unsafe private void btn_Bridge_print_debug_Click(object sender, RoutedEventArgs e)
+        {
+            DAP_bridge_state_st tmp_2;
+            int length;
+            tmp_2.payLoadHeader_.version = (byte)Constants.pedalConfigPayload_version;
+            tmp_2.payLoadHeader_.payloadType = (byte)Constants.bridgeStatePayloadType;
+            tmp_2.payLoadHeader_.PedalTag = (byte)indexOfSelectedPedal_u;
+            tmp_2.payloadBridgeState_.Pedal_RSSI = 0;
+            tmp_2.payloadBridgeState_.Pedal_availability_0 = 0;
+            tmp_2.payloadBridgeState_.Pedal_availability_1 = 0;
+            tmp_2.payloadBridgeState_.Pedal_availability_2 = 0;
+            tmp_2.payloadBridgeState_.Bridge_action = 4; //print out debug message
+            DAP_bridge_state_st* v_2 = &tmp_2;
+            byte* p_2 = (byte*)v_2;
+            tmp_2.payloadFooter_.checkSum = Plugin.checksumCalc(p_2, sizeof(payloadHeader) + sizeof(payloadBridgeState));
+            length = sizeof(DAP_bridge_state_st);
+            byte[] newBuffer_2 = new byte[length];
+            newBuffer_2 = Plugin.getBytes_Bridge(tmp_2);
+            if (Plugin.ESPsync_serialPort.IsOpen)
+            {
+                try
+                {
+                    // clear inbuffer 
+                    Plugin.ESPsync_serialPort.DiscardInBuffer();
+                    // send query command
+                    Plugin.ESPsync_serialPort.Write(newBuffer_2, 0, newBuffer_2.Length);
+                }
+                catch (Exception caughtEx)
+                {
+                    string errorMessage = caughtEx.Message;
+                    TextBox_debugOutput.Text = errorMessage;
+                }
+            }
+        }
     }
 }

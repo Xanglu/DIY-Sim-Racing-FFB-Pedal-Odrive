@@ -964,6 +964,7 @@
                                             <styles:SHButtonPrimary x:Name="btn_Bridge_restart" Click="btn_Bridge_restart_Click" Width="160" Content="Bridge Restart" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
                                             <styles:SHButtonPrimary x:Name="btn_Bridge_boot_restart" Click="btn_Bridge_boot_restart_Click" Width="160" Content="Enable Download Mode" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" ToolTip="Click for enabling Bridge into firmware download mode" />
                                             <styles:SHButtonPrimary x:Name="btn_Bridge_OTA" Click="btn_Bridge_OTA_Click" Width="160" Content="Bridge FW OTA Update" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                            <styles:SHButtonPrimary x:Name="btn_Bridge_print_debug" Click="btn_Bridge_print_debug_Click" Width="160" Content="Bridge Debug Mode" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
                                             <localFunction:SettingSection_System x:Name="SystemSetting_Section" SettingsChanged="Tab_SettingsChanged"/>
 
 

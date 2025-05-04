@@ -129,8 +129,8 @@ namespace User.PluginSdkDemo.UIFunction
                     if (control.Rangeslider_rudder_travel_range != null) control.Rangeslider_rudder_travel_range.UpperValue = control.dap_config_st.payloadPedalConfig_.pedalEndPosition;
                     if (control.Label_min_pos_rudder != null) control.Label_min_pos_rudder.Content = "MIN\n" + control.dap_config_st.payloadPedalConfig_.pedalStartPosition + "%";
                     if (control.Label_max_pos_rudder != null) control.Label_max_pos_rudder.Content = "MAX\n" + control.dap_config_st.payloadPedalConfig_.pedalEndPosition + "%";
-                    if (control.Label_max_force_rudder != null) control.Label_max_force_rudder.Content = "Max force:\n" + control.dap_config_st.payloadPedalConfig_.maxForce + "kgf";
-                    if (control.Label_min_force_rudder != null) control.Label_min_force_rudder.Content = "Preload:\n" + control.dap_config_st.payloadPedalConfig_.preloadForce + "kgf";
+                    if (control.Label_max_force_rudder != null) control.Label_max_force_rudder.Content = "Max force:\n" + control.dap_config_st.payloadPedalConfig_.maxForce + "kg";
+                    if (control.Label_min_force_rudder != null) control.Label_min_force_rudder.Content = "Preload:\n" + control.dap_config_st.payloadPedalConfig_.preloadForce + "kg";
                     
 
                 }
