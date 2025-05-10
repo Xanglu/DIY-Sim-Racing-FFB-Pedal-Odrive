@@ -18,7 +18,7 @@
     Joystick.setBrakeRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);
     delay(100);
   
-    Joystick.begin(false, 0);
+    Joystick.begin(false);
 
     // rename HID device name, see e.g. https://github.com/schnoog/Joystick_ESP32S2/issues/8
     //USB.PID(0x8211);
@@ -64,7 +64,6 @@
   bool IsControllerReady() { return true; }
   void SetControllerOutputValue(int32_t value) {
     Joystick.setBrake(value);
-    Joystick.sendState();
   }
   void SetControllerOutputValue_rudder(int32_t value,int32_t value2)
   {
@@ -72,6 +71,22 @@
     Joystick.setAccelerator(value2);
   }
 
+  void JoystickSendState()
+  {
+    Joystick.sendState();
+  }
+
+  bool GetJoystickStatus()
+  {
+   return Joystick._usbDeviceStatus;
+  }
+
+  void RestartJoystick()
+  {
+    Joystick.end();
+    delay(1000);
+    SetupController();
+  };
 
   
   
