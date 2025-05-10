@@ -1124,6 +1124,14 @@ void Joystick_Task( void * pvParameters )
       
 
       joystickSendState();
+      //bool joystatus=GetJoystickStatus();
+      if(!GetJoystickStatus())
+      {
+
+        RestartJoystick();
+        Serial.println("[L]HID Eroor, Restart Joystick...");
+        //last_serial_joy_out=millis();
+      }
     }
     #endif
     // set analog value

@@ -4,16 +4,18 @@
 
 
 
+
 //#define USB_JOYSTICK
 #ifdef USB_JOYSTICK
+#include "Joystick_ESP32S2.h"
   //#include <Joystick_ESP32S2.h>
-  #include <Joystick_ESP32S2.h>
   Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_GAMEPAD,
-                   0, 0,                 // Button Count, Hat Switch Count
-                   true, true, true,  // X and Y, but no Z Axis
-                   true, true, true,  // No Rx, Ry, or Rz
-                   false, false,         // No rudder or throttle
-                   false, false, false);  // No accelerator, brake, or steering
+                    0, 0,                 // Button Count, Hat Switch Count
+                    true, true, true,  // X and Y, but no Z Axis
+                    true, true, true,  // No Rx, Ry, or Rz
+                    false, false,         // No rudder or throttle
+                    false, false, false);  // No accelerator, brake, or steering
+
   
   void SetupController() {
     	USB.PID(0x8213);
@@ -61,6 +63,16 @@
   {
     Joystick.sendState();
   }
+  bool GetJoystickStatus()
+  {
+   return Joystick._usbDeviceStatus;
+  }
+    void RestartJoystick()
+  {
+    Joystick.end();
+    delay(1000);
+    SetupController();
+  };
 
 
   

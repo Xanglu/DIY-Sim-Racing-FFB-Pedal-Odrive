@@ -2,7 +2,7 @@
 
 #include "Arduino.h"
 #include "Main.h"
-
+#include "Joystick_ESP32S2.h"
 static const int16_t JOYSTICK_MIN_VALUE = 0;
 static const int16_t JOYSTICK_MAX_VALUE = 10000;
 static const int16_t JOYSTICK_RANGE = JOYSTICK_MAX_VALUE - JOYSTICK_MIN_VALUE;
@@ -12,7 +12,10 @@ static const int16_t JOYSTICK_RANGE = JOYSTICK_MAX_VALUE - JOYSTICK_MIN_VALUE;
   #define BLUETOOTH_GAMEPAD
 #endif
 */
+#ifdef USB_JOYSTICK
+  //#include <Joystick_ESP32S2.h>
 
+#endif
 
 
 
@@ -26,3 +29,5 @@ void SetControllerOutputValueThrottle(int32_t value);
 void SetControllerOutputValueRudder(int32_t value);
 void SetControllerOutputValueRudder_brake(int32_t value, int32_t value2);
 void joystickSendState();
+bool GetJoystickStatus();
+void RestartJoystick();
