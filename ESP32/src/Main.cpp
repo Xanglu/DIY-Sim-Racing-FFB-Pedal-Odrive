@@ -1948,14 +1948,17 @@ void serialCommunicationTask( void * pvParameters )
         {
           //general output
           SetControllerOutputValue(joystickNormalizedToInt32_local);
-          JoystickSendState();
-          // Restart HID output if faulty behavior was detected
-          if(!GetJoystickStatus())
-          {
-            RestartJoystick();
-            Serial.println("[L]HID Eroor, Restart Joystick...");
-            //last_serial_joy_out=millis();
-          }
+          
+          #ifdef USB_JOYSTICK
+            // Restart HID output if faulty behavior was detected
+            JoystickSendState();
+            if(!GetJoystickStatus())
+            {
+              RestartJoystick();
+              Serial.println("[L]HID Eroor, Restart Joystick...");
+              //last_serial_joy_out=millis();
+            }
+          #endif
 
         }
       }

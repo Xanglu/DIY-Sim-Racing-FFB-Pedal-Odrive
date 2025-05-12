@@ -509,7 +509,12 @@ void ESPNow_initialize()
     #ifdef ESPNow_S3
       //esp_wifi_config_espnow_rate(WIFI_IF_STA, 	WIFI_PHY_RATE_54M);
       esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_11M_L);
-      esp_wifi_set_max_tx_power(WIFI_POWER_8_5dBm);
+      //esp_wifi_set_max_tx_power(WIFI_POWER_8_5dBm);
+      #if PCB_VERSION == 9
+        esp_wifi_set_max_tx_power(WIFI_POWER_17dBm);
+      #else
+        esp_wifi_set_max_tx_power(WIFI_POWER_8_5dBm);
+      #endif
     #endif
     #ifdef ESPNow_ESP32
       esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_MCS0_LGI);
