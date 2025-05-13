@@ -870,8 +870,8 @@ unsigned long firCycleIncrementer = 0;
 
 float filteredReading_exp_filter = 0;
 unsigned long printCycleCounter = 0;
-
-
+unsigned long servoActionLast = millis();
+bool servoIdleStatus=false;
 uint printCntr = 0;
 
 
@@ -1126,6 +1126,15 @@ void pedalUpdateTask( void * pvParameters )
       FilterReadingJoystick=filteredReading;
 
     }
+
+    //if filtered reading > min force, mark the servo was in aciton
+    #ifdef SERVO_POWER_PIN
+      if(filteredReading>dap_config_pedalUpdateTask_st.payLoadPedalConfig_.preloadForce)
+      {
+        servoActionLast=millis();
+      }
+    #endif
+
     //float FilterReadingJoystick=averagefilter_joystick.process(filteredReading);
 
     float stepperPosFraction = stepper->getCurrentPositionFraction();
@@ -1267,6 +1276,21 @@ void pedalUpdateTask( void * pvParameters )
 
     }
 
+    //pedal not in action for 10 mins, disable pedal power
+    #ifdef SERVO_POWER_PIN
+      if(!stepper->servoIdleStatus &&millis()-servoActionLast>MAXIMUM_STEPPER_IDLE_TIMEOUT)
+      {
+        stepper->servoIdleAction();
+        stepper->servoIdleStatus=true;
+        Buzzer.single_beep_tone(770,100);
+        pixels.setPixelColor(0,0xff,0x00,0x00);//show red
+        pixels.show(); 
+        delay(300);
+        Buzzer.single_beep_tone(770,100);
+        Serial.println("Servo Idle timeout, please restart pedal.");
+
+      }
+    #endif
 
     // print all servo parameters for debug purposes
     if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS) )
@@ -1441,7 +1465,7 @@ void pedalUpdateTask( void * pvParameters )
           dap_state_basic_st.payloadPedalState_Basic_.erroe_code_u8=11;
           isv57.isv57_update_parameter_b=false;
         }*/
-        if( stepper->getLifelineSignal()==false )
+        if( stepper->getLifelineSignal()==false && !stepper->servoIdleStatus)
         {
           dap_state_basic_st.payloadPedalState_Basic_.erroe_code_u8=12;
         }
@@ -1955,7 +1979,7 @@ void serialCommunicationTask( void * pvParameters )
             if(!GetJoystickStatus())
             {
               RestartJoystick();
-              Serial.println("[L]HID Eroor, Restart Joystick...");
+              Serial.println("HID Eroor, Restart Joystick...");
               //last_serial_joy_out=millis();
             }
           #endif

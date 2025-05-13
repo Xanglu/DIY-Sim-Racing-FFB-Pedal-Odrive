@@ -1030,16 +1030,18 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 		}
 		else
 		{
-			Serial.println("Servo communication lost!");
-			delay(100);
-			previousIsv57LifeSignal_b = false;
+			if(!stepper_cl->servoIdleStatus)
+			{
+				Serial.println("Servo communication lost!");
+				delay(100);
+				previousIsv57LifeSignal_b = false;
+				// De-activate brake resistor once servo communication is lost to prevent resistor damage
+				#ifdef BRAKE_RESISTOR_PIN
+					digitalWrite(BRAKE_RESISTOR_PIN, LOW);
+					stepper_cl->brakeResistorState_b = false;
+				#endif
+			}
 
-
-			// De-activate brake resistor once servo communication is lost to prevent resistor damage
-			#ifdef BRAKE_RESISTOR_PIN
-				digitalWrite(BRAKE_RESISTOR_PIN, LOW);
-				stepper_cl->brakeResistorState_b = false;
-			#endif
 		}
 
 
@@ -1051,6 +1053,18 @@ bool StepperWithLimits::getBrakeResistorState()
 {
 	return brakeResistorState_b;
 	//return true;
+}
+
+bool StepperWithLimits::servoIdleAction()
+{
+	#ifdef SERVO_POWER_PIN
+        //turn off the servo's power        
+        gpio_set_level((gpio_num_t)SERVO_POWER_PIN, 0);
+        //wait for the servo to initialize
+        delay(500);
+		return true;
+    #endif
+	return false;
 }
 
 
