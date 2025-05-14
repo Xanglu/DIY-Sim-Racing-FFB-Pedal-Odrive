@@ -1276,12 +1276,12 @@ void pedalUpdateTask( void * pvParameters )
 
     }
 
-    //pedal not in action for 10 mins, disable pedal power
+    //pedal not in action, disable pedal power
     #ifdef SERVO_POWER_PIN
-      if(!stepper->servoIdleStatus &&millis()-servoActionLast>MAXIMUM_STEPPER_IDLE_TIMEOUT)
+      if(stepper->servoStatus==SERVO_CONNECTED &&millis()-servoActionLast>MAXIMUM_STEPPER_IDLE_TIMEOUT)
       {
         stepper->servoIdleAction();
-        stepper->servoIdleStatus=true;
+        stepper->servoStatus=SERVO_IDLE_NOT_CONNECTED;
         Buzzer.single_beep_tone(770,100);
         pixels.setPixelColor(0,0xff,0x00,0x00);//show red
         pixels.show(); 
@@ -1465,7 +1465,7 @@ void pedalUpdateTask( void * pvParameters )
           dap_state_basic_st.payloadPedalState_Basic_.erroe_code_u8=11;
           isv57.isv57_update_parameter_b=false;
         }*/
-        if( stepper->getLifelineSignal()==false && !stepper->servoIdleStatus)
+        if( stepper->getLifelineSignal()==false && stepper->servoStatus!=SERVO_IDLE_NOT_CONNECTED)
         {
           dap_state_basic_st.payloadPedalState_Basic_.erroe_code_u8=12;
         }

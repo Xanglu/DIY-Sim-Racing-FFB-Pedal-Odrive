@@ -8,6 +8,12 @@ static const int32_t MAXIMUM_STEPPER_ACCELERATION = INT32_MAX / 10;
 static const int32_t MAXIMUM_STEPPER_IDLE_TIMEOUT = 1800000; //set the servo idle timeout                                         
  // steps/s²
 // 10000000; //
+enum ServoStatus
+{
+	SERVO_NOT_CONNECTED,
+	SERVO_CONNECTED,
+	SERVO_IDLE_NOT_CONNECTED
+};
 
 class StepperWithLimits {
 private:
@@ -104,7 +110,7 @@ public:
 	bool getBrakeResistorState();
 	
 	bool servoIdleAction();
-	bool servoIdleStatus=false;
+	uint8_t servoStatus=0;
 
 	
 

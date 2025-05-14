@@ -730,7 +730,10 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 		/************************************************************/
 		if ( stepper_cl->getLifelineSignal() )
 		{
-
+			if(stepper_cl->servoStatus!=SERVO_IDLE_NOT_CONNECTED)
+			{
+				stepper_cl->servoStatus=SERVO_CONNECTED;
+			}
 			// restarting servo axis
 			if(true == stepper_cl->restartServo)
 			{
@@ -1025,23 +1028,23 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 				}
 				stackSizeIdx_u32++;
 			#endif
-
+			
 			
 		}
 		else
 		{
-			if(!stepper_cl->servoIdleStatus)
+			if(stepper_cl->servoStatus!=SERVO_IDLE_NOT_CONNECTED)
 			{
 				Serial.println("Servo communication lost!");
 				delay(100);
 				previousIsv57LifeSignal_b = false;
+				stepper_cl->servoStatus=SERVO_NOT_CONNECTED;
 				// De-activate brake resistor once servo communication is lost to prevent resistor damage
 				#ifdef BRAKE_RESISTOR_PIN
 					digitalWrite(BRAKE_RESISTOR_PIN, LOW);
 					stepper_cl->brakeResistorState_b = false;
 				#endif
 			}
-
 		}
 
 
