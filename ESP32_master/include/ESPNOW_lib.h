@@ -17,6 +17,7 @@ uint8_t* Recv_mac;
 uint16_t ESPNow_send=0;
 uint16_t ESPNow_recieve=0;
 int rssi_display;
+int rssi[3]={0,0,0};
 //bool MAC_get=false;
 bool ESPNOW_status =false;
 bool ESPNow_initial_status=false;
@@ -245,9 +246,33 @@ void promiscuous_rx_cb(void *buf, wifi_promiscuous_pkt_type_t type) {
   const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buf;
   //const wifi_ieee80211_packet_t *ipkt = (wifi_ieee80211_packet_t *)ppkt->payload;
   //const wifi_ieee80211_mac_hdr_t *hdr = &ipkt->hdr;
-
-  int rssi = ppkt->rx_ctrl.rssi;
-  rssi_display = rssi;
+  const uint8_t* payload = ppkt->payload;
+  if (ppkt->rx_ctrl.sig_len > 24)
+  {
+    const uint8_t *addr_DESTINATION = payload + 4;   
+    const uint8_t *addr_SOURCE = payload + 10;  // 傳送端 MAC
+    uint8_t addr_package[6];
+    memcpy(addr_package, addr_SOURCE, 6);
+    if(MacCheck(addr_package, Clu_mac))
+    {
+      rssi[0]=ppkt->rx_ctrl.rssi;
+      rssi_display=rssi[0];
+    }
+    if(MacCheck(addr_package, Brk_mac))
+    {
+      rssi[1]=ppkt->rx_ctrl.rssi;
+      rssi_display=rssi[1];
+    }
+    if(MacCheck(addr_package, Gas_mac))
+    {
+      rssi[2]=ppkt->rx_ctrl.rssi;
+      rssi_display=rssi[2];
+    }
+  }
+  
+  //int rssi = ppkt->rx_ctrl.rssi;
+  //rssi_display = rssi;
+  
 }
 
 void ESPNow_initialize()

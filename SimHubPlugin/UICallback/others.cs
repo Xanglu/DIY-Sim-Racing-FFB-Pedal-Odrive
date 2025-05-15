@@ -238,6 +238,7 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.stepLossFunctionFlags_u8 = 0b11;
             dap_config_st_rudder.payloadPedalConfig_.kf_modelNoise_joystick = 1;
             dap_config_st_rudder.payloadPedalConfig_.kf_Joystick_u8 = 1;
+            dap_config_st_rudder.payloadPedalConfig_.servoIdleTimeout = 0;
         }
         public byte[] getBytesPayload(payloadPedalConfig aux)
         {

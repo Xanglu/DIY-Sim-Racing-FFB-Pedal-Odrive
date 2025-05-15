@@ -16,6 +16,7 @@ namespace User.PluginSdkDemo
         public UInt16 joystickOutput_u16;
         public byte error_code_u8;
         public fixed byte pedalFirmwareVersion_u8[3];
+        public byte servoStatus;
 
     };
 }

@@ -332,7 +332,11 @@
 
 
                 </StackPanel>
-                <localUI:SliderWithLabel x:Name="Slider_damping" SliderLength="400" SliderName="Damping factor" TickFrequency="0.00015" Unit="s" Width="400" Height="40" MaxValue="0.0375" SliderValueChanged="Slider_damping_SliderValueChanged"/>
+                <StackPanel Height="40" Width="540" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
+                    <localUI:SliderWithLabel x:Name="Slider_damping" SliderLength="190" SliderName="Damping factor" TickFrequency="0.00015" Unit="s" Width="200" Height="40" MaxValue="0.0375" SliderValueChanged="Slider_damping_SliderValueChanged" Margin="70,0,0,0"/>
+                    <localUI:SliderWithLabel x:Name="Slider_ServoTimeout" SliderLength="190" SliderName="Servo Idle Timeout" TickFrequency="1" Unit="mins" Width="200" Height="40" MaxValue="50" SliderValueChanged="Slider_ServoTimeoutValueChanged" Margin="10,0,0,0" ToolTip="Only work with PCBA v2, set to 0 to off the function"/>
+                </StackPanel>
+                
                 <StackPanel Height="40" Width="540" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
                     <localUI:SliderWithLabel x:Name="Slider_LC_rate" Width="200" SliderLength="190" SliderName="Loadcell Rate" MaxValue="500" Height="40" Unit="kg" TickFrequency="10" SliderValue="300" SliderValueChanged="Slider_LC_rate_SliderValueChanged" Margin="70,0,0,0"/>
                     <localUI:SliderWithLabel x:Name="Slider_maxgame_output" SliderName="Max Game Output" SliderLength="190" SliderValue="100" Width="190" Height="40" Margin="10,0,0,0" Unit="%" SliderValueChanged="Slider_maxgame_output_SliderValueChanged"/>

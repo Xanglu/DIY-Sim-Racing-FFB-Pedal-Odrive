@@ -1127,12 +1127,38 @@ void pedalUpdateTask( void * pvParameters )
 
     }
 
-    //if filtered reading > min force, mark the servo was in aciton
+    //Pedal servo power control
     #ifdef SERVO_POWER_PIN
+      //if filtered reading > min force, mark the servo was in aciton
       if(filteredReading>dap_config_pedalUpdateTask_st.payLoadPedalConfig_.preloadForce)
       {
         servoActionLast=millis();
       }
+      //wakeup process
+      if(filteredReading>STEPPER_WAKEUP_FORCE && stepper->servoStatus==SERVO_IDLE_NOT_CONNECTED)
+      {
+        Buzzer.single_beep_tone(770,100);
+        delay(300);
+        Buzzer.single_beep_tone(770,100);
+        Serial.println("Wake up servo, restart esp.");
+        delay(1000);
+        ESP.restart();
+      }
+      //pedal not in action, disable pedal power
+      uint32_t pedalIdleTimout= dap_config_pedalUpdateTask_st.payLoadPedalConfig_.servoIdleTimeout*60*1000;// timeout in ms
+      if(stepper->servoStatus==SERVO_CONNECTED && millis()-servoActionLast>pedalIdleTimout && dap_config_pedalUpdateTask_st.payLoadPedalConfig_.servoIdleTimeout!=0)
+      {
+        stepper->servoIdleAction();
+        stepper->servoStatus=SERVO_IDLE_NOT_CONNECTED;
+        Buzzer.single_beep_tone(770,100);
+        pixels.setPixelColor(0,0xff,0x00,0x00);//show red
+        pixels.show(); 
+        delay(300);
+        Buzzer.single_beep_tone(770,100);
+        Serial.println("Servo Idle timeout, please restart pedal.");
+
+      }
+
     #endif
 
     //float FilterReadingJoystick=averagefilter_joystick.process(filteredReading);
@@ -1276,21 +1302,7 @@ void pedalUpdateTask( void * pvParameters )
 
     }
 
-    //pedal not in action, disable pedal power
-    #ifdef SERVO_POWER_PIN
-      if(stepper->servoStatus==SERVO_CONNECTED &&millis()-servoActionLast>MAXIMUM_STEPPER_IDLE_TIMEOUT)
-      {
-        stepper->servoIdleAction();
-        stepper->servoStatus=SERVO_IDLE_NOT_CONNECTED;
-        Buzzer.single_beep_tone(770,100);
-        pixels.setPixelColor(0,0xff,0x00,0x00);//show red
-        pixels.show(); 
-        delay(300);
-        Buzzer.single_beep_tone(770,100);
-        Serial.println("Servo Idle timeout, please restart pedal.");
 
-      }
-    #endif
 
     // print all servo parameters for debug purposes
     if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS) )

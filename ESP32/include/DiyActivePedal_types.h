@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // define the payload revision
-#define DAP_VERSION_CONFIG 147
+#define DAP_VERSION_CONFIG 148
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -54,6 +54,7 @@ struct payloadPedalState_Basic {
   uint16_t joystickOutput_u16;
   uint8_t erroe_code_u8;
   uint8_t pedalFirmwareVersion_u8[3];
+  uint8_t servoStatus;
 };
 
 struct payloadPedalState_Extended {
@@ -206,6 +207,7 @@ struct payloadPedalConfig {
 
   uint8_t kf_Joystick_u8;
   uint8_t kf_modelNoise_joystick;
+  uint8_t servoIdleTimeout;
   
 
 };

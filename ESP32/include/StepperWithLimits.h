@@ -5,7 +5,8 @@
 
 // these are physical properties of the stepper
 static const int32_t MAXIMUM_STEPPER_ACCELERATION = INT32_MAX / 10;       
-static const int32_t MAXIMUM_STEPPER_IDLE_TIMEOUT = 1800000; //set the servo idle timeout                                         
+static const int32_t MAXIMUM_STEPPER_IDLE_TIMEOUT = 1800000; //set the servo idle timeout      
+static const float STEPPER_WAKEUP_FORCE=0.5f; //set the servo wakeup force in kg.
  // steps/s²
 // 10000000; //
 enum ServoStatus

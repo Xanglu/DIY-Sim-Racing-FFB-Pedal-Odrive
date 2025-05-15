@@ -860,9 +860,19 @@ void Serial_Task( void * pvParameters)
             }
             if(dap_bridge_state_lcl.payloadBridgeState_.Bridge_action==4)
             {
-              //aciton=4 print pedal update interval
-              Serial.println("[L]Bridge debug mode on. Restart bridge to turn off the debug mode.");
-              PedalUpdateIntervalPrint_trigger=true;
+              if(PedalUpdateIntervalPrint_trigger)
+              {
+                //aciton=4 print pedal update interval
+                Serial.println("[L]Bridge debug mode off.");
+                PedalUpdateIntervalPrint_trigger=false;
+              }
+              else
+              {
+                //aciton=4 print pedal update interval
+                Serial.println("[L]Bridge debug mode on.");
+                PedalUpdateIntervalPrint_trigger=true;
+              }
+
 
             }
             
@@ -1058,7 +1068,9 @@ void Serial_Task( void * pvParameters)
             Serial.print("[L]Pedal ");
             Serial.print(pedalIDX);
             Serial.print(" Update interval: ");
-            Serial.println(current_time-pedal_last_update[pedalIDX]);
+            Serial.print(current_time-pedal_last_update[pedalIDX]);
+            Serial.print(" RSSI: ");
+            Serial.println(rssi[pedalIDX]);
           }
         }
       }
