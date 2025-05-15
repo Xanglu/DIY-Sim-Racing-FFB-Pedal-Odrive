@@ -103,18 +103,15 @@ namespace User.PluginSdkDemo.UIFunction
                 }
                 if (Settings.Pedal_ESPNow_Sync_flag[Settings.table_selected])
                 {
-                    if (calculation.PedalAvailability[0]  && Settings.table_selected == 0)
+                    for (int pedalIDX = 0; pedalIDX < 3; pedalIDX++)
                     {
-                        calculation.PedalStatusString = "Wireless";
+                        if (calculation.PedalAvailability[pedalIDX] && Settings.table_selected == pedalIDX)
+                        {
+                            calculation.PedalStatusString = "WLS(";
+                            calculation.PedalStatusString += calculation.rssi[pedalIDX] + " dbm)";
+                        }
                     }
-                    if (calculation.PedalAvailability[1] && Settings.table_selected == 1)
-                    {
-                        calculation.PedalStatusString = "Wireless";
-                    }
-                    if (calculation.PedalAvailability[2] && Settings.table_selected == 2)
-                    {
-                        calculation.PedalStatusString = "Wireless";
-                    }
+
                 }
                 calculation.PedalStatusString += "\n" + Constants.pedalConfigPayload_version + "\n" + Constants.pluginVersion;
                 if (calculation.PedalFirmwareVersion[Settings.table_selected, 2] != 0)

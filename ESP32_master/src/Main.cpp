@@ -1015,6 +1015,11 @@ void Serial_Task( void * pvParameters)
       dap_bridge_state_st.payLoadHeader_.payloadType=DAP_PAYLOAD_TYPE_BRIDGE_STATE;
       dap_bridge_state_st.payLoadHeader_.version=DAP_VERSION_CONFIG;
       dap_bridge_state_st.payloadBridgeState_.Bridge_action=0;
+      for(int pedalIDX=0;pedalIDX<3;pedalIDX++)
+      {
+        dap_bridge_state_st.payloadBridgeState_.Pedal_RSSI_Realtime[pedalIDX]=rssi[pedalIDX];
+      }
+      
       parse_version(BRIDGE_FIRMWARE_VERSION,&dap_bridge_state_st.payloadBridgeState_.Bridge_firmware_version_u8[0],&dap_bridge_state_st.payloadBridgeState_.Bridge_firmware_version_u8[1],&dap_bridge_state_st.payloadBridgeState_.Bridge_firmware_version_u8[2]);
       //CRC check should be in the final
       crc = checksumCalculator((uint8_t*)(&(dap_bridge_state_st.payLoadHeader_)), sizeof(dap_bridge_state_st.payLoadHeader_) + sizeof(dap_bridge_state_st.payloadBridgeState_));
