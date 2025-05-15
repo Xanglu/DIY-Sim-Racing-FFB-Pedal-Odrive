@@ -49,6 +49,7 @@ namespace User.PluginSdkDemo
         public bool BridgeSerialAvailability;
         public bool OTASettingUpdate_b;
         public int[] rssi;
+        public byte[] ServoStatus;
         public uint RSSI_Value
         {
             get => _rssi_value;
@@ -130,6 +131,8 @@ namespace User.PluginSdkDemo
             _bridgeConnectingString = "";
             OTASettingUpdate_b = false;
             rssi = new int[3] { 0, 0, 0 };
+            ServoStatus = new byte[3] { 0, 0, 0 };
+            
             
     }
         public event PropertyChangedEventHandler PropertyChanged;

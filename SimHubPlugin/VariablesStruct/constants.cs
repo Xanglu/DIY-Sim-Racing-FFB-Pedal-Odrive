@@ -21,4 +21,11 @@ namespace User.PluginSdkDemo
         public const uint Basic_Wifi_info_type = 220;
         public const string pluginVersion = "0.90.03";
     }
+
+    public enum enumServoStatus
+    {
+        Off,
+        On,
+        Idle
+    }
 }

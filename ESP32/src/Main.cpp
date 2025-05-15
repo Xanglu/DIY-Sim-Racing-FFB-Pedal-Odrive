@@ -1464,6 +1464,8 @@ void pedalUpdateTask( void * pvParameters )
         parse_version(DAP_FIRMWARE_VERSION, &dap_state_basic_st.payloadPedalState_Basic_.pedalFirmwareVersion_u8[0], &dap_state_basic_st.payloadPedalState_Basic_.pedalFirmwareVersion_u8[1], &dap_state_basic_st.payloadPedalState_Basic_.pedalFirmwareVersion_u8[2]);
         //error code
         dap_state_basic_st.payloadPedalState_Basic_.erroe_code_u8=0;
+        //servo status update
+        dap_state_basic_st.payloadPedalState_Basic_.servoStatus=stepper->servoStatus;
         #ifdef ESPNOW_Enable
         if(ESPNow_error_code!=0)
         {

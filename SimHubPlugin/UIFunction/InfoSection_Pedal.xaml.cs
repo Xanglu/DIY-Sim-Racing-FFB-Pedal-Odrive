@@ -108,10 +108,25 @@ namespace User.PluginSdkDemo.UIFunction
                         if (calculation.PedalAvailability[pedalIDX] && Settings.table_selected == pedalIDX)
                         {
                             calculation.PedalStatusString = "WLS(";
-                            calculation.PedalStatusString += calculation.rssi[pedalIDX] + " dbm)";
+                            calculation.PedalStatusString += calculation.rssi[pedalIDX] + " dBm)";
                         }
                     }
 
+                }
+                switch (calculation.ServoStatus[Settings.table_selected])
+                {
+                    case (byte)enumServoStatus.Off:
+                        calculation.PedalStatusString += "\nOff";
+                        break;
+                    case (byte)enumServoStatus.On:
+                        calculation.PedalStatusString += "\nOn";
+                        break;
+                    case (byte)enumServoStatus.Idle:
+                        calculation.PedalStatusString += "\nIdle";
+                        break;
+                    default:
+                        calculation.PedalStatusString += "\n";
+                        break;
                 }
                 calculation.PedalStatusString += "\n" + Constants.pedalConfigPayload_version + "\n" + Constants.pluginVersion;
                 if (calculation.PedalFirmwareVersion[Settings.table_selected, 2] != 0)
@@ -133,7 +148,7 @@ namespace User.PluginSdkDemo.UIFunction
 
 
             }
-            if(info_label!=null) info_label.Content = "State:\nDAP Version:\nPlugin Version:\nPedal Version:";
+            if(info_label!=null) info_label.Content = "Connection:\nServo State:\nDAP Version:\nPlugin Version:\nPedal Version:";
             if (info_label_2 != null) info_label_2.Content = calculation.PedalStatusString;
         }
     }

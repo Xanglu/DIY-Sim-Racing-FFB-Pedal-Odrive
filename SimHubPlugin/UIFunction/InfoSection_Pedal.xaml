@@ -7,7 +7,7 @@
              xmlns:localUI="clr-namespace:User.PluginSdkDemo.UIElement"
              xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins" mc:Ignorable="d" 
              xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-             d:DesignHeight="70" d:DesignWidth="160">
+             d:DesignHeight="85" d:DesignWidth="160">
     <UserControl.Resources>
         <ResourceDictionary>
             <SolidColorBrush x:Key="TestBrush" Color="White"/>
@@ -302,13 +302,13 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <StackPanel HorizontalAlignment="Center" Height="70" VerticalAlignment="Top" Width="160">
+        <StackPanel HorizontalAlignment="Center" Height="85" VerticalAlignment="Top" Width="160">
             <StackPanel Height="15" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <Label Content="Pedal Info"  FontFamily="Arial Black" FontSize="12" Height="15" Width="80" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center"  />
             </StackPanel>
-            <StackPanel Height="55" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <Label x:Name="info_label" Content="" Height="55" Width="80" FontFamily="Arial" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10"/>
-                <Label x:Name="info_label_2" Content="Label" Height="55" Width="80" FontFamily="Arial" VerticalAlignment="Top" FontSize="10"/>
+            <StackPanel Height="70" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <Label x:Name="info_label" Content="" Height="70" Width="80" FontFamily="Arial" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10"/>
+                <Label x:Name="info_label_2" Content="Label" Height="70" Width="80" FontFamily="Arial" VerticalAlignment="Top" FontSize="10"/>
             </StackPanel>
         </StackPanel>
     </Grid>

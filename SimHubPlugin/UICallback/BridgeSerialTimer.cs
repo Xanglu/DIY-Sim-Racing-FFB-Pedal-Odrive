@@ -178,6 +178,18 @@ namespace User.PluginSdkDemo
 
                                     // write vJoy data
                                     Pedal_position_reading[pedalSelected] = pedalState_read_st.payloadPedalBasicState_.joystickOutput_u16;
+
+                                    //check servo status change
+                                    if (Plugin._calculations.ServoStatus[pedalSelected] == (byte)enumServoStatus.On && pedalState_read_st.payloadPedalBasicState_.servoStatus == (byte)enumServoStatus.Idle)
+                                    {
+                                        string tmp = "Pedal:"+pedalSelected+" Servo idle reach timeout, power cutoff, please restart pedal to wake it up";
+                                        ToastNotification("Wireless Connection", tmp);
+                                    }
+
+                                    //fill servo status
+
+                                    Plugin._calculations.ServoStatus[pedalSelected] = pedalState_read_st.payloadPedalBasicState_.servoStatus;
+                                    
                                     // GUI update
                                     if (pedalState_read_st.payloadPedalBasicState_.error_code_u8 != 0)
                                     {
