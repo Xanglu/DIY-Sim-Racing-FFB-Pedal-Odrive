@@ -118,6 +118,7 @@ namespace User.PluginSdkDemo
                             for (int i = 0; i < 3; i++)
                             {
                                 Plugin.PedalConfigRead_b[i] = false;
+                                
                             }
 
                         }
@@ -185,6 +186,7 @@ namespace User.PluginSdkDemo
                                 Plugin.Settings.connect_status[pedalIdx] = 0;
                                 Plugin.PedalConfigRead_b[pedalIdx] = false;
                                 Plugin._calculations.PedalSerialAvailability[pedalIdx] = false;
+                                Plugin._calculations.ServoStatus[pedalIdx] = 0;
                                 updateTheGuiFromConfig();
                             }
 

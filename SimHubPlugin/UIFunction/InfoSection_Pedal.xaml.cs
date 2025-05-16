@@ -107,8 +107,8 @@ namespace User.PluginSdkDemo.UIFunction
                     {
                         if (calculation.PedalAvailability[pedalIDX] && Settings.table_selected == pedalIDX)
                         {
-                            calculation.PedalStatusString = "WLS(";
-                            calculation.PedalStatusString += calculation.rssi[pedalIDX] + " dBm)";
+                            calculation.PedalStatusString = "Wireless";
+                            
                         }
                     }
 
@@ -150,6 +150,67 @@ namespace User.PluginSdkDemo.UIFunction
             }
             if(info_label!=null) info_label.Content = "Connection:\nServo State:\nDAP Version:\nPlugin Version:\nPedal Version:";
             if (info_label_2 != null) info_label_2.Content = calculation.PedalStatusString;
+
+            if (calculation.BridgeSerialConnectionStatus && calculation.PedalAvailability[Settings.table_selected])
+            {
+                if (RSSI_canvas != null) RSSI_canvas.Visibility = Visibility.Visible;
+                //Label_RSSI.Visibility = Visibility.Visible;
+                //if (Label_RSSI != null && Settings.advanced_b) Label_RSSI.Visibility = Visibility.Visible;
+                //else Label_RSSI.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                if (RSSI_canvas != null) RSSI_canvas.Visibility = Visibility.Hidden;
+                //if (Label_RSSI != null) Label_RSSI.Visibility = Visibility.Hidden;
+            }
+            
+
+            if (Label_RSSI != null && calculation.rssi[Settings.table_selected] < -20 && calculation.rssi[Settings.table_selected] > -100 && calculation.PedalAvailability[Settings.table_selected])
+            {
+                if (calculation.BridgeSerialAvailability)
+                {
+                    Label_RSSI.Content = "" + calculation.rssi[Settings.table_selected] + "dBm";
+                    Label_RSSI.Visibility = Visibility.Visible;
+                }
+
+            }
+            else Label_RSSI.Visibility = Visibility.Hidden;
+
+            if (RSSI_1 != null && RSSI_2 != null && RSSI_3 != null && RSSI_4 != null)
+            {
+                RSSI_1.Visibility = Visibility.Hidden;
+                RSSI_2.Visibility = Visibility.Hidden;
+                RSSI_3.Visibility = Visibility.Hidden;
+                RSSI_4.Visibility = Visibility.Hidden;
+                if (calculation.rssi[Settings.table_selected] < -75)
+                {
+                    RSSI_1.Visibility = Visibility.Visible;
+                    RSSI_2.Visibility = Visibility.Hidden;
+                    RSSI_3.Visibility = Visibility.Hidden;
+                    RSSI_4.Visibility = Visibility.Hidden;
+                }
+                if (calculation.rssi[Settings.table_selected] > -75 && calculation.rssi[Settings.table_selected] < -70)
+                {
+                    RSSI_1.Visibility = Visibility.Visible;
+                    RSSI_2.Visibility = Visibility.Visible;
+                    RSSI_3.Visibility = Visibility.Hidden;
+                    RSSI_4.Visibility = Visibility.Hidden;
+                }
+                if (calculation.rssi[Settings.table_selected] > -70 && calculation.rssi[Settings.table_selected] < -65)
+                {
+                    RSSI_1.Visibility = Visibility.Visible;
+                    RSSI_2.Visibility = Visibility.Visible;
+                    RSSI_3.Visibility = Visibility.Visible;
+                    RSSI_4.Visibility = Visibility.Hidden;
+                }
+                if (calculation.rssi[Settings.table_selected]>-65 && calculation.rssi[Settings.table_selected] < -20)
+                {
+                    RSSI_1.Visibility = Visibility.Visible;
+                    RSSI_2.Visibility = Visibility.Visible;
+                    RSSI_3.Visibility = Visibility.Visible;
+                    RSSI_4.Visibility = Visibility.Visible;
+                }
+            }
         }
     }
 }

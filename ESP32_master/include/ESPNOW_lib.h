@@ -17,7 +17,7 @@ uint8_t* Recv_mac;
 uint16_t ESPNow_send=0;
 uint16_t ESPNow_recieve=0;
 int rssi_display;
-int rssi[3]={0,0,0};
+int32_t rssi[3]={0,0,0};
 //bool MAC_get=false;
 bool ESPNOW_status =false;
 bool ESPNow_initial_status=false;
@@ -401,4 +401,15 @@ void ESPNow_initialize()
     ESPNow_initial_status=true;
     Serial.println("[L]ESPNow Initialized");
   
+}
+void print_struct_hex(DAP_bridge_state_st* s) {
+    const uint8_t* p = (const uint8_t*)s;
+    for (size_t i = 0; i < sizeof(DAP_bridge_state_st); i++) 
+    {
+      Serial.print("0x");  
+      if (p[i] < 16) Serial.print('0');
+      Serial.print(p[i], HEX);
+      Serial.print("-");
+    }
+    Serial.println("");
 }

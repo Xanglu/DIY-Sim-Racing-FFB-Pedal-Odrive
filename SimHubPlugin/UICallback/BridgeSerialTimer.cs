@@ -364,7 +364,7 @@ namespace User.PluginSdkDemo
 
                                 // parse byte array as config struct
                                 DAP_bridge_state_st bridge_state = getStateBridgeFromBytes(destinationArray);
-
+                                string buffer_string = BitConverter.ToString(destinationArray);
                                 // check whether receive struct is plausible
                                 DAP_bridge_state_st* v_state = &bridge_state;
                                 byte* p_state = (byte*)v_state;

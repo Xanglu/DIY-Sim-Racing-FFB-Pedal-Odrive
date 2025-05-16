@@ -19,7 +19,7 @@ namespace User.PluginSdkDemo
         public const uint pedalStateExtendedPayload_type = 130;
         public const uint bridgeStatePayloadType = 210;
         public const uint Basic_Wifi_info_type = 220;
-        public const string pluginVersion = "0.90.03";
+        public const string pluginVersion = "0.90.04";
     }
 
     public enum enumServoStatus

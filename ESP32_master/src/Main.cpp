@@ -1015,12 +1015,9 @@ void Serial_Task( void * pvParameters)
       dap_bridge_state_st.payLoadHeader_.payloadType=DAP_PAYLOAD_TYPE_BRIDGE_STATE;
       dap_bridge_state_st.payLoadHeader_.version=DAP_VERSION_CONFIG;
       dap_bridge_state_st.payloadBridgeState_.Bridge_action=0;
-      for(int pedalIDX=0;pedalIDX<3;pedalIDX++)
-      {
-        dap_bridge_state_st.payloadBridgeState_.Pedal_RSSI_Realtime[pedalIDX]=rssi[pedalIDX];
-      }
-      
+      memcpy(dap_bridge_state_st.payloadBridgeState_.Pedal_RSSI_Realtime,rssi,sizeof(int32_t)*3);
       parse_version(BRIDGE_FIRMWARE_VERSION,&dap_bridge_state_st.payloadBridgeState_.Bridge_firmware_version_u8[0],&dap_bridge_state_st.payloadBridgeState_.Bridge_firmware_version_u8[1],&dap_bridge_state_st.payloadBridgeState_.Bridge_firmware_version_u8[2]);
+      
       //CRC check should be in the final
       crc = checksumCalculator((uint8_t*)(&(dap_bridge_state_st.payLoadHeader_)), sizeof(dap_bridge_state_st.payLoadHeader_) + sizeof(dap_bridge_state_st.payloadBridgeState_));
       dap_bridge_state_st.payloadFooter_.checkSum=crc;
@@ -1058,6 +1055,7 @@ void Serial_Task( void * pvParameters)
           Serial.print(pedalIDX);
           Serial.println(" Disconnected");
           dap_bridge_state_st.payloadBridgeState_.Pedal_availability[pedalIDX]=0;
+
         }
       }  
     }
@@ -1077,7 +1075,10 @@ void Serial_Task( void * pvParameters)
             Serial.print(" RSSI: ");
             Serial.println(rssi[pedalIDX]);
           }
+          
         }
+        Serial.print("[L]sending:");
+        print_struct_hex(&dap_bridge_state_st);
       }
       PedalUpdateIntervalPrint_b=false;
     }

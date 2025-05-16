@@ -1,4 +1,4 @@
-#define BRIDGE_FIRMWARE_VERSION "0.90.03"
+#define BRIDGE_FIRMWARE_VERSION "0.90.04"
 #if PCB_VERSION==5
 	#define BRIDGE_BOARD   "Bridge_FANATEC"
 #endif
@@ -10,5 +10,9 @@
 #endif
 
 void parse_version(char *version, uint8_t *major, uint8_t *minor, uint8_t *patch) {
-    sscanf(version, "%d.%d.%d", major, minor, patch);
+    int imajor, iminor, ipatch;
+    sscanf(version, "%d.%d.%d", &imajor, &iminor, &ipatch);
+    *major = (uint8_t)imajor;
+    *minor = (uint8_t)iminor;
+    *patch = (uint8_t)ipatch;
 }
