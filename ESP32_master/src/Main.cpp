@@ -1144,9 +1144,8 @@ void Joystick_Task( void * pvParameters )
       //bool joystatus=GetJoystickStatus();
       if(!GetJoystickStatus())
       {
-
         RestartJoystick();
-        Serial.println("[L]HID Eroor, Restart Joystick...");
+        Serial.println("[L]HID Error, Restart Joystick...");
         //last_serial_joy_out=millis();
       }
     }

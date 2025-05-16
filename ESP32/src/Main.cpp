@@ -1993,7 +1993,7 @@ void serialCommunicationTask( void * pvParameters )
             if(!GetJoystickStatus())
             {
               RestartJoystick();
-              Serial.println("HID Eroor, Restart Joystick...");
+              Serial.println("HID Error, Restart Joystick...");
               //last_serial_joy_out=millis();
             }
           #endif
