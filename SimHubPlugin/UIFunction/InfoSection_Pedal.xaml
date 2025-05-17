@@ -306,12 +306,7 @@
             <StackPanel Height="15" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <Label Content="Pedal Info"  FontFamily="Arial Black" FontSize="12" Height="15" Width="80" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center"  />
                 <Label x:Name="Label_RSSI" Content=""  FontFamily="Arial" FontSize="8" Height="15" Width="35" Padding="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" VerticalContentAlignment="Center" Margin="29,0,0,0"  />
-                <Canvas x:Name="RSSI_canvas" Width="16" Height="15">
-                    <Rectangle x:Name="RSSI_1" Width="3" Height="3" Fill="{DynamicResource AccentColorBrush}" Canvas.Left="0" Canvas.Top="12" />
-                    <Rectangle x:Name="RSSI_2" Width="3" Height="7" Fill="{DynamicResource AccentColorBrush}" Canvas.Left="4" Canvas.Top="8" />
-                    <Rectangle x:Name="RSSI_3" Width="3" Height="11" Fill="{DynamicResource AccentColorBrush}" Canvas.Left="8" Canvas.Top="4" />
-                    <Rectangle x:Name="RSSI_4" Width="3" Height="15" Fill="{DynamicResource AccentColorBrush}" Canvas.Left="12" Canvas.Top="0" />
-                </Canvas>
+                <localUI:RSSIBar x:Name="rssibar" />
             </StackPanel>
             <StackPanel Height="70" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <Label x:Name="info_label" Content="" Height="70" Width="80" FontFamily="Arial" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10"/>

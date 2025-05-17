@@ -121,61 +121,7 @@ namespace User.PluginSdkDemo.UIFunction
                 {
                     calculation.SystemStatusString += "\nNo Data";
                 }
-
-
-
-            } 
-            if (calculation.BridgeSerialConnectionStatus)
-            {
-                if(RSSI_canvas!=null) RSSI_canvas.Visibility = Visibility.Visible;
-                //Label_RSSI.Visibility = Visibility.Visible;
-                //if (Label_RSSI != null && Settings.advanced_b) Label_RSSI.Visibility = Visibility.Visible;
-                //else Label_RSSI.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                if (RSSI_canvas != null) RSSI_canvas.Visibility = Visibility.Hidden;
-                //if (Label_RSSI != null) Label_RSSI.Visibility = Visibility.Hidden;
-            }
-            if (info_label_2_system != null) info_label_2_system.Content = calculation.SystemStatusString;
-
-            if (Label_RSSI != null && calculation.RSSI_Value != 0)
-            {
-                Label_RSSI.Content = "" + ((int)calculation.RSSI_Value - 100) + "dBm";
-                Label_RSSI.Visibility = Visibility.Visible;
-            } 
-            else Label_RSSI.Visibility = Visibility.Hidden;
-
-            if (RSSI_1 != null && RSSI_2 != null && RSSI_3 != null && RSSI_4 != null)
-            {
-                if (calculation.RSSI_Value < 25)
-                {
-                    RSSI_1.Visibility = Visibility.Visible;
-                    RSSI_2.Visibility = Visibility.Hidden;
-                    RSSI_3.Visibility = Visibility.Hidden;
-                    RSSI_4.Visibility = Visibility.Hidden;
-                }
-                if (calculation.RSSI_Value > 25 && calculation.RSSI_Value < 30)
-                {
-                    RSSI_1.Visibility = Visibility.Visible;
-                    RSSI_2.Visibility = Visibility.Visible;
-                    RSSI_3.Visibility = Visibility.Hidden;
-                    RSSI_4.Visibility = Visibility.Hidden;
-                }
-                if (calculation.RSSI_Value > 30 && calculation.RSSI_Value < 35)
-                {
-                    RSSI_1.Visibility = Visibility.Visible;
-                    RSSI_2.Visibility = Visibility.Visible;
-                    RSSI_3.Visibility = Visibility.Visible;
-                    RSSI_4.Visibility = Visibility.Hidden;
-                }
-                if (calculation.RSSI_Value > 35)
-                {
-                    RSSI_1.Visibility = Visibility.Visible;
-                    RSSI_2.Visibility = Visibility.Visible;
-                    RSSI_3.Visibility = Visibility.Visible;
-                    RSSI_4.Visibility = Visibility.Visible;
-                }
+                if (info_label_2_system != null) info_label_2_system.Content = calculation.SystemStatusString;
             }
             
         }
