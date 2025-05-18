@@ -2191,7 +2191,8 @@ bool building_dap_esppairing_lcl =false;
 unsigned long Pairing_state_start;
 unsigned long Pairing_state_last_sending;
 unsigned long Debug_rudder_last=0;
-
+unsigned long basic_state_update_last=0;
+unsigned long extend_state_update_last=0;
 uint32_t espNowTask_stackSizeIdx_u32 = 0;
 void ESPNOW_SyncTask( void * pvParameters )
 {
@@ -2216,15 +2217,19 @@ void ESPNOW_SyncTask( void * pvParameters )
 
     
     //basic state sendout interval
-    if(ESPNOW_count%9==0)
+    //if(ESPNOW_count%9==0)
+    if(millis()-basic_state_update_last>3)
     {
       basic_state_send_b=true;
+      basic_state_update_last=millis();
       
     }
     //entend state send out interval
-    if(ESPNOW_count%13==0 && dap_config_st.payLoadPedalConfig_.debug_flags_0 == DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT)
+    //if(ESPNOW_count%13==0 && dap_config_st.payLoadPedalConfig_.debug_flags_0 == DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT)
+    if((millis()-extend_state_update_last>10) && dap_config_st.payLoadPedalConfig_.debug_flags_0 == DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT)
     {
       extend_state_send_b=true;
+      extend_state_update_last=millis();
       
     }
 
