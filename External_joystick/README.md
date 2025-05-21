@@ -1,8 +1,12 @@
 # DAP Joystick UART Output Format
 
-This document describes the UART output data structure used for communication between the DAP Joystick system and external devices. The data is transmitted as a packed binary struct, ensuring compact and predictable layout.
+This document describes the UART output data structure used for communication between the FFB Pedal Wireless Bridge system and external devices. The data is transmitted as a packed binary struct, ensuring compact and predictable layout. 
 
-## Overview
+## Firmware Flashing for External Joystick Support
+
+To enable external joystick inject support, flash the wireless bridge with the **`Bridge_with_external_joystick`** firmware tag.
+
+## Packet Overview
 
 The UART packet consists of two parts:
 
@@ -75,7 +79,30 @@ enum Pedal_status {
 ## Checksum
 
 The checksum is a `uint16_t` value appended at the end of each packet. It should be calculated using the same algorithm on both sender and receiver. The common method is to sum all bytes (excluding the checksum itself) or use CRC16 if needed.
+### Checksum Calculation
 
+To ensure data integrity, a 16-bit checksum is appended to the end of each UART packet.  
+The checksum is computed using a simple **Fletcher-like algorithm** over the payload data.
+
+### Checksum Function
+
+```c
+uint16_t checksumCalculator(uint8_t *data, uint16_t length)
+{
+    uint16_t curr_crc = 0x0000;
+    uint8_t sum1 = (uint8_t)curr_crc;
+    uint8_t sum2 = (uint8_t)(curr_crc >> 8);
+    int index;
+
+    for (index = 0; index < length; index++)
+    {
+        sum1 = (sum1 + data[index]) % 255;
+        sum2 = (sum2 + sum1) % 255;
+    }
+
+    return (sum2 << 8) | sum1;
+}
+```
 ---
 
 ## Example Use Case
@@ -104,5 +131,5 @@ The checksum is a `uint16_t` value appended at the end of each packet. It should
 
 > ⚠️ All signals must use **3.3V logic level** to avoid damaging ESP32-S3 or other devices.
 
-You can find the example code in RP2040_joystick folder.
+# You can find the example code in RP2040_joystick folder.
 
