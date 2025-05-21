@@ -23,13 +23,13 @@ These are wrapped in the composite structure `DAP_JoystickUART_State`.
 
 ```c
 struct __attribute__((packed)) payloadjoystick {
-    uint8_t payloadtype;             // Identifies the type of payload, set to 215
-    uint8_t key;                     // current key is set to 0x97
+    uint8_t payloadtype;             // Identifies the type of payload, set to 215, serves as an alignment marker
+    uint8_t key;                     // current key is set to 0x97, serves as an alignment marker
     uint8_t DAP_JOY_Version;         // Payload protocol version, current version set to 0x01
-    int16_t controllerValue_i32[3];  // Joystick output value
+    int16_t controllerValue_i32[3];  // Joystick output value, max is set to 10000
     int8_t pedal_status;             // Pedal mode (see enum below)
     uint8_t pedalAvailability[3];    // Availability status of 3 pedals (0 = not available, 1 = available)
-    uint8_t JoystickAction;          // Bitfield representing joystick actions
+    uint8_t JoystickAction;          // Bitfield representing joystick actions, not use for now.
 };
 ```
 
