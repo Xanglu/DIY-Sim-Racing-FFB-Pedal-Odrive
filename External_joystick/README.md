@@ -122,7 +122,7 @@ uint16_t checksumCalculator(uint8_t *data, uint16_t length)
 | GPIO15       | TX        | GPIO9          | RX               | ESP32-S3 transmits UART data to the other device         |
 | GPIO16       | RX        | GPIO8          | TX               | ESP32-S3 receives UART data from the other device        |
 | GPIO17       | Input     | GPIO7          | Any Digital Out  | Handshake pin. Drive HIGH (3.3V) to signal MCU is ready  |
-
+| GND          | GND       | GND            | GND              | Make sure to connect all GND (ground) lines together and ensure that all devices operate at the same voltage level.|
 ### Handshake Pin Behavior (GPIO17)
 
 - **GPIO17** on ESP32-S3 is used as a **handshake input**.
