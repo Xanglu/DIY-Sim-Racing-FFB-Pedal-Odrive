@@ -88,6 +88,7 @@ DAP_ESPPairing_st dap_esppairing_st;//saving
 DAP_ESPPairing_st dap_esppairing_lcl;//sending
 //DAP_config_st dap_config_st_store[3];
 DAP_bridge_state_st dap_bridge_state_lcl;//
+
 #include "CycleTimer.h"
 
 
@@ -235,6 +236,27 @@ void FanatecUpdate(void * pvParameters);
 /*                         setup function                                                     */
 /*                                                                                            */
 /**********************************************************************************************/
+//HardwareSerial SerialExt(2);
+/*
+void sendPacket(uint8_t* data, size_t len) 
+{
+  size_t avail = SerialExt.availableForWrite();
+  if (avail >= len) {
+    SerialExt.write(data, len);
+  } else {
+    Serial.println("TX buffer full, rp2040 off, restart Serial?");
+    SerialExt.end();
+    delay(10000);
+    SerialExt.begin(baud, SERIAL_8N1, 16, 15);  // RX=16, TX=15
+  }
+}
+*/
+
+#ifdef External_RP2040
+  #include "RP2040PicoUART.h"
+  RP2040PicoUART *_rp2040picoUART;
+  DAP_JoystickUART_State dap_joystickUART_state_lcl;
+#endif
 
 void setup()
 {
@@ -242,9 +264,11 @@ void setup()
   //Serial.begin(921600);
   //Serial.begin(512000);
   //
-  
+  #ifdef External_RP2040
+    _rp2040picoUART= new RP2040PicoUART(RP2040rxPin, RP2040txPin, handshakeGPIO, RP2040baudrate);
+  #endif
 
-  #if PCB_VERSION == 5||PCB_VERSION == 6||PCB_VERSION == 7
+  #if PCB_VERSION == 5 || PCB_VERSION == 6 || PCB_VERSION == 7 || PCB_VERSION == 8
     //Serial.setTxTimeoutMs(0);
     Serial.setRxBufferSize(1024);
     Serial.setTimeout(5);
@@ -257,10 +281,10 @@ void setup()
     Serial.setRxBufferSize(1024);
     Serial.begin(921600);
     Serial.setTimeout(5);
-    
+
   #endif
   #ifdef USB_JOYSTICK
-	SetupController();
+	  SetupController();
   #endif
   Serial.println(" ");
   Serial.println(" ");
@@ -284,9 +308,9 @@ void setup()
   */
   delay(10);
   #ifdef ESPNow_Pairing_function
-  //button read setup
-  pinMode(Pairing_GPIO, INPUT_PULLUP);
-  EEPROM.begin(256);
+    //button read setup
+    pinMode(Pairing_GPIO, INPUT_PULLUP);
+    EEPROM.begin(256);
   #endif
 /*
   if(semaphore_updateJoystick==NULL)
@@ -689,7 +713,11 @@ void ESPNOW_SyncTask( void * pvParameters )
 
 bool PedalUpdateIntervalPrint_b=false;
 unsigned long PedalUpdateLast=0;
+unsigned long UARTJoystickUpdateLast=0;
 bool PedalUpdateIntervalPrint_trigger=false;
+bool UARTJoystickUpdate_b=false;
+int joystick_fake_value=0;
+
 void Serial_Task( void * pvParameters)
 {
   for(;;)
@@ -707,7 +735,11 @@ void Serial_Task( void * pvParameters)
       PedalUpdateIntervalPrint_b=true;
       PedalUpdateLast=current_time;
     }
-
+    if(current_time-UARTJoystickUpdateLast>7)
+    {
+      UARTJoystickUpdate_b=true;
+      UARTJoystickUpdateLast=current_time;
+    }
     bool structChecker = true;
     if (n > 0)
     {
@@ -1043,6 +1075,26 @@ void Serial_Task( void * pvParameters)
           Serial.println(rssi_filter_value);        
         #endif
     }
+    #ifdef External_RP2040
+      if(UARTJoystickUpdate_b)
+      {
+        DAP_JoystickUART_State * dap_joystickUART_state_local_ptr;
+        UARTJoystickUpdate_b=false;
+        dap_joystickUART_state_lcl._payloadjoystick.payloadtype=(uint8_t)DAP_PAYLOAD_TYPE_JOYSTICKUART;
+        dap_joystickUART_state_lcl._payloadjoystick.key = DAP_JOY_KEY;
+        dap_joystickUART_state_lcl._payloadjoystick.DAP_JOY_Version = DAP_JOY_VERSION;
+        for(int i=0; i<3;i++)
+        {
+          dap_joystickUART_state_lcl._payloadjoystick.controllerValue_i32[i]=Joystick_value_original[i];
+          dap_joystickUART_state_lcl._payloadjoystick.pedalAvailability[i] = dap_bridge_state_st.payloadBridgeState_.Pedal_availability[i];
+        }
+        dap_joystickUART_state_lcl._payloadjoystick.pedal_status=pedal_status;
+        dap_joystickUART_state_lcl._payloadfooter.checkSum= checksumCalculator((uint8_t*)(&(dap_joystickUART_state_lcl._payloadjoystick)), sizeof(dap_joystickUART_state_lcl._payloadjoystick));
+        _rp2040picoUART->UARTSendPacket((uint8_t*)&dap_joystickUART_state_lcl, sizeof(DAP_JoystickUART_State));
+
+      }
+    #endif
+
     uint8_t pedalIDX;
     for(pedalIDX=0;pedalIDX<3;pedalIDX++)
     {
