@@ -29,6 +29,15 @@ struct __attribute__((packed)) DAP_JoystickUART_State
     JoystickPayloadFooter _payloadfooter;
     
 };
+
+enum JoystickAction
+{
+    NONE,
+    JOYSTICKACTION_DEBUG_MODE,
+    JOYSTICKACTION_RESET_INTO_BOOTLOADER,
+    JOYSTICK_RESTART
+};
+
 class RP2040PicoUART
 {
     public:

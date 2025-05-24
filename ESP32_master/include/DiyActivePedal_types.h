@@ -85,6 +85,18 @@ struct payloadBridgeState
   uint8_t Bridge_firmware_version_u8[3];
   int32_t Pedal_RSSI_Realtime[3];
 };
+
+enum bridgeAction
+{
+  BRIDGE_ACTION_NONE,
+  BRIDGE_ACTION_ENABLE_PAIRING,
+  BRIDGE_ACTION_RESTART,
+  BRIDGE_ACTION_DOWNLOAD_MODE,
+  BRIDGE_ACTION_DEBUG,
+  BRIDGE_ACTION_JOYSTICK_FLASHING_MODE,
+  BRIDGE_ACTION_JOYSTICK_DEBUG
+};
+
 struct payloadPedalConfig
 {
   // configure pedal start and endpoint
