@@ -779,7 +779,9 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 			// but deactivate brake resistor once certain activation time is exceeded to prevent damage due to overheating
 			#ifdef BRAKE_RESISTOR_PIN
 				int64_t brakeResistorUpTime_i64 = timeNow_isv57SerialCommunicationTask_l - time_brakeResistorLastPassive;
-				if ( ( stepper_cl->getServosVoltage() > ((servoBusVoltageParameterized_fl32 + 4.0f)*10.0f) ) && (brakeResistorUpTime_i64 < BRAKE_RESISTOR_DEACTIVATION_TIME_IN_MS) )
+				if ( ( stepper_cl->getServosVoltage() > ((servoBusVoltageParameterized_fl32 + 4.0f)*10.0f) ) 
+				&& (brakeResistorUpTime_i64 < BRAKE_RESISTOR_DEACTIVATION_TIME_IN_MS) 
+				&& (brakeResistorUpTime_i64 > 0))
 				{
 					digitalWrite(BRAKE_RESISTOR_PIN, HIGH);
 					stepper_cl->brakeResistorState_b = true;
