@@ -1067,10 +1067,6 @@ void pedalUpdateTask( void * pvParameters )
     float pedalInclineAngleInDeg_fl32 = pedalInclineAngleDeg(sledPosition, &dap_config_pedalUpdateTask_st);
     float pedalForce_fl32 = convertToPedalForce(loadcellReading, sledPosition, &dap_config_pedalUpdateTask_st);
     float d_phi_d_x = convertToPedalForceGain(sledPosition, &dap_config_pedalUpdateTask_st);
-    pedalForce_fl32 = loadcellReading;
-    // Serial.printf("SledPos:%f,    PedalAngle: %f\n", sledPosition, pedalInclineAngleInDeg_fl32);
-
-    // delay(10);
 
     // compute gain for horizontal foot model
     float b = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.lengthPedal_b;
@@ -1097,8 +1093,7 @@ void pedalUpdateTask( void * pvParameters )
         filteredReading = filteredReading_exp_filter;
         break;
       default:
-        //filteredReading_exp_filter = filteredReading_exp_filter * alpha_exp_filter + pedalForce_fl32 * (1.0f-alpha_exp_filter);
-        filteredReading = pedalForce_fl32;//filteredReading_exp_filter;
+        filteredReading = pedalForce_fl32;
         break;
     }
 
@@ -1568,7 +1563,7 @@ void pedalUpdateTask( void * pvParameters )
 uint32_t communicationTask_stackSizeIdx_u32 = 0;
 int64_t timeNow_serialCommunicationTask_l = 0;
 int64_t timePrevious_serialCommunicationTask_l = 0;
-#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK (int64_t)3
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK (int64_t)10
 
 int32_t joystickNormalizedToInt32_local = 0;
 void serialCommunicationTask( void * pvParameters )
