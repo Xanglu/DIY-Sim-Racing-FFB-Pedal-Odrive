@@ -45,6 +45,7 @@
 void updatePedalCalcParameters();
 void pedalUpdateTask( void * pvParameters );
 void serialCommunicationTask( void * pvParameters );
+void joystickOutputTask( void * pvParameters );
 void servoCommunicationTask( void * pvParameters );
 void OTATask( void * pvParameters );
 void ESPNOW_SyncTask( void * pvParameters);
@@ -550,6 +551,17 @@ void setup()
   xTaskCreatePinnedToCore(
                     serialCommunicationTask,   
                     "serialCommunicationTask", 
+                    5000,  
+                    //STACK_SIZE_FOR_TASK_2,    
+                    NULL,      
+                    1,         
+                    &Task2,    
+                    0);     
+  delay(500);
+
+  xTaskCreatePinnedToCore(
+                    joystickOutputTask,   
+                    "joystickOutputTask", 
                     5000,  
                     //STACK_SIZE_FOR_TASK_2,    
                     NULL,      
@@ -1552,8 +1564,75 @@ void pedalUpdateTask( void * pvParameters )
 
 
 
+/**********************************************************************************************/
+/*                                                                                            */
+/*                         joystick output task                                               */
+/*                                                                                            */
+/**********************************************************************************************/
+#define REPETITION_INTERVAL_JOYSTICK_TASK (int64_t)10
+int64_t timeNow_joystickTask_l = 0;
+int64_t timePrevious_joystickTask_l = 0;
+void joystickOutputTask( void * pvParameters )
+{ 
+  int32_t joystickNormalizedToInt32_local = 0;
+
+  for(;;){
+    // measure callback time and continue, when desired period is reached
+    timeNow_joystickTask_l = millis();
+
+    // control execution time
+    int64_t timeDiff_joystick_l = ( timePrevious_joystickTask_l + REPETITION_INTERVAL_JOYSTICK_TASK) - timeNow_joystickTask_l;
+    uint32_t targetWaitTime_u32 = constrain(timeDiff_joystick_l, 0, REPETITION_INTERVAL_JOYSTICK_TASK);
+    delay(targetWaitTime_u32);
+    timePrevious_joystickTask_l = millis();
+
+    // obtain joystick output level
+    if(semaphore_updateJoystick!=NULL)
+    {
+      if(xSemaphoreTake(semaphore_updateJoystick, (TickType_t)1)==pdTRUE)
+      {
+         //Serial.print(" 3");
+        joystickNormalizedToInt32_local = joystickNormalizedToInt32;
+        xSemaphoreGive(semaphore_updateJoystick);
+      }
+    }
 
 
+    // send joystick output
+    #if defined(USB_JOYSTICK) || defined(BLUETOOTH_GAMEPAD)
+      if (IsControllerReady()) 
+      {
+        if(dap_calculationVariables_st.Rudder_status==false)
+        {
+          //general output
+          SetControllerOutputValue(joystickNormalizedToInt32_local);
+          
+          #ifdef USB_JOYSTICK
+            // Restart HID output if faulty behavior was detected
+            JoystickSendState();
+            if(!GetJoystickStatus())
+            {
+              RestartJoystick();
+              Serial.println("HID Error, Restart Joystick...");
+              //last_serial_joy_out=millis();
+            }
+          #endif
+
+        }
+      }
+    #endif
+
+
+    // print the execution time averaged over multiple cycles
+    if (dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+    {
+      static CycleTimer timerJoystick("Joystick cycle time");
+      timerJoystick.Bump();
+    }
+
+
+  }
+}
 
 /**********************************************************************************************/
 /*                                                                                            */
@@ -1566,9 +1645,11 @@ int64_t timePrevious_serialCommunicationTask_l = 0;
 #define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK (int64_t)10
 #define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST (int64_t)2
 
-int32_t joystickNormalizedToInt32_local = 0;
+
 void serialCommunicationTask( void * pvParameters )
 { 
+
+  int32_t joystickNormalizedToInt32_local = 0;
 
   for(;;){
 
@@ -1991,38 +2072,6 @@ void serialCommunicationTask( void * pvParameters )
 
     }
 
-    delay( SERIAL_COOMUNICATION_TASK_DELAY_IN_MS );
-    if(semaphore_updateJoystick!=NULL)
-    {
-      if(xSemaphoreTake(semaphore_updateJoystick, (TickType_t)1)==pdTRUE)
-      {
-         //Serial.print(" 3");
-        joystickNormalizedToInt32_local = joystickNormalizedToInt32;
-        xSemaphoreGive(semaphore_updateJoystick);
-      }
-    }
-    #if defined(USB_JOYSTICK) || defined(BLUETOOTH_GAMEPAD)
-      if (IsControllerReady()) 
-      {
-        if(dap_calculationVariables_st.Rudder_status==false)
-        {
-          //general output
-          SetControllerOutputValue(joystickNormalizedToInt32_local);
-          
-          #ifdef USB_JOYSTICK
-            // Restart HID output if faulty behavior was detected
-            JoystickSendState();
-            if(!GetJoystickStatus())
-            {
-              RestartJoystick();
-              Serial.println("HID Error, Restart Joystick...");
-              //last_serial_joy_out=millis();
-            }
-          #endif
-
-        }
-      }
-    #endif
 
     #ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
       if( communicationTask_stackSizeIdx_u32 == 1000)

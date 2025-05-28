@@ -5,6 +5,9 @@
 
 int32_t previousTransmittedControllerValue_u32 = 0;
 bool newControllerValueReceived_b = false;
+
+#define WAITTIME_FOR_HOST_TO_RESPOND_TO_HID_REPORT_IN_MS (uint32_t)500
+
 #ifdef USB_JOYSTICK
   #include <Joystick_ESP32S2.h>
   
@@ -19,7 +22,7 @@ bool newControllerValueReceived_b = false;
     Joystick.setBrakeRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);
     delay(100);
   
-    Joystick.begin(false);
+    Joystick.begin(false, WAITTIME_FOR_HOST_TO_RESPOND_TO_HID_REPORT_IN_MS);
 
     // rename HID device name, see e.g. https://github.com/schnoog/Joystick_ESP32S2/issues/8
     //USB.PID(0x8211);
@@ -61,7 +64,7 @@ bool newControllerValueReceived_b = false;
     Joystick.setBrakeRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);
     //while (!USB) delay(10); // Wait until the USB device is mounted and started
     delay(100); 
-    Joystick.begin();
+    Joystick.begin(false, WAITTIME_FOR_HOST_TO_RESPOND_TO_HID_REPORT_IN_MS);
   }
   bool IsControllerReady() { return true; }
   void SetControllerOutputValue(int32_t value) {
