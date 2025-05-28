@@ -77,7 +77,7 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
     _stepper->setSpeedInTicks( maxSpeedInTicks ); // ticks
     _stepper->setAcceleration(MAXIMUM_STEPPER_ACCELERATION);  // steps/s²
 	_stepper->setLinearAcceleration(0);
-    _stepper->setForwardPlanningTimeInMs(8);
+    _stepper->setForwardPlanningTimeInMs(4);
 
 	
 	/************************************************************/
@@ -782,7 +782,7 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 				if ( ( stepper_cl->getServosVoltage() > ((servoBusVoltageParameterized_fl32 + 4.0f)*10.0f) ) 
 				&& (brakeResistorUpTime_i64 < BRAKE_RESISTOR_DEACTIVATION_TIME_IN_MS) 
 				&& (brakeResistorUpTime_i64 > 0))
-				{
+				{  
 					digitalWrite(BRAKE_RESISTOR_PIN, HIGH);
 					stepper_cl->brakeResistorState_b = true;
 				}

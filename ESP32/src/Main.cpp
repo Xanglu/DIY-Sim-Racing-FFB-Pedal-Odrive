@@ -1564,17 +1564,27 @@ uint32_t communicationTask_stackSizeIdx_u32 = 0;
 int64_t timeNow_serialCommunicationTask_l = 0;
 int64_t timePrevious_serialCommunicationTask_l = 0;
 #define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK (int64_t)10
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST (int64_t)2
 
 int32_t joystickNormalizedToInt32_local = 0;
 void serialCommunicationTask( void * pvParameters )
-{
+{ 
 
   for(;;){
 
     // measure callback time and continue, when desired period is reached
     timeNow_serialCommunicationTask_l = millis();
-    int64_t timeDiff_serialCommunicationTask_l = ( timePrevious_serialCommunicationTask_l + REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK) - timeNow_serialCommunicationTask_l;
-    uint32_t targetWaitTime_u32 = constrain(timeDiff_serialCommunicationTask_l, 0, REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK);
+
+    // if DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT is set, target faster execution time for more accurate plotting 
+    int64_t targetTaskRepetitionIntervall_i64 = REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK;
+    if ( (dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT) )
+    {
+      targetTaskRepetitionIntervall_i64 = REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST;
+    }
+
+    // control execution time
+    int64_t timeDiff_serialCommunicationTask_l = ( timePrevious_serialCommunicationTask_l + targetTaskRepetitionIntervall_i64) - timeNow_serialCommunicationTask_l;
+    uint32_t targetWaitTime_u32 = constrain(timeDiff_serialCommunicationTask_l, 0, targetTaskRepetitionIntervall_i64);
     delay(targetWaitTime_u32);
     timePrevious_serialCommunicationTask_l = millis();
 
