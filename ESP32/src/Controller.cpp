@@ -3,6 +3,13 @@
 #include "Controller.h"
 
 
+// #include "USB.h"
+// #include "esp_event.h"
+// #include "class/hid/hid.h"
+// #include "class/hid/hid_device.h"
+#include "esp32-hal-tinyusb.h"
+// #include "esp_hid_common.h"
+
 int32_t previousTransmittedControllerValue_u32 = 0;
 bool newControllerValueReceived_b = false;
 
@@ -60,6 +67,12 @@ bool newControllerValueReceived_b = false;
     USB.VID(0x3035);
     USB.productName(APname);
     USB.manufacturerName("OpenSource");
+
+    // Force USB re-enumeration
+    tud_disconnect();
+    delay(200);  // Ensure host sees disconnect
+    tud_connect();
+
     USB.begin();
     Joystick.setBrakeRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);
     //while (!USB) delay(10); // Wait until the USB device is mounted and started
