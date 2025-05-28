@@ -186,15 +186,17 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st) {
   pedal_type=config_st.payLoadPedalConfig_.pedal_type;
 
   // calculate steps per motor revolution
-  // float helper = MAXIMUM_STEPPER_SPEED / (MAXIMUM_STEPPER_RPM / SECONDS_PER_MINUTE);
-  // helper = floor(helper / 10) * 10;
-  // helper = constrain(helper, 2000, 10000);
-  // stepsPerMotorRevolution = helper;
+  float helper = MAXIMUM_STEPPER_SPEED / (MAXIMUM_STEPPER_RPM / SECONDS_PER_MINUTE);
+  helper = floor(helper / 10) * 10;
+  helper = constrain(helper, 2000, 10000);
+  stepsPerMotorRevolution = helper;
 
-  // when spindle pitch is smaller than 8, choose coarse microstepping
-  if ( 8 > config_st.payLoadPedalConfig_.spindlePitch_mmPerRev_u8)
-  {stepsPerMotorRevolution = 3200;}
-  else{stepsPerMotorRevolution = 6400;}
+  // // when spindle pitch is smaller than 8, choose coarse microstepping
+  // if ( 8 > config_st.payLoadPedalConfig_.spindlePitch_mmPerRev_u8)
+  // {stepsPerMotorRevolution = 3200;}
+  // else{stepsPerMotorRevolution = 6400;}
+
+  // stepsPerMotorRevolution = 3750;
   
 }
 
