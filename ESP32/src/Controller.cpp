@@ -3,7 +3,8 @@
 #include "Controller.h"
 
 
-
+int32_t previousTransmittedControllerValue_u32 = 0;
+bool newControllerValueReceived_b = false;
 #ifdef USB_JOYSTICK
   #include <Joystick_ESP32S2.h>
   
@@ -58,12 +59,23 @@
     USB.manufacturerName("OpenSource");
     USB.begin();
     Joystick.setBrakeRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);
+    //while (!USB) delay(10); // Wait until the USB device is mounted and started
     delay(100); 
     Joystick.begin();
   }
   bool IsControllerReady() { return true; }
   void SetControllerOutputValue(int32_t value) {
-    Joystick.setBrake(value);
+    if (previousTransmittedControllerValue_u32 != value)
+    {
+      previousTransmittedControllerValue_u32 = value;
+      newControllerValueReceived_b = true;
+      Joystick.setBrake(value);
+    }
+    else
+    {
+      newControllerValueReceived_b = false;
+    }
+  
   }
   void SetControllerOutputValue_rudder(int32_t value,int32_t value2)
   {
@@ -73,7 +85,10 @@
 
   void JoystickSendState()
   {
-    Joystick.sendState();
+    if (newControllerValueReceived_b)
+    {
+      Joystick.sendState();
+    }
   }
 
   bool GetJoystickStatus()
