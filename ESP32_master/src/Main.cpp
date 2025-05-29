@@ -1081,14 +1081,14 @@ void Serial_Task( void * pvParameters)
         Serial.println(rssi_filter_value);  
       }
       */
-#ifdef ESPNow_debug
+      #ifdef ESPNow_debug
           Serial.print("Pedal:");
           Serial.print(dap_state_basic_st.payLoadHeader_.PedalTag);
           Serial.print(" RSSI:");
           Serial.println(rssi_filter_value);
-#endif
+      #endif
     }
-#ifdef External_RP2040
+      #ifdef External_RP2040
       if(UARTJoystickUpdate_b)
       {
         DAP_JoystickUART_State * dap_joystickUART_state_local_ptr;
@@ -1110,7 +1110,7 @@ void Serial_Task( void * pvParameters)
         }
 
       }
-#endif
+      #endif
 
     uint8_t pedalIDX;
     for(pedalIDX=0;pedalIDX<3;pedalIDX++)
@@ -1161,7 +1161,7 @@ void Joystick_Task( void * pvParameters )
 {
   for(;;)
   {
-#ifdef USB_JOYSTICK
+    #ifdef USB_JOYSTICK
     if(IsControllerReady())
     {
       if(pedal_status==0)
@@ -1219,15 +1219,15 @@ void Joystick_Task( void * pvParameters )
         //last_serial_joy_out=millis();
       }
     }
-#endif
+    #endif
     // set analog value
-#ifdef Using_analog_output
+    #ifdef Using_analog_output
 
       dacWrite(Analog_brk,(uint16_t)((float)((Joystick_value[1])/(float)(JOYSTICK_RANGE))*255));
       dacWrite(Analog_gas,(uint16_t)((float)((Joystick_value[2])/(float)(JOYSTICK_RANGE))*255));
-#endif
+    #endif
     //set MCP4728 analog value
-#ifdef Using_MCP4728
+    #ifdef Using_MCP4728
       //Serial.print("MCP/");
       now=millis();
       if(MCP_status)
@@ -1249,7 +1249,7 @@ void Joystick_Task( void * pvParameters )
         mcp.setChannelValue(MCP4728_CHANNEL_C, (uint16_t)((float)Joystick_value[2]/(float)JOYSTICK_RANGE*0.8f*4096));
       }
 
-#endif
+    #endif
       delay(1);
   }
 }
@@ -1264,7 +1264,7 @@ void OTATask( void * pvParameters )
 
   for(;;)
   {
-#ifdef OTA_Update
+    #ifdef OTA_Update
       if(OTA_count>200)
       {
         message_out_b=true;
@@ -1337,9 +1337,9 @@ void OTATask( void * pvParameters )
       }
       
       //delay(2);
-#endif
+    #endif
 
-#ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
+    #ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
       if( otaTask_stackSizeIdx_u32 == 1000)
       {
         UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
@@ -1348,7 +1348,7 @@ void OTATask( void * pvParameters )
         otaTask_stackSizeIdx_u32 = 0;
       }
       otaTask_stackSizeIdx_u32++;
-#endif
+    #endif
     delay(2);
   }
 }
@@ -1360,7 +1360,7 @@ void LED_Task( void * pvParameters)
 {
   for(;;)
   {
-#ifdef LED_ENABLE_WAVESHARE
+    #ifdef LED_ENABLE_WAVESHARE
     //LED status update
       if(LED_Status==0)
       {
@@ -1429,7 +1429,7 @@ void LED_Task( void * pvParameters)
         delay(500);
       }
 
-#endif  
+    #endif  
     delay(10);
   }
 }
@@ -1438,7 +1438,7 @@ void LED_Task_Dongle( void * pvParameters)
 {
   for(;;)
   {
-#ifdef LED_ENABLE_DONGLE
+    #ifdef LED_ENABLE_DONGLE
     //LED status update
       if(LED_Status==0)
       {
@@ -1490,7 +1490,7 @@ void LED_Task_Dongle( void * pvParameters)
         delay(500);
       }
 
-#endif  
+    #endif  
     delay(10);
   }
 }

@@ -301,9 +301,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ISV57_TXPIN 10//27 //17
   #define ISV57_RXPIN 9//26 // 16
 
-  //#define Using_analog_output_ESP32_S3
-  #define ESPNOW_Enable
-  #define ESPNow_S3
   //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
 
@@ -348,10 +345,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ISV57_TXPIN 10//27 //17
   #define ISV57_RXPIN 9//26 // 16
 
-  //#define Using_analog_output_ESP32_S3
-  #define ESPNOW_Enable
-  #define ESPNow_S3
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
 
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5

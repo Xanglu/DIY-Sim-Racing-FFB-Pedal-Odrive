@@ -1,7 +1,7 @@
 #include <string>
 //#include <string>
 #include "Controller.h"
-
+#include "esp32-hal-tinyusb.h"
 
 
 
@@ -17,12 +17,18 @@
                     false, false, false);  // No accelerator, brake, or steering
 
   
-  void SetupController() {
-    	USB.PID(0x8213);
-      USB.VID(0x3035);
-      USB.productName("DIY_FFB_PEDAL_JOYSTICK");
-      USB.manufacturerName("OPENSOURCE");
-      USB.begin();
+  void SetupController() 
+  {
+    // Force USB re-enumeration
+    tud_disconnect();
+    delay(200);  // Ensure host sees disconnect
+    tud_connect();
+    USB.PID(0x8213);
+    USB.VID(0x3035);
+    USB.productName("DIY_FFB_PEDAL_JOYSTICK");
+    USB.manufacturerName("OPENSOURCE");
+    USB.begin();
+
     Joystick.setRxAxisRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);
     Joystick.setRyAxisRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);
     Joystick.setRzAxisRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);
@@ -67,7 +73,7 @@
   {
    return Joystick._usbDeviceStatus;
   }
-    void RestartJoystick()
+  void RestartJoystick()
   {
     Joystick.end();
     delay(1000);
