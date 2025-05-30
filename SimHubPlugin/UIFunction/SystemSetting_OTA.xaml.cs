@@ -84,7 +84,7 @@ namespace User.PluginSdkDemo.UIFunction
                     if (calculation.UpdateChannel == 2 && OTAChannel_Sel_3 != null)
                     {
                         OTAChannel_Sel_3.IsChecked = true;
-                        Label_update_channel_notice.Content = "Warning: This is a daily build intended for development and testing purposes only. It may be unstable and is not recommended for production use.";
+                        Label_update_channel_notice.Content = "Warning: This is a daily build intended for development and testing purposes only. \nIt may be unstable and is not recommended for production use.";
                     }
                     if (calculation.ForceUpdate_b == true && Checkbox_Force_flash != null) Checkbox_Force_flash.IsChecked = true;
                     if (calculation.ForceUpdate_b == false && Checkbox_Force_flash != null) Checkbox_Force_flash.IsChecked = false;
@@ -160,7 +160,7 @@ namespace User.PluginSdkDemo.UIFunction
                 if ((bool)OTAChannel_Sel_3.IsChecked)
                 {  
                     calculation.UpdateChannel = 2;
-                    Label_update_channel_notice.Content = "Warning: This is a daily build intended for development and testing purposes only. It may be unstable and is not recommended for production use.";
+                    Label_update_channel_notice.Content = "Warning: This is a daily build intended for development and testing purposes only.\nIt may be unstable and is not recommended for production use.";
                 }
                     
                 CalculationChangedEvent(calculation);
