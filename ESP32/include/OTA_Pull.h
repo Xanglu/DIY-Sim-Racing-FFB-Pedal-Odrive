@@ -4,6 +4,7 @@
 #define JSON_URL_dev   "https://raw.githubusercontent.com/gilphilbert/pedal-flasher/main/json/dev/Version_ControlBoard.json"
 //#define JSON_URL_dev "https://raw.githubusercontent.com/tcfshcrw/playground/main/OTA_test_repo/GH2/Version.json"
 #define JSON_URL_main   "https://raw.githubusercontent.com/gilphilbert/pedal-flasher/main/json/main/Version_ControlBoard.json"
+#define JSON_URL_daily "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/DailyBuild/json/Version_ControlBoard.json"
 bool OTA_enable_b =false;
 bool OTA_status =false;
 struct Basic_WIfi_info

@@ -2214,6 +2214,12 @@ void OTATask( void * pvParameters )
               Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
               OTA_update_status=ret;
               break;
+            case 3:
+              Serial.printf("Flashing to Daily build, checking %s to see if an update is available...\n", JSON_URL_dev);
+              ret = ota.CheckForOTAUpdate(JSON_URL_daily, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
+              Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
+              OTA_update_status=ret;
+              break;
             default:
             break;
             delete[] version_tag; 

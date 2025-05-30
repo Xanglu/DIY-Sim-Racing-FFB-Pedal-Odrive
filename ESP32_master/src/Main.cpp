@@ -1326,6 +1326,11 @@ void OTATask( void * pvParameters )
                 ret = ota.CheckForOTAUpdate(JSON_URL_dev, Version_tag);
                 Serial.printf("[L]CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
                 break;
+              case 3:
+                Serial.printf("[L]Flashing to Daily build, checking %s to see if an update is available...\n", JSON_URL_dev);
+                ret = ota.CheckForOTAUpdate(JSON_URL_daily, Version_tag);
+                Serial.printf("[L]CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
+                break;
               default:
               break;
             }

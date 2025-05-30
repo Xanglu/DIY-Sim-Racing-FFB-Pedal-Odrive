@@ -17,7 +17,11 @@ const char *DAP_FIRMWARE_VERSION = "0.90.04";
 #endif
 
 #if PCB_VERSION==8
-	#define CONTROL_BOARD "Gilphilbert_PCBAv2"
+	#ifdef ENABLE_ESP_NOW
+		#define CONTROL_BOARD "Gilphilbert_PCBAv2"
+	#else
+		#define CONTROL_BOARD "Gilphilbert_PCBAv2_Without_Wireless"
+	#endif
 #endif
 #if PCB_VERSION==9
 	#define CONTROL_BOARD "Gilphilbert_PCBAv2"
@@ -29,7 +33,11 @@ const char *DAP_FIRMWARE_VERSION = "0.90.04";
 	#define CONTROL_BOARD "Switch-!t_ESP32S3"
 #endif
 #if PCB_VERSION==12
-	#define CONTROL_BOARD "V5_ESP32S3"
+	#ifdef ENABLE_ESP_NOW
+		#define CONTROL_BOARD "V5_ESP32S3_With_Wireless"
+	#else
+		#define CONTROL_BOARD "V5_ESP32S3"
+	#endif
 #endif
 
 void parse_version(const char *version, uint8_t *major, uint8_t *minor, uint8_t *patch) 
