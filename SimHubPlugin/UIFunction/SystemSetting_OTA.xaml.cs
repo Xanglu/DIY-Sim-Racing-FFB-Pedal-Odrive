@@ -78,8 +78,14 @@ namespace User.PluginSdkDemo.UIFunction
                 }
                 if (calculation != null)
                 {
+                    if (Label_update_channel_notice != null) Label_update_channel_notice.Content = "";
                     if (calculation.UpdateChannel == 0 && OTAChannel_Sel_1 != null) OTAChannel_Sel_1.IsChecked = true;
                     if (calculation.UpdateChannel == 1 && OTAChannel_Sel_2 != null) OTAChannel_Sel_2.IsChecked = true;
+                    if (calculation.UpdateChannel == 2 && OTAChannel_Sel_3 != null)
+                    {
+                        OTAChannel_Sel_3.IsChecked = true;
+                        Label_update_channel_notice.Content = "Warning: This is a daily build intended for development and testing purposes only. It may be unstable and is not recommended for production use.";
+                    }
                     if (calculation.ForceUpdate_b == true && Checkbox_Force_flash != null) Checkbox_Force_flash.IsChecked = true;
                     if (calculation.ForceUpdate_b == false && Checkbox_Force_flash != null) Checkbox_Force_flash.IsChecked = false;
                 }
@@ -147,10 +153,16 @@ namespace User.PluginSdkDemo.UIFunction
 
         private void OTAChannel_Sel_Checked(object sender, RoutedEventArgs e)
         {
-            if (OTAChannel_Sel_1 != null && OTAChannel_Sel_2 != null)
+            if (OTAChannel_Sel_1 != null && OTAChannel_Sel_2 != null && OTAChannel_Sel_3 != null)
             {
                 if ((bool)OTAChannel_Sel_1.IsChecked) calculation.UpdateChannel = 0;
                 if ((bool)OTAChannel_Sel_2.IsChecked) calculation.UpdateChannel = 1;
+                if ((bool)OTAChannel_Sel_3.IsChecked)
+                {  
+                    calculation.UpdateChannel = 2;
+                    Label_update_channel_notice.Content = "Warning: This is a daily build intended for development and testing purposes only. It may be unstable and is not recommended for production use.";
+                }
+                    
                 CalculationChangedEvent(calculation);
             }
 
