@@ -198,7 +198,7 @@ jobs:
       # copy files to dir
       - name: Copy files to packing dir
         run: | 
-          copy ${{ github.workspace }}/External_joystick/RP2040_joystick.pio/build/rp2040/firmware.uf2  ${{ github.workspace }}/Helper/bins/esp32s3_Bridge_with_external_joystick
+          copy ${{ github.workspace }}/External_joystick/RP2040_joystick/.pio/build/rp2040/firmware.uf2  ${{ github.workspace }}/Helper/bins/esp32s3_Bridge_with_external_joystick
 
 
       # zip plugin binaries
