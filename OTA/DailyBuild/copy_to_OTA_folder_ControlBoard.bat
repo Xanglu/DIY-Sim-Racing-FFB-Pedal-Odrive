@@ -89,6 +89,24 @@ set destination=..\DailyBuild\ControlBoard\Speedcrafter\
 echo Copying %source% to %destination%...
 xcopy "%source%" "%destination%" /y
 
+set source=..\..\ESP32\.pio\build\esp32s3usbotg_pcbV5_without_espnow\firmware.bin
+set destination=..\DailyBuild\ControlBoard\esp32S3_V5_without_wireless\
+
+echo Copying %source% to %destination%...
+xcopy "%source%" "%destination%" /y
+
+set source=..\..\ESP32\.pio\build\esp32s3usbotg_pcbV5_without_espnow\bootloader.bin
+set destination=..\DailyBuild\ControlBoard\esp32S3_V5_without_wireless\
+
+echo Copying %source% to %destination%...
+xcopy "%source%" "%destination%" /y
+
+set source=..\..\ESP32\.pio\build\esp32s3usbotg_pcbV5_without_espnow\partitions.bin
+set destination=..\DailyBuild\ControlBoard\esp32S3_V5_without_wireless\
+
+echo Copying %source% to %destination%...
+xcopy "%source%" "%destination%" /y
+
 set source=..\..\ESP32\.pio\build\esp32s3usbotg_pcbV5\firmware.bin
 set destination=..\DailyBuild\ControlBoard\esp32S3_V5\
 
@@ -103,24 +121,6 @@ xcopy "%source%" "%destination%" /y
 
 set source=..\..\ESP32\.pio\build\esp32s3usbotg_pcbV5\partitions.bin
 set destination=..\DailyBuild\ControlBoard\esp32S3_V5\
-
-echo Copying %source% to %destination%...
-xcopy "%source%" "%destination%" /y
-
-set source=..\..\ESP32\.pio\build\esp32s3usbotg_pcbV5_with_espnow\firmware.bin
-set destination=..\DailyBuild\ControlBoard\esp32S3_V5_with_wireless\
-
-echo Copying %source% to %destination%...
-xcopy "%source%" "%destination%" /y
-
-set source=..\..\ESP32\.pio\build\esp32s3usbotg_pcbV5_with_espnow\bootloader.bin
-set destination=..\DailyBuild\ControlBoard\esp32S3_V5_with_wireless\
-
-echo Copying %source% to %destination%...
-xcopy "%source%" "%destination%" /y
-
-set source=..\..\ESP32\.pio\build\esp32s3usbotg_pcbV5_with_espnow\partitions.bin
-set destination=..\DailyBuild\ControlBoard\esp32S3_V5_with_wireless\
 
 echo Copying %source% to %destination%...
 xcopy "%source%" "%destination%" /y
