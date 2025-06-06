@@ -97,6 +97,9 @@ public:
 	int32_t getServosCurrent();
 	int32_t getServosPos();
 	int32_t getServosPosError();
+	int32_t getEstimatedPosError();
+	//int32_t getEstimatedPosError_getCurrentStepperPos();
+	
 	bool getLifelineSignal();
 	
 	void configSteplossRecovAndCrashDetection(uint8_t flags_u8);

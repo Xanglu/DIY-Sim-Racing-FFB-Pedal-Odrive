@@ -229,6 +229,14 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
   
   // get current stepper position
   float stepperPos = stepper->getCurrentPositionFromMin();
+
+  float estimatedServoPosErrorInSteps_fl32 = stepper->getEstimatedPosError();
+  if (0)
+  {
+    stepperPos += estimatedServoPosErrorInSteps_fl32;
+  }
+
+
   // float lagedPos;
 
   // posArray[arrayIndex] = stepperPos;
@@ -275,11 +283,9 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
   // motion corrected loadcell reading
   float loadCellReadingKg_corrected = loadCellReadingKg;
 
-  
   // set initial guess
   float stepperPos_initial = stepperPos;
 
-  
   // foot spring stiffness
   float d_f_d_x_hor = -config_st->payLoadPedalConfig_.MPC_0th_order_gain;
 

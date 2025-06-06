@@ -21,7 +21,7 @@ static const int32_t ENDSTOP_MOVEMENT = (float)100; // how much to move between 
 static const int32_t ENDSTOP_MOVEMENT_SENSORLESS = ENDSTOP_MOVEMENT * 5;
 
 
-
+#define MAX_ESTIMATED_SERVO_OFFSET (int16_t)1000
 
 TaskHandle_t task_iSV_Communication;
 unsigned long cycleTimeLastCall_lifelineCheck = 0;//micros();
@@ -578,25 +578,35 @@ void StepperWithLimits::setLifelineSignal()
 
 int32_t StepperWithLimits::getServosVoltage()
 {
-	return isv57.servo_voltage_0p1V;
+	return isv57.isv57dynamicStates_.servo_voltage_0p1V;
 }
 
 int32_t StepperWithLimits::getServosCurrent()
 {
-	return isv57.servo_current_percent;
+	return isv57.isv57dynamicStates_.servo_current_percent;
 }
 
 int32_t StepperWithLimits::getServosPos()
 {
-	//return isv57.servo_pos_given_p;
 	return isv57.getPosFromMin();
 }
 
 int32_t StepperWithLimits::getServosPosError()
 {
-	//return isv57.servo_pos_given_p;
-	return isv57.servo_pos_error_p;
+	return isv57.isv57dynamicStates_.servo_pos_error_p;
 }
+
+int32_t StepperWithLimits::getEstimatedPosError()
+{
+	return isv57.isv57dynamicStates_.estimated_pos_error_i16;
+}
+
+// int32_t StepperWithLimits::getEstimatedPosError_getCurrentStepperPos()
+// {
+// 	return isv57.isv57dynamicStates_.estimated_pos_error_currentStepperPos_i16;
+// }
+
+
 
 
 
@@ -774,6 +784,7 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 			// read servo states
 			stepper_cl->isv57.readServoStates();
 
+			
 
 			// Activate brake resistor once a certain voltage level is exceeded, 
 			// but deactivate brake resistor once certain activation time is exceeded to prevent damage due to overheating
@@ -800,7 +811,6 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 				if(xSemaphoreTake(semaphore_readServoValues, (TickType_t)1)==pdTRUE) {
 
 					// caclulate servos positions from endstop
-					//stepper_cl->servoPos_i16 = stepper_cl->isv57.servo_pos_given_p - stepper_cl->isv57.getZeroPos() ;
 					stepper_cl->servoPos_i16 = stepper_cl->isv57.getPosFromMin();
 
 					// in normal configuration, where servo is at front of the pedal, a positive servo rotation will make the sled move to the front. We want it to be the other way around though. Movement to the back means positive rotation
@@ -851,12 +861,15 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 			}
 			
 
-
 			stepper_cl->setServosInternalPositionCorrected(servoPosCorrected_i32);
 			
 			
-			
-			
+			// estimate position offset between ESPs target position and true servo position
+			int16_t estServoOffsetInSteps_i16 = stepper_cl->getServosInternalPositionCorrected() - stepper_cl->getCurrentPosition();
+			estServoOffsetInSteps_i16 = constrain(estServoOffsetInSteps_i16, -MAX_ESTIMATED_SERVO_OFFSET, MAX_ESTIMATED_SERVO_OFFSET );
+  			stepper_cl->isv57.isv57dynamicStates_.estimated_pos_error_i16 = estServoOffsetInSteps_i16;
+			// stepper_cl->isv57.isv57dynamicStates_.estimated_pos_error_currentStepperPos_i16 = stepper_cl->getCurrentPosition();
+  			
 			
 			
 			int32_t servo_offset_compensation_steps_local_i32 = 0;
@@ -875,7 +888,6 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 			if (cond_stepperIsAtMinPos == true)
 			{
 				//isv57.readServoStates();
-				//int16_t servoPos_now_i16 = stepper_cl->isv57.servo_pos_given_p;
 				servoPos_now_i16 = stepper_cl->isv57.getPosFromMin();
 				timeNow_l = millis();
 
@@ -935,14 +947,14 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 				if (cond_timeSinceHitMinPositionLargerThanThreshold_2 && (true == stepper_cl->enableCrashDetection_b))
 				{
 					
-					bool servoCurrentLow_b = abs(stepper_cl->isv57.servo_current_percent) < 50;//200;
+					bool servoCurrentLow_b = abs(stepper_cl->isv57.isv57dynamicStates_.servo_current_percent) < 50;//200;
 					if (!servoCurrentLow_b)
 					{
 
 						// positive current means positive rotation 
 						bool minBlockCrashDetected_b = false;
 						bool maxBlockCrashDetected_b = false;
-						if (stepper_cl->isv57.servo_current_percent > 0) // if current is positive, the rotation will be positive and thus the sled will move towards the user
+						if (stepper_cl->isv57.isv57dynamicStates_.servo_current_percent > 0) // if current is positive, the rotation will be positive and thus the sled will move towards the user
 						{
 							minBlockCrashDetected_b = true; 
 							stepper_cl->isv57.applyOfsetToZeroPos(-500); // bump up a bit to prevent the servo from pushing against the endstop continously

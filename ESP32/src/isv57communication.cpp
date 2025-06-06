@@ -322,7 +322,7 @@ bool isv57communication::checkCommunication()
 
 void isv57communication::setZeroPos()
 {
-  zeroPos = servo_pos_given_p;
+  zeroPos = isv57dynamicStates_.servo_pos_given_p;
 }
 
 void isv57communication::applyOfsetToZeroPos(int16_t givenPosOffset_i16)
@@ -337,7 +337,7 @@ int16_t isv57communication::getZeroPos()
 
 int16_t isv57communication::getPosFromMin()
 {
-  return servo_pos_given_p - zeroPos;
+  return isv57dynamicStates_.servo_pos_given_p - zeroPos;
 }
 
 
@@ -363,11 +363,17 @@ void isv57communication::readServoStates() {
   }
 
   // write to public variables
-  servo_pos_given_p = regArray[0];
-  servo_current_percent = regArray[1];
-  servo_pos_error_p = regArray[2];
-  servo_voltage_0p1V = regArray[3];
-  
+  // servo_pos_given_p = regArray[0];
+  // servo_current_percent = regArray[1];
+  // servo_pos_error_p = regArray[2];
+  // servo_voltage_0p1V = regArray[3];
+
+  isv57dynamicStates_.servo_pos_given_p = regArray[0];
+  isv57dynamicStates_.servo_current_percent = regArray[1];
+  isv57dynamicStates_.servo_pos_error_p = regArray[2];
+  isv57dynamicStates_.servo_voltage_0p1V = regArray[3];
+  isv57dynamicStates_.lastUpdateTimeInMS_u32 = millis();
+
   //Serial.print("Bytes :");
   //Serial.println(bytesReceived_i);
   
@@ -377,16 +383,16 @@ void isv57communication::readServoStates() {
   if (0)
   {
     Serial.print("Pos_given:");
-    Serial.print(servo_pos_given_p);
+    Serial.print(isv57dynamicStates_.servo_pos_given_p);
 
     Serial.print(",Pos_error:");
-    Serial.print(servo_pos_error_p);
+    Serial.print(isv57dynamicStates_.servo_pos_error_p);
 
     Serial.print(",Cur_given:");
-    Serial.print(servo_current_percent);
+    Serial.print(isv57dynamicStates_.servo_current_percent);
 
     Serial.print(",Voltage:");
-    Serial.print(servo_voltage_0p1V);
+    Serial.print(isv57dynamicStates_.servo_voltage_0p1V);
 
     Serial.println(" "); 
   }

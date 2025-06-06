@@ -375,18 +375,20 @@ namespace User.PluginSdkDemo
                                                 using (StreamWriter writer = new StreamWriter(filePath, true))
                                                 {
                                                     // Write the content to the file
-                                                    writer.Write("cycleCtr, ");
-                                                    writer.Write("time_InMs, ");
-                                                    writer.Write("forceRaw_InKg, ");
-                                                    writer.Write("forceFiltered_InKg, ");
-                                                    writer.Write("forceVelocity_InKgPerSec, ");
-                                                    writer.Write("servoPos_InSteps, ");
-                                                    writer.Write("servoPosEsp_InSteps, ");
-                                                    writer.Write("servoPosError_InSteps, ");
-                                                    writer.Write("servoCurrent_InPercent, ");
-                                                    writer.Write("servoVoltage_InV, ");
-                                                    writer.Write("angleSensorOutput, ");
-                                                    writer.Write("brakeResistorState_b");
+                                                    writer.Write("cycleCtr");
+                                                    writer.Write(", time_InMs");
+                                                    writer.Write(", forceRaw_InKg");
+                                                    writer.Write(", forceFiltered_InKg");
+                                                    writer.Write(", forceVelocity_InKgPerSec");
+                                                    writer.Write(", servoPos_InSteps");
+                                                    writer.Write(", servoPosEsp_InSteps");
+                                                    writer.Write(", servoPosError_InSteps");
+                                                    writer.Write(", servoCurrent_InPercent");
+                                                    writer.Write(", servoVoltage_InV");
+                                                    writer.Write(", angleSensorOutput");
+                                                    writer.Write(", brakeResistorState_b");
+                                                    writer.Write(", servoPosEstimated_InSteps");
+                                                    //writer.Write(", servoPositionEstimated_stepperPos_i16");
                                                     writer.Write("\n");
                                                 }
 
@@ -421,6 +423,10 @@ namespace User.PluginSdkDemo
                                                 writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.angleSensorOutput_ui16);
                                                 writer.Write(", ");
                                                 writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.brakeResistorState_b);
+                                                writer.Write(", ");
+                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servoPositionEstimated_i16);
+                                                //writer.Write(", ");
+                                                //writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servoPositionEstimated_stepperPos_i16);
                                                 writer.Write("\n");
                                             }
                                         }
