@@ -2,7 +2,7 @@
 //#include <string>
 #include "Controller.h"
 #include "esp32-hal-tinyusb.h"
-
+#define WAITTIME_FOR_HOST_TO_RESPOND_TO_HID_REPORT_IN_MS (uint32_t)500
 
 
 //#define USB_JOYSTICK
@@ -37,8 +37,8 @@
     Joystick.setZAxisRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);//rudder brake throttle
     delay(100);
     //Joystick.begin();
-    Joystick.begin(false);
-
+    //Joystick.begin(false);
+    Joystick.begin(false, WAITTIME_FOR_HOST_TO_RESPOND_TO_HID_REPORT_IN_MS);
     // rename HID device name, see e.g. https://github.com/schnoog/Joystick_ESP32S2/issues/8
     //USB.PID(0x8211);
     //USB.VID(0x303b);

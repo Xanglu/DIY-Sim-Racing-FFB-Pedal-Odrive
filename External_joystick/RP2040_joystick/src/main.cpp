@@ -15,7 +15,7 @@ void printOutRaw();
 void setup()
 {
   delay(10000);
-  Serial.begin(115200);
+  Serial.begin(921600);
   Serial2.begin(baud);
   Joystick.begin();
   Joystick.useManualSend(true);
