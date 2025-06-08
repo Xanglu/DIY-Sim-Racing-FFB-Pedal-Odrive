@@ -10,7 +10,16 @@ The file naming is "DiyFfbPedalStateLog_0: for clutch", "DiyFfbPedalStateLog_1: 
 8) Select "Debug Flag 0" = 0
 9) Send the config to the pedal.
 
-# Visualize the pedal logs
+# Visualize the pedal logs (Option 1)
+## Option 1: Via Google Colab:
+1) Open this [link](https://colab.research.google.com/github/ChrGri/DIY-Sim-Racing-FFB-Pedal/blob/develop/Validation/VisualizePedalLog.ipynb)
+2) Upload the pedal log file, see <br> <img width="400" alt="Bildschirmfoto 2024-11-01 um 20 37 07" src="https://github.com/user-attachments/assets/e4215739-4a6f-40ac-8531-cf2c7b5e2120"> <br>
+3) Run the code <br>
+<img width="400" alt="Bildschirmfoto 2024-11-01 um 20 37 07" src="https://github.com/user-attachments/assets/0183959a-20a7-4bb5-920b-bb88a95e3cb2"> <br>
+4) Inspect the generated graphs, e.g. <br> <img width="980" alt="Bildschirmfoto 2024-11-01 um 20 48 59" src="https://github.com/user-attachments/assets/d8d3c60a-5d7f-44c2-a404-40fc3253edc1">
+
+
+## Option 2: Via python fiddle
 1) Open [jupyter online](https://python-fiddle.com/)
 2) Upload the plotting code by opening "upload code context menu" <br>
 <img width="400" alt="Bildschirmfoto 2024-11-01 um 20 37 07" src="https://github.com/user-attachments/assets/878bfa80-b024-4f1e-bb99-c0760aeb9418"> <br>
