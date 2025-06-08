@@ -9,7 +9,7 @@ static const float ADC_VREF = 2.5f;        // voltage reference
 
 static const int NUMBER_OF_SAMPLES_FOR_LOADCELL_OFFFSET_ESTIMATION = 1000;
 static const float DEFAULT_VARIANCE_ESTIMATE = 0.2f * 0.2f;
-static const float LOADCELL_VARIANCE_MIN = 0.001f;
+static const float LOADCELL_VARIANCE_MIN = 7.0 * 1e-5; // on 8th april 2025, approx. 50g fluctuation were observed --> 6 * sigma = 50g --> sigma = 50g / 6 = 8g --> sigma^2 = (8g)^2 = 0.00064
 //static const float CONVERSION_FACTOR = LOADCELL_WEIGHT_RATING_KG / (LOADCELL_EXCITATION_V * (LOADCELL_SENSITIVITY_MV_V/1000));
 
 float updatedConversionFactor_f64 = 1.0f;
