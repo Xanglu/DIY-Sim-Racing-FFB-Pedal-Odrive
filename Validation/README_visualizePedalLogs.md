@@ -10,7 +10,7 @@ The file naming is "DiyFfbPedalStateLog_0: for clutch", "DiyFfbPedalStateLog_1: 
 8) Select "Debug Flag 0" = 0
 9) Send the config to the pedal.
 
-# Visualize the pedal logs (Option 1)
+# Visualize the pedal logs
 ## Option 1: Via Google Colab:
 1) Open this [link](https://colab.research.google.com/github/ChrGri/DIY-Sim-Racing-FFB-Pedal/blob/develop/Validation/VisualizePedalLog.ipynb)
 2) Upload the pedal log file, see <br> <img width="400" alt="Bildschirmfoto 2024-11-01 um 20 37 07" src="https://github.com/user-attachments/assets/e4215739-4a6f-40ac-8531-cf2c7b5e2120"> <br>
