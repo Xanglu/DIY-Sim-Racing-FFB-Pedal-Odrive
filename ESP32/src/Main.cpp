@@ -142,6 +142,9 @@ DAP_ESPPairing_st dap_esppairing_lcl;//sending
 #include "RTDebugOutput.h"
 
 
+
+
+
 /**********************************************************************************************/
 /*                                                                                            */
 /*                         iterpolation  definitions                                          */
@@ -1133,6 +1136,38 @@ void pedalUpdateTask( void * pvParameters )
       FilterReadingJoystick=filteredReading;
 
     }
+
+    #ifdef DISABLE_SERVO_WHEN_INACTIVE
+    //if filtered reading > min force, mark the servo was in aciton
+      if(filteredReading>dap_config_pedalUpdateTask_st.payLoadPedalConfig_.preloadForce)
+      {
+        servoActionLast = millis();
+      }
+
+      //wakeup process
+      if ( (filteredReading>STEPPER_WAKEUP_FORCE) 
+          && (stepper->servoStatus==SERVO_IDLE_NOT_CONNECTED) )
+      {
+        Serial.println("Wake up servo, restart esp.");
+        delay(1000);
+        ESP.restart();
+      }
+
+      //pedal not in action, disable pedal power
+      uint32_t pedalIdleTimout = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.servoIdleTimeout*60*1000;// timeout in ms
+      if( (stepper->servoStatus==SERVO_CONNECTED) 
+        && ( (millis()-servoActionLast) > pedalIdleTimout) 
+        && (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.servoIdleTimeout!=0) )
+      {
+        stepper->servoIdleAction();
+        
+        stepper->servoStatus=SERVO_IDLE_NOT_CONNECTED;
+        delay(300);
+        Serial.println("Servo idle timeout reached. To restart pedal, please apply pressure.");
+      }
+    #endif
+
+
 
     //Pedal servo power control
     #ifdef SERVO_POWER_PIN

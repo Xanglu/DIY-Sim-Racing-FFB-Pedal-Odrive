@@ -39,6 +39,7 @@ static SemaphoreHandle_t semaphore_getSetCorrectedServoPos = xSemaphoreCreateMut
 static float servoBusVoltageParameterized_fl32 = SERVO_MAX_VOLTAGE_IN_V_36V;
 static bool servoBusVoltageParameterized_b = true;
 
+bool setServoToSleep_b = false;
 
 
 
@@ -710,7 +711,18 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 
 		
 
-		
+		/************************************************************/
+		/* 					disable servo due to timeout			*/
+		/************************************************************/
+		if(true == setServoToSleep_b)
+		{
+			stepper_cl->isv57.disableAxis();
+			delay(500);	
+			setServoToSleep_b = false;
+		}
+
+
+
 		/************************************************************/
 		/* 					recheck lifeline						*/
 		/************************************************************/
@@ -1059,16 +1071,17 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 		{
 			if(stepper_cl->servoStatus!=SERVO_IDLE_NOT_CONNECTED)
 			{
-				Serial.println("Servo communication lost!");
-				delay(100);
-				previousIsv57LifeSignal_b = false;
 				stepper_cl->servoStatus=SERVO_NOT_CONNECTED;
-				// De-activate brake resistor once servo communication is lost to prevent resistor damage
-				#ifdef BRAKE_RESISTOR_PIN
-					digitalWrite(BRAKE_RESISTOR_PIN, LOW);
-					stepper_cl->brakeResistorState_b = false;
-				#endif
 			}
+
+			Serial.println("Servo communication lost!");
+			delay(100);
+			previousIsv57LifeSignal_b = false;
+			// De-activate brake resistor once servo communication is lost to prevent resistor damage
+			#ifdef BRAKE_RESISTOR_PIN
+				digitalWrite(BRAKE_RESISTOR_PIN, LOW);
+				stepper_cl->brakeResistorState_b = false;
+			#endif
 		}
 
 
@@ -1084,14 +1097,22 @@ bool StepperWithLimits::getBrakeResistorState()
 
 bool StepperWithLimits::servoIdleAction()
 {
+
+	bool returnValue_b = false;
 	#ifdef SERVO_POWER_PIN
         //turn off the servo's power        
         gpio_set_level((gpio_num_t)SERVO_POWER_PIN, 0);
         //wait for the servo to initialize
         delay(500);
-		return true;
+		returnValue_b = true;
     #endif
-	return false;
+
+	#ifdef DISABLE_SERVO_WHEN_INACTIVE
+		setServoToSleep_b = true;
+		returnValue_b = true;
+	#endif
+
+	return returnValue_b;
 }
 
 
