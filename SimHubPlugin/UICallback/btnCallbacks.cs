@@ -341,8 +341,8 @@ namespace User.PluginSdkDemo
             }
             else
             {
-                if (Plugin.Settings.USING_ESP32S3[Plugin.Settings.table_selected])
-                {
+                //if (Plugin.Settings.USING_ESP32S3[Plugin.Settings.table_selected])
+                //{
                     DAP_action_st tmp;
                     tmp.payloadHeader_.version = (byte)Constants.pedalConfigPayload_version;
                     tmp.payloadHeader_.payloadType = (byte)Constants.pedalActionPayload_type;
@@ -353,15 +353,15 @@ namespace User.PluginSdkDemo
                     byte* p = (byte*)v;
                     tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
                     Plugin.SendPedalAction(tmp , (byte)Plugin.Settings.table_selected);
-                }
-                else
-                {
-                    Plugin._serialPort[indexOfSelectedPedal_u].DtrEnable = true;
-                    Plugin._serialPort[indexOfSelectedPedal_u].RtsEnable = true;
-                    System.Threading.Thread.Sleep(100);
-                    Plugin._serialPort[indexOfSelectedPedal_u].DtrEnable = false;
-                    Plugin._serialPort[indexOfSelectedPedal_u].RtsEnable = false;
-                }
+                //}
+                //else
+                //{
+                //    Plugin._serialPort[indexOfSelectedPedal_u].DtrEnable = true;
+                //    Plugin._serialPort[indexOfSelectedPedal_u].RtsEnable = true;
+                //    System.Threading.Thread.Sleep(100);
+                //    Plugin._serialPort[indexOfSelectedPedal_u].DtrEnable = false;
+                //    Plugin._serialPort[indexOfSelectedPedal_u].RtsEnable = false;
+                //}
             }
 
         }
