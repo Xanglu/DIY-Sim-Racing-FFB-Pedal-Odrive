@@ -1107,7 +1107,7 @@ bool StepperWithLimits::servoIdleAction()
 		returnValue_b = true;
     #endif
 
-	#ifdef DISABLE_SERVO_WHEN_INACTIVE
+	#ifndef SERVO_POWER_PIN
 		setServoToSleep_b = true;
 		returnValue_b = true;
 	#endif

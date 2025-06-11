@@ -1137,7 +1137,7 @@ void pedalUpdateTask( void * pvParameters )
 
     }
 
-    #ifdef DISABLE_SERVO_WHEN_INACTIVE
+    #ifndef SERVO_POWER_PIN
     //if filtered reading > min force, mark the servo was in aciton
       if(filteredReading>dap_config_pedalUpdateTask_st.payLoadPedalConfig_.preloadForce)
       {
