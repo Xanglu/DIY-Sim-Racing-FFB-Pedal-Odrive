@@ -68,5 +68,5 @@ Detailed descriptions of all aspects of the build can be found on the dedicated 
 Our [Discord server](https://discord.gg/zTfQaxpAUz) has thousands of users just like you and contains additional designs, insight and provides a place to find answers to all of your questions.
 
 # Architecture
-A Doxygen report of the sources can be found [here](https://chrgri.github.io/DIY-Sim-Racing-FFB-Pedal/Arduino/html/index.html).
+A Deepwiki of the sources can be found [here](https://deepwiki.com/ChrGri/DIY-Sim-Racing-FFB-Pedal).
 
