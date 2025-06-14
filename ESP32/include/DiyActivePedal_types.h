@@ -355,6 +355,9 @@ public:
   // Methode zum Speichern der Konfiguration im EEPROM
   void storeConfigToEprom();
 
+  //initialized config if needed
+  void initializedConfig();
+
 private:
   SemaphoreHandle_t mutex;
   DAP_config_st _config_st;

@@ -448,7 +448,10 @@ void setup()
     Serial.print(crc);
     Serial.print(",   CRC received: ");
     Serial.println(dap_config_st_local.payloadFooter_.checkSum);
-
+    //if the config check all failed, reinitialzie _config_st
+    Serial.println("initialized config");
+    global_dap_config_class.initializedConfig();
+    dap_config_st_local=global_dap_config_class.getConfig();
   }
 
 

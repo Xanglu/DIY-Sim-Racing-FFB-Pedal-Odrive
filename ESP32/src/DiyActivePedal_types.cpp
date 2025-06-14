@@ -323,6 +323,8 @@ void DAP_config_class::setConfig(DAP_config_st tmp) {
   // return returnV_b;
 }
 
+
+
 void DAP_config_class::loadConfigFromEprom() {
   if (xSemaphoreTake(mutex, pdMS_TO_TICKS(WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT)) == pdTRUE) {
     _config_st.loadConfigFromEprom(_config_st);
@@ -335,4 +337,23 @@ void DAP_config_class::storeConfigToEprom() {
     _config_st.storeConfigToEprom(_config_st);
     xSemaphoreGive(mutex);
   }
+}
+
+void DAP_config_class::initializedConfig()
+{
+  // boolean returnV_b = false;
+  // requests the mutex, waits N milliseconds if not available immediately
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT)) == pdTRUE)
+  {
+    _config_st.initialiseDefaults();
+    // returnV_b = true;
+    // gives back the mutex
+    xSemaphoreGive(mutex);
+  }
+  else
+  {
+    Serial.println("Error: Coul not aquire mutex!");
+  }
+
+  // return returnV_b;
 }
