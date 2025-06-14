@@ -54,6 +54,7 @@ private:
 	bool enableCrashDetection_b = true;
 
 	bool logAllServoParams = false;
+	bool clearAllServoAlarms_b = false;
 
 	int32_t servoPos_local_corrected_i32 = 0;
 
@@ -104,6 +105,7 @@ public:
 	
 	void configSteplossRecovAndCrashDetection(uint8_t flags_u8);
 	void printAllServoParameters();
+	void clearAllServoAlarms();
 
 
 	void setServosInternalPositionCorrected(int32_t posCorrected_i32);

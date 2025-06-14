@@ -19,7 +19,9 @@ private:
   float _S_cov;         // Residual covariance
 
   // Model noise constant (higher value = faster pedal response)
-  static constexpr float KF_MODEL_NOISE_FORCE_ACCELERATION = 20000.0f;
+  // On accelerator pedal an 23kg/0.1s = 230kg/s increase was observed
+  // Calculating the force acceleration by difference quotient, gave a max force acceleration of 600kg/s^2
+  static constexpr float KF_MODEL_NOISE_FORCE_ACCELERATION = 400000.0f;
 
   void multiplyMatrices(float mat1[2][2], float mat2[2][2], float result[2][2]);
 

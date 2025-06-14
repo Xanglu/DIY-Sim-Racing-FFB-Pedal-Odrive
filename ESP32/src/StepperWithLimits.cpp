@@ -41,7 +41,8 @@ static bool servoBusVoltageParameterized_b = true;
 
 bool setServoToSleep_b = false;
 
-
+#define BRAKE_RESISTOR_UPPER_TRHESHOLD_VOLTAGE 4.0f
+#define BRAKE_RESISTOR_LOWER_TRHESHOLD_VOLTAGE 1.0f
 
 FastAccelStepperEngine& stepperEngine() {
   static FastAccelStepperEngine myEngine = FastAccelStepperEngine();   // this is a factory and manager for all stepper instances
@@ -118,7 +119,7 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 		isv57.readAlarmHistory();
 
 		// reset iSV57 alarms
-		bool servoAlarmsCleared = isv57.clearServoAlarms();
+		//bool servoAlarmsCleared = isv57.clearServoAlarms();
 
 		Serial.print("iSV57 communication state:  ");
 		Serial.println( getLifelineSignal() );
@@ -169,6 +170,12 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
   
 }
 
+
+// Clear all servo alarms
+void StepperWithLimits::clearAllServoAlarms()
+{
+	clearAllServoAlarms_b = true;
+}
 
 // Log all servo params
 void StepperWithLimits::printAllServoParameters()
@@ -734,6 +741,17 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 			stepper_cl->setLifelineSignal();
 		}
 
+
+		/************************************************************/
+		/* 					clear all servo alarms 					*/
+		/************************************************************/
+		if (true == stepper_cl->clearAllServoAlarms_b)
+		{
+			Serial.println("Clearing all servo alarms.");
+			stepper_cl->isv57.clearServoAlarms();
+			stepper_cl->isv57.readAlarmHistory();
+			stepper_cl->clearAllServoAlarms_b = false;
+		}
 		
 		/************************************************************/
 		/* 					log all servo params 					*/
@@ -770,9 +788,17 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 
 			if (false == servoBusVoltageParameterized_b)
 			{
-				Serial.print("Setting virtual brake resistor to: ");
+				Serial.print("Setting virtual brake resistor to ");
 				Serial.print( servoBusVoltageParameterized_fl32 );
 				Serial.println("V");
+
+				#ifdef BRAKE_RESISTOR_PIN
+					Serial.print("Setting real brake resistor thresholds to ");
+					Serial.print( servoBusVoltageParameterized_fl32+BRAKE_RESISTOR_UPPER_TRHESHOLD_VOLTAGE );
+					Serial.print("V and ");
+					Serial.print( servoBusVoltageParameterized_fl32+BRAKE_RESISTOR_LOWER_TRHESHOLD_VOLTAGE );
+					Serial.println("V");
+				#endif
 
 				// set iSV57 parameters for 36 or 48V range
 				stepper_cl->isv57.setServoVoltage(servoBusVoltageParameterized_fl32);
@@ -804,8 +830,9 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 			
 
 			#ifdef BRAKE_RESISTOR_PIN
-				float brakeResistorVoltageOn_inV_fl32 = (servoBusVoltageParameterized_fl32 + 4.0f);
-				float brakeResistorVoltageOff_inV_fl32 = (servoBusVoltageParameterized_fl32 + 1.0f);
+
+				float brakeResistorVoltageOn_inV_fl32 = (servoBusVoltageParameterized_fl32 + BRAKE_RESISTOR_UPPER_TRHESHOLD_VOLTAGE);
+				float brakeResistorVoltageOff_inV_fl32 = (servoBusVoltageParameterized_fl32 + BRAKE_RESISTOR_LOWER_TRHESHOLD_VOLTAGE);
 				
 				float busVoltage_inV_fl32 = ( (float)stepper_cl->getServosVoltage() ) * 0.1f;
 				int64_t brakeResistorUpTime_i64 = timeNow_isv57SerialCommunicationTask_l - time_brakeResistorLastPassive;

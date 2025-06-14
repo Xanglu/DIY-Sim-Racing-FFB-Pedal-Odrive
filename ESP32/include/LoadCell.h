@@ -16,8 +16,7 @@ public:
   void setLoadcellRating(uint8_t loadcellRating_u8) const;
   
 public:
-  void setZeroPoint();
-  void estimateVariance();
+  void estimateBiasAndVariance();
 
 public:
   float getVarianceEstimate() const { return _varianceEstimate; }

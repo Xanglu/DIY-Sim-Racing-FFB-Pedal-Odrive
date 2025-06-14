@@ -4,6 +4,81 @@
 Modbus modbus(Serial1);
 
 
+
+
+
+void printDecodedAlarmString(uint16_t alarm_code) 
+{
+
+  switch (alarm_code & 0x0FFF) { // Mask to get lower 12 bits
+    case 0x000:
+        Serial.println("Normal\n");
+        break;
+    case 0x0E1:
+    case 0x0E0:
+        Serial.println("Overcurrent\n");
+        break;
+    case 0x100:
+        Serial.println("Overload\n");
+        break;
+    case 0x180:
+        Serial.println("Excessive position deviation\n");
+        break;
+    case 0x1A0:
+        Serial.println("Overspeed\n");
+        break;
+    case 0x1A1:
+        Serial.println("Motor out of control\n");
+        break;
+    case 0x0D0:
+        Serial.println("Undervoltage\n");
+        break;
+    case 0x0C0:
+        Serial.println("Overvoltage\n");
+        break;
+    case 0x171:
+    case 0x172:
+        Serial.println("Encoder parameter error\n");
+        break;
+    case 0x190:
+        Serial.println("Excessive motor vibration\n");
+        break;
+    case 0x150:
+        Serial.println("Encoder disconnected\n");
+        break;
+    case 0x151:
+    case 0x170:
+        Serial.println("Encoder data error\n");
+        break;
+    case 0x152:
+        Serial.println("Encoder HALL signal error\n");
+        break;
+    case 0x240:
+        Serial.println("Parameter saving error\n");
+        break;
+    case 0x570:
+        Serial.println("Emergency stop\n");
+        break;
+    case 0x120:
+        Serial.println("Regenerative energy overload\n");
+        break;
+    case 0x153:
+        Serial.println("Encoder battery error\n");
+        break;
+    case 0x210:
+    case 0x211:
+    case 0x212:
+        Serial.println("Input configuration error (Repeated/wrong input)\n");
+        break;
+    default:
+        Serial.println("Unknown or refer to Chapter 9\n");
+        break;
+  }
+}
+
+
+
+
 // initialize the communication
 isv57communication::isv57communication()
 {
@@ -165,10 +240,10 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   // see https://www.oyostepper.com/images/upload/File/ISV57T-180.pdf
   // 0x01: =0: Enablespeedfeed-forwardfiltering; =1:Disablespeed feed-forward filtering
   // 0x02: =0: Enabletorquefeed-forwardfiltering; =2:disabletorque feed-forward filtering
-  // 0x04: =0: Enablemotor stall Er1A1alarm; =4:Blockmotor stall Er1A1 alarm
+  // 0x04: =0: Enablemotor stall Er1A1 alarm; =4:Blockmotor stall Er1A1 alarm
   // 0x08: =0: Enable overshoot Er180 alarm; =8:Mask overshoot Er180alarm
   // 0x10: =0: Enable overload Er100 alarm; =0x10: Mask overload Er100alarm
-  // 0x20: =0: dial input functionnot assignable; =0x20: dial input function assignable
+  // 0x20: =0: dial input function not assignable; =0x20: dial input function assignable
   // 0x40: =0: Mask drive disable Er260 alarm; =0x40: Enable drive disable Er260 alarm
   // 0x400: =0: Mask undervoltage Er0D0 alarm; =0x400: Enable undervoltage Er0D0 alarm
 
@@ -409,8 +484,8 @@ bool isv57communication::clearServoAlarms() {
   //int bytesReceived_i = modbus.requestFrom(slaveId, 0x03, 0x02, numberOfRegistersToRead_u8);
 
   // clear alarm list
-  modbus.holdingRegisterWrite(slaveId, 0x019a, 0x7777); 
-  
+  //modbus.holdingRegisterWrite(slaveId, 0x019a, 0x7777); 
+  modbus.holdingRegisterWrite(slaveId, 0x019a, 0x7788); 
   
   // ToDo: soft reset servo. The iSV57 docu says Pr0.25: 0x1111 resets current alarm; 0x1122 resets alarm history
     
@@ -437,8 +512,8 @@ bool isv57communication::readCurrentAlarm() {
 
 bool isv57communication::readAlarmHistory() {
 
-	// 
-	Serial.println("\niSV57 alarm history: ");
+  bool alarmWasFound_b = false;
+	Serial.print("\niSV57 alarm history: ");
 	for (uint8_t idx=0; idx < 12; idx++)
 	{
 	  // example signal, read the 9th alarm
@@ -446,28 +521,41 @@ bool isv57communication::readAlarmHistory() {
 
 	  // read the four registers simultaneously
 	  int bytesReceived_i = modbus.requestFrom(slaveId, 0x03, 0x1200 + idx, 1);
+    
 	  if(bytesReceived_i == (2))
 	  {
-		modbus.RxRaw(raw,  len);
-		for (uint8_t regIdx = 0; regIdx < 1; regIdx++)
-		{ 
-		  uint16_t tmp = modbus.uint16(regIdx) & 0x0FFF; // mask the first half byte as it does not contain info
+      modbus.RxRaw(raw,  len);
+      for (uint8_t regIdx = 0; regIdx < 1; regIdx++)
+      { 
+        uint16_t alarm_code = modbus.uint16(regIdx) & 0x0FFF; // mask the first half byte as it does not contain info
 
-		  if (tmp > 0)
-		  {
-			Serial.print("Alarm Idx: ");
-			Serial.print(idx);
-			Serial.print(",    Alarm Code: ");
-			Serial.println( tmp, HEX);
-		  }
-		  
-		}
+        if (alarm_code > 0)
+        {
+          Serial.print("Alarm Idx: ");
+          Serial.print(idx);
+          Serial.print(",    Alarm Code: ");
+          Serial.print( alarm_code, HEX);
+          Serial.print(" --> ");
+          printDecodedAlarmString(alarm_code);
+          alarmWasFound_b = true;
+        }
+        
+      }
 	  }
 	}
+
+  // In case of no alarm --> indicate with string
+  if (false == alarmWasFound_b)
+  {
+    Serial.print("No alarm was found.");
+  }
+
 	Serial.print("\n");
     
 	return 1;
 }
+
+
 
 void isv57communication::resetToFactoryParams() 
 {

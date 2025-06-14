@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "Arduino.h"
 
 // define the payload revision
 #define DAP_VERSION_CONFIG 149
@@ -14,6 +15,8 @@
 #define DAP_PAYLOAD_TYPE_ESPNOW_RUDDER 150
 #define DAP_PAYLOAD_TYPE_ESPNOW_JOYSTICK 160
 #define DAP_PAYLOAD_TYPE_BRIDGE_STATE 210
+
+
 
 struct payloadHeader {
   
@@ -256,9 +259,7 @@ struct DAP_config_st {
   payloadPedalConfig payLoadPedalConfig_;
   payloadFooter payloadFooter_; 
   
-  
   void initialiseDefaults();
-  void initialiseDefaults_Accelerator();
   void loadConfigFromEprom(DAP_config_st& config_st);
   void storeConfigToEprom(DAP_config_st& config_st);
 };
@@ -334,4 +335,27 @@ enum class PedalSystemAction
   ENABLE_OTA,//not in use
   ENABLE_PAIRING,//not in use
   ESP_BOOT_INTO_DOWNLOAD_MODE
+};
+
+
+class DAP_config_class {
+public:
+  // Konstruktor
+  DAP_config_class();
+
+  // Methode zum sicheren Abrufen der Konfiguration
+  DAP_config_st getConfig();
+
+  // Methode zum sicheren Setzen der Konfiguration
+  void setConfig(DAP_config_st tmp);
+
+  // Methode zum Laden der Konfiguration aus dem EEPROM
+  void loadConfigFromEprom();
+
+  // Methode zum Speichern der Konfiguration im EEPROM
+  void storeConfigToEprom();
+
+private:
+  SemaphoreHandle_t mutex;
+  DAP_config_st _config_st;
 };

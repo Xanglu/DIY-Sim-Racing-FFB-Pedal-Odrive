@@ -1,5 +1,5 @@
 #include "DiyActivePedal_types.h"
-#include "Arduino.h"
+
 
 #include "PedalGeometry.h"
 #include "StepperWithLimits.h"
@@ -7,6 +7,8 @@
 #include <EEPROM.h>
 
 static const float ABS_SCALING = 50;
+
+#define WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT 500
 
 const uint32_t EEPROM_OFFSET = (DAP_VERSION_CONFIG-128) * sizeof(DAP_config_st) % (2048-sizeof(DAP_config_st));
 
@@ -269,3 +271,68 @@ void DAP_calculationVariables_st::Default_pos()
 }
 
 
+
+/**********************************************************************************************/
+/*                                                                                            */
+/*                         DAP_config_class                                                   */
+/*                                                                                            */
+/**********************************************************************************************/
+// constructor
+DAP_config_class::DAP_config_class() {
+
+  // create the mutex
+  mutex = xSemaphoreCreateMutex();
+  if (mutex == NULL) {
+    Serial.println("Error: Mutex could not be created!");
+    ESP.restart();
+  }
+
+  // initialize the default config
+  _config_st.initialiseDefaults();
+}
+
+
+// method to safely get the config variable
+DAP_config_st DAP_config_class::getConfig() {
+  DAP_config_st tmp;
+  // requests the mutex, waits N milliseconds if not available immediately
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT)) == pdTRUE) {
+    tmp = _config_st;
+    // gives back the mutex
+    xSemaphoreGive(mutex);
+  }
+
+  return tmp;
+}
+
+// method to safely set the config variable
+void DAP_config_class::setConfig(DAP_config_st tmp) {
+  // boolean returnV_b = false;
+  // requests the mutex, waits N milliseconds if not available immediately
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT)) == pdTRUE) {
+    _config_st = tmp;
+    // returnV_b = true;
+    // gives back the mutex
+    xSemaphoreGive(mutex);
+  }
+  else
+  {
+    Serial.println("Error: Coul not aquire mutex!");
+  }
+
+  // return returnV_b;
+}
+
+void DAP_config_class::loadConfigFromEprom() {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT)) == pdTRUE) {
+    _config_st.loadConfigFromEprom(_config_st);
+    xSemaphoreGive(mutex);
+  }
+}
+
+void DAP_config_class::storeConfigToEprom() {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT)) == pdTRUE) {
+    _config_st.storeConfigToEprom(_config_st);
+    xSemaphoreGive(mutex);
+  }
+}
