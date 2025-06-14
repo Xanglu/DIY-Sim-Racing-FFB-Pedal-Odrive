@@ -2353,10 +2353,10 @@ void ESPNOW_SyncTask( void * pvParameters )
       {
         Config_update_b=false;
         #ifdef USING_BUZZER
-          if(dap_config_st_local.payLoadHeader_.storeToEeprom==1)
-          {
-            Buzzer.single_beep_tone(700,100);
-          }          
+        if (espnow_dap_config_st.payLoadHeader_.storeToEeprom == 1)
+        {
+          Buzzer.single_beep_tone(700, 100);
+        }          
         #endif 
       }
       if(ESPNow_OTA_enable)
