@@ -427,7 +427,7 @@ void setup()
   if (structChecker == true)
   {
     Serial.println("Updating pedal config from EEPROM");
-    global_dap_config_class.setConfig(dap_config_st_local);        
+    global_dap_config_class.setConfig(dap_config_st_local);
   }
   else
   {
@@ -701,6 +701,7 @@ void setup()
           }
           DAP_config_st tmp = global_dap_config_class.getConfig();
           tmp.payLoadPedalConfig_.pedal_type = Pedal_assignment;
+          dap_config_st_local.payLoadPedalConfig_.pedal_type = Pedal_assignment;
           global_dap_config_class.setConfig(tmp);
 
         }
