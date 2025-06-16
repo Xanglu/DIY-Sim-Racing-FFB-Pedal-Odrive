@@ -855,6 +855,8 @@ float Position_Next_Prev = 0.0f;
 
 //void loop()
 
+float previousLoadcellReadingInKg_fl32 = 0.0f;
+
 void pedalUpdateTask( void * pvParameters )
 {
 
@@ -959,6 +961,16 @@ void pedalUpdateTask( void * pvParameters )
 
     // Get the loadcell reading
     float loadcellReading = loadcell->getReadingKg();
+
+    // detect loadcell outlier
+    float loadcellDifferenceToLastCycle_fl32 = loadcellReading - previousLoadcellReadingInKg_fl32;
+    previousLoadcellReadingInKg_fl32 = loadcellReading;
+    if (fabsf(loadcellDifferenceToLastCycle_fl32) > 5.0f)
+    {
+      // reject update when loadcell reading likely outlier
+      continue;
+    }
+
 
     uint16_t angleReading_ui16 = 0;
     #ifdef ANGLE_SENSOR_GPIO
