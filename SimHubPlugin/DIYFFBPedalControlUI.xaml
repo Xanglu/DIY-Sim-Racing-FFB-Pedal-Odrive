@@ -542,20 +542,38 @@
                                                     <!--<TextBlock Text="Connect to pedal:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="200,10,0,0"  Grid.Row="2" Width="200" Foreground="Red" />-->
                                                     <CheckBox x:Name="ConnectToPedal" Width="30" Height="30" IsChecked="False" IsEnabled="False" Content="" FontSize="8" Margin="5,0,0,0"/>
                                                 </StackPanel>
-                                                <styles:SHButtonPrimary x:Name="btn_pedal_connect" Click="ConnectToPedal_click" Width="160"  Height="25" Content="Connect to Pedal" HorizontalAlignment="Center" Margin="0,2,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" Padding="15,0,15,0"  />
-                                                <styles:SHButtonPrimary x:Name="btn_update" Click="UpdateSerialPortList_click" Width="160" Height="25" Content="Update Serial Port List" HorizontalAlignment="Left" Margin="0,2,0,0" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="15,0,15,0" />
-                                                <styles:SHButtonPrimary x:Name="btn_SendConfig" Click="SendConfigToPedal_click" Width="160" Height="25" Content="Send Config to Pedal" HorizontalAlignment="Left" Margin="0,2,0,0" Padding="0,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" ToolTip="Send Config to Pedal and save in storage" />
-                                                <styles:SHButtonPrimary Click="ReadConfigFromPedal_click" Width="160" Height="25" Content="Load Config from Pedal" Margin="0,2,0,0" HorizontalAlignment="Left" Padding="0,0,0,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary Click="SaveButton_Click" Width="160" Content="Export Config to Local" Height="25" Margin="0,10,0,0" HorizontalAlignment="Left" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary Click="OpenButton_Click" Width="160" Content="Load Config from Local" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="btn_OnlineProfile" Click="btn_OnlineProfile_Click" Width="160" Content="Community Config" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="btn_reset_default" Click="btn_reset_default_Click" Width="160"  Content="Reset Config to Default" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" ToolTip="Reset the config to default" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="button_pedal_restart" Click="RestartPedal_click" Width="160" Content="Restart Pedal" Height="25" Margin="0,10,0,0" HorizontalAlignment="Center" MinHeight="20" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="btn_OTA_enable" Click="btn_OTA_enable_Click" Width="160" Content="Pedal FW OTA Update" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="btn_PedalBootMode" Click="btn_PedalBootMode_Click" Width="160" Content="Pedal Download Mode" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="btn_SerialMonitorWindow" Click="btn_SerialMonitorWindow_Click" Width="160" Content="Pedal Log Monitor" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <Border Background="#FF4E4E4E" Height="62" CornerRadius="5,5,5,5" BorderThickness="0,0,0,0" Width="160" HorizontalAlignment="Center" Margin="0,2,0,0" >
-                                                    <TextBox x:Name="TextBox2" TextWrapping="Wrap" Width="160" AutomationProperties.Name="TextBox2" Height="62" FontSize="9" Background="#004E4E4E" BorderBrush="#00CCCCCC" IsHitTestVisible="False" AllowDrop="True" HorizontalAlignment="Center"/>
+
+                                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <styles:SHButtonPrimary x:Name="btn_pedal_connect" Click="ConnectToPedal_click" Width="160"  Height="25" Content="Connect to Pedal" HorizontalAlignment="Center" Margin="0,2,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" Padding="15,0,15,0"  />
+                                                    <styles:SHButtonPrimary x:Name="btn_update" Click="UpdateSerialPortList_click" Width="160" Height="25" Content="Update Serial Port List" HorizontalAlignment="Left" Margin="0,2,0,0" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="15,0,15,0" />
+                                                    <styles:SHButtonPrimary x:Name="btn_SendConfig" Click="SendConfigToPedal_click" Width="160" Height="25" Content="Send Config to Pedal" HorizontalAlignment="Left" Margin="0,2,0,0" Padding="0,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" ToolTip="Send Config to Pedal and save in storage" />
+                                                    <styles:SHButtonPrimary Click="ReadConfigFromPedal_click" Width="160" Height="25" Content="Load Config from Pedal" Margin="0,2,0,0" HorizontalAlignment="Left" Padding="0,0,0,0" VerticalContentAlignment="Center" />
+                                                </StackPanel>
+                                                <StackPanel>
+                                                    <Canvas Height="8">
+                                                        <Line  X1="10" Y1="4" X2="150" Y2="4" Stroke="{DynamicResource AccentColorBrush3}" StrokeThickness="2" StrokeEndLineCap="Round" StrokeStartLineCap="Round" />
+                                                    </Canvas>
+                                                </StackPanel>
+                                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <styles:SHButtonPrimary Click="SaveButton_Click" Width="160" Content="Export Config to Local" Height="25" Margin="0,0,0,0" HorizontalAlignment="Left" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary Click="OpenButton_Click" Width="160" Content="Load Config from Local" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_OnlineProfile" Click="btn_OnlineProfile_Click" Width="160" Content="Community Config" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_reset_default" Click="btn_reset_default_Click" Width="160"  Content="Reset Config to Default" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" ToolTip="Reset the config to default" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                </StackPanel>
+                                                <StackPanel>
+                                                    <Canvas Height="8">
+                                                        <Line  X1="10" Y1="4" X2="150" Y2="4" Stroke="{DynamicResource AccentColorBrush3}" StrokeThickness="2" StrokeEndLineCap="Round" StrokeStartLineCap="Round" />
+                                                    </Canvas>
+                                                </StackPanel>
+                                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <styles:SHButtonPrimary x:Name="button_pedal_restart" Click="RestartPedal_click" Width="160" Content="Restart Pedal" Height="25" Margin="0,0,0,0" HorizontalAlignment="Center" MinHeight="20" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_OTA_enable" Click="btn_OTA_enable_Click" Width="160" Content="Pedal FW OTA Update" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_PedalBootMode" Click="btn_PedalBootMode_Click" Width="160" Content="Pedal Download Mode" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_SerialMonitorWindow" Click="btn_SerialMonitorWindow_Click" Width="160" Content="Pedal Log Monitor" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                </StackPanel>
+
+                                                <Border Background="#FF4E4E4E" Height="50" CornerRadius="5,5,5,5" BorderThickness="0,0,0,0" Width="160" HorizontalAlignment="Center" Margin="0,2,0,0" >
+                                                    <TextBox x:Name="TextBox2" TextWrapping="Wrap" Width="160" AutomationProperties.Name="TextBox2" Height="50" FontSize="9" Background="#004E4E4E" BorderBrush="#00CCCCCC" IsHitTestVisible="False" AllowDrop="True" HorizontalAlignment="Center"/>
                                                 </Border>
                                                 <localFunction:SettingSection_Pedal x:Name="PedalSettingsSection" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
 
