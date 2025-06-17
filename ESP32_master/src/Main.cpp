@@ -633,18 +633,21 @@ void ESPNOW_SyncTask( void * pvParameters )
       {
         if(dap_bridge_state_st.payloadBridgeState_.Pedal_availability[0]==1)
         {
-          ESPNow.send_message(Clu_mac,(uint8_t *) &dap_config_st,sizeof(dap_config_st));
-          Serial.println("[L]Clutch config sent");
-          configUpdateAvailable=false;
+          configUpdateAvailable = false;
+          Serial.print("[L]Sending Clutch config,Result:");
+          esp_err_t err = ESPNow.send_message(Clu_mac, (uint8_t *)&dap_config_st, sizeof(dap_config_st));
+          Serial.println(esp_err_to_name(err));
         }
       }
       if(dap_config_st.payLoadHeader_.PedalTag==1)
       {
+        Serial.println(dap_bridge_state_st.payloadBridgeState_.Pedal_availability[1]);
         if(dap_bridge_state_st.payloadBridgeState_.Pedal_availability[1]==1)
         {
-          ESPNow.send_message(Brk_mac,(uint8_t *) &dap_config_st,sizeof(dap_config_st));
-          Serial.println("[L]BRK config sent");
-          configUpdateAvailable=false;
+          configUpdateAvailable = false;
+          Serial.print("[L]Sending BRK config,Result:");
+          esp_err_t err = ESPNow.send_message(Brk_mac, (uint8_t *)&dap_config_st, sizeof(dap_config_st));
+          Serial.println(esp_err_to_name(err));
         }
 
       }
@@ -652,9 +655,10 @@ void ESPNOW_SyncTask( void * pvParameters )
       {
         if(dap_bridge_state_st.payloadBridgeState_.Pedal_availability[2]==1)
         {
-          ESPNow.send_message(Gas_mac,(uint8_t *) &dap_config_st,sizeof(dap_config_st));
-          Serial.println("[L]Throttle config sent");
-          configUpdateAvailable=false;
+          configUpdateAvailable = false;
+          Serial.print("[L]Sending Throttle config,Result:");
+          esp_err_t err = ESPNow.send_message(Gas_mac, (uint8_t *)&dap_config_st, sizeof(dap_config_st));
+          Serial.println(esp_err_to_name(err));
         }
 
       }
