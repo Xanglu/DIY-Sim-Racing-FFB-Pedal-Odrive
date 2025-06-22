@@ -38,4 +38,15 @@ namespace User.PluginSdkDemo
         BRIDGE_ACTION_JOYSTICK_FLASHING_MODE,
         BRIDGE_ACTION_JOYSTICK_DEBUG
     };
+
+    public enum PedalSystemAction
+    {
+        NONE,
+        RESET_PEDAL_POSITION,//not in use
+        PEDAL_RESTART,
+        ENABLE_OTA,//not in use
+        ENABLE_PAIRING,//not in use
+        ESP_BOOT_INTO_DOWNLOAD_MODE,
+        PRINT_PEDAL_INFO
+    };
 }

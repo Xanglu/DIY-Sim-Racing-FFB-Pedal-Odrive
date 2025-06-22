@@ -1752,7 +1752,14 @@ void serialCommunicationTask( void * pvParameters )
                 #endif
                 //ESPNOW_BootIntoDownloadMode = false;
               }
-              
+              if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::PRINT_PEDAL_INFO)
+              {
+                char logString[200];
+                snprintf(logString, sizeof(logString),
+                         "Pedal ID: %d\nBoard: %s\nLoadcell shift= %.3f kg\nLoadcell variance= %.3f kg\nPSU voltage:%.1f V\nMax endstop:%lu\nCurrentPos:%lu\n\0",
+                         sct_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage() / 10.0f), dap_calculationVariables_st.stepperPosMaxEndstop, dap_calculationVariables_st.current_pedal_position);
+                Serial.println(logString);
+              }
 
               // trigger ABS effect
               if (dap_actions_st.payloadPedalAction_.triggerAbs_u8>0)
@@ -2403,6 +2410,16 @@ void ESPNOW_SyncTask( void * pvParameters )
           }
           #endif
 
+      }
+      if(printPedalInfo_b)
+      {
+        printPedalInfo_b=false;
+        char logString[200];
+        snprintf(logString, sizeof(logString),
+                 "Pedal ID: %d\nBoard: %s\nLoadcell shift= %.3f kg\nLoadcell variance= %.3f kg\nPSU voltage:%.1f V\nMax endstop:%lu\nCurrentPos:%d\0",
+                 espnow_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage()/10.0f),dap_calculationVariables_st.stepperPosMaxEndstop,dap_calculationVariables_st.current_pedal_position);
+        Serial.println(logString);
+        sendESPNOWLog(logString, strnlen(logString, sizeof(logString)));
       }
       if(Get_Rudder_action_b)
       {

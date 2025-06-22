@@ -1132,6 +1132,14 @@ void Serial_Task( void * pvParameters)
         }
       }  
     }
+    //print log from espnow
+    if(getESPNOWLog_b)
+    {
+      getESPNOWLog_b=false;
+      Serial.print("[L]");
+      Serial.println(espnowLog);
+    }
+
     //debug message print
     if(PedalUpdateIntervalPrint_b)
     {

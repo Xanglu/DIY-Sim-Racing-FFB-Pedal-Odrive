@@ -4,7 +4,8 @@
 #include "ESPNowW.h"
 #include "DiyActivePedal_types.h"
 //#define ESPNow_debug
-
+#define ESPNOW_LOG_MAGIC_KEY 0x99
+#define ESPNOW_LOG_MAGIC_KEY_2 0x97
 uint8_t esp_master[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x31};
 //uint8_t esp_master[] = {0xdc, 0xda, 0x0c, 0x22, 0x8f, 0xd8}; // S3
 //uint8_t esp_master[] = {0x48, 0x27, 0xe2, 0x59, 0x48, 0xc0}; // S2 mini
@@ -17,6 +18,7 @@ uint8_t esp_Mac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 uint8_t* Recv_mac;
 uint16_t ESPNow_send=0;
 uint16_t ESPNow_recieve=0;
+
 //bool MAC_get=false;
 bool ESPNOW_status =false;
 bool ESPNow_initial_status=false;
@@ -37,6 +39,7 @@ bool Rudder_initializing = false;
 bool Rudder_deinitializing = false;
 bool ESPNOW_BootIntoDownloadMode = false;
 bool Get_Rudder_action_b=false;
+bool printPedalInfo_b=false;
 unsigned long Rudder_initialized_time=0;
 
 DAP_Rudder_st dap_rudder_receiving;
@@ -320,6 +323,11 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
                   {
                     ESPNOW_BootIntoDownloadMode = true;
                   }
+                  if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::PRINT_PEDAL_INFO)
+                  {
+                    printPedalInfo_b = true;
+                  }
+
                   // trigger ABS effect
                   if (dap_actions_st.payloadPedalAction_.triggerAbs_u8>0)
                   {
@@ -592,4 +600,22 @@ void ESPNow_initialize()
     ESPNOW_status=true;
     Serial.println("ESPNow Initialized");
   
+}
+
+void sendESPNOWLog(const char *log, uint8_t logLen)
+{
+  uint8_t buffer[250];
+  uint8_t payloadType = DAP_PAYLOAD_TYPE_ESPNOW_LOG;
+  //uint8_t logLen = strlen(log); 
+
+  if (logLen > 240)
+  {
+    logLen = 240;
+  }
+  buffer[0] = payloadType;
+  buffer[1] = ESPNOW_LOG_MAGIC_KEY;
+  buffer[2] = ESPNOW_LOG_MAGIC_KEY_2;
+  buffer[3] = logLen;
+  memcpy(&buffer[4], log, logLen);
+  ESPNow.send_message(broadcast_mac, (uint8_t *)buffer, 4 + logLen);
 }

@@ -6,6 +6,8 @@
 #include "Main.h"
 
 //#define ESPNow_debug
+#define ESPNOW_LOG_MAGIC_KEY 0x99
+#define ESPNOW_LOG_MAGIC_KEY_2 0x97
 uint8_t esp_master[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x31};
 uint8_t Clu_mac[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x32};
 uint8_t Gas_mac[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x33};
@@ -40,6 +42,9 @@ bool ESPNow_Pairing_status = false;
 bool UpdatePairingToEeprom = false;
 bool ESPNow_pairing_action_b = false;
 bool software_pairing_action_b = false;
+char espnowLog[240];
+bool getESPNOWLog_b=false;
+
 
 bool MacCheck(uint8_t* Mac_A, uint8_t*  Mac_B)
 {
@@ -147,6 +152,16 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
   //only recieve the package from registed mac address
   if(MacCheck((uint8_t*)mac_addr, Clu_mac)||MacCheck((uint8_t*)mac_addr, Brk_mac)||MacCheck((uint8_t*)mac_addr, Gas_mac))
   {
+    if(data[0]==DAP_PAYLOAD_TYPE_ESPNOW_LOG && data[1]==ESPNOW_LOG_MAGIC_KEY && data[2]==ESPNOW_LOG_MAGIC_KEY_2)
+    {
+      if(!getESPNOWLog_b)
+      {
+        getESPNOWLog_b = true;
+        memset(espnowLog, 0, sizeof(espnowLog));
+        memcpy(&espnowLog, &data[4], data[3]);
+      }
+
+    }
     if(data_len==sizeof(Joystick_Data))
     {
 

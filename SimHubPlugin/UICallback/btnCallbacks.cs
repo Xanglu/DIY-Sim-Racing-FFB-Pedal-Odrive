@@ -247,7 +247,7 @@ namespace User.PluginSdkDemo
                         openSerialAndAddReadCallback(indexOfSelectedPedal_u);
                         TextBox_debugOutput.Text = "Serialport open";
                         ConnectToPedal.IsChecked = true;
-                        btn_pedal_connect.Content = "Disconnect From Pedal";
+                        btn_pedal_connect.Content = "Disconnect";
 
                         // register a callback that is triggered when serial data is received
                         // see https://gist.github.com/mini-emmy/9617732
@@ -276,7 +276,7 @@ namespace User.PluginSdkDemo
                     Plugin.Settings.connect_status[indexOfSelectedPedal_u] = 0;
                     Plugin.Settings.connect_flag[indexOfSelectedPedal_u] = 0;
                     Plugin.connectSerialPort[indexOfSelectedPedal_u] = false;
-                    btn_pedal_connect.Content = "Connect To Pedal";
+                    btn_pedal_connect.Content = "Connect";
                 }
             }
             else
@@ -287,7 +287,7 @@ namespace User.PluginSdkDemo
                 Plugin.connectSerialPort[indexOfSelectedPedal_u] = false;
                 Plugin.Settings.connect_status[indexOfSelectedPedal_u] = 0;
                 Plugin.Settings.connect_flag[indexOfSelectedPedal_u] = 0;
-                btn_pedal_connect.Content = "Connect To Pedal";
+                btn_pedal_connect.Content = "Connect";
 
             }
 
@@ -1204,6 +1204,19 @@ namespace User.PluginSdkDemo
                     TextBox_debugOutput.Text = errorMessage;
                 }
             }
+        }
+        unsafe private void btn_Printlog_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.MessageBox.Show("Please check Serial monitor for pedal info");
+            DAP_action_st tmp;
+            tmp.payloadHeader_.version = (byte)Constants.pedalConfigPayload_version;
+            tmp.payloadHeader_.payloadType = (byte)Constants.pedalActionPayload_type;
+            tmp.payloadPedalAction_.system_action_u8 = (byte)PedalSystemAction.PRINT_PEDAL_INFO;
+            tmp.payloadHeader_.PedalTag = (byte)indexOfSelectedPedal_u;
+            DAP_action_st* v = &tmp;
+            byte* p = (byte*)v;
+            tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
+            Plugin.SendPedalAction(tmp, (byte)indexOfSelectedPedal_u);
         }
     }
 }

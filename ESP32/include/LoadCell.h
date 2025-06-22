@@ -20,4 +20,6 @@ public:
 
 public:
   float getVarianceEstimate() const { return _varianceEstimate; }
+  float getShiftingEstimate() const { return _zeroPoint; }
+  float getSTDEstimate() const { return _standardDeviationEstimate; }
 };

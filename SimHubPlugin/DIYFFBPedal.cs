@@ -114,16 +114,6 @@ namespace User.PluginSdkDemo
 
         };
 
-        public enum PedalSystemAction
-        {
-            NONE,
-            RESET_PEDAL_POSITION,//not in use
-            PEDAL_RESTART,
-            ENABLE_OTA,//not in use
-            ENABLE_PAIRING,//not in use
-            ESP_BOOT_INTO_DOWNLOAD_MODE
-        };
-
         public enum TrackConditionEnum
         {
             Dry,

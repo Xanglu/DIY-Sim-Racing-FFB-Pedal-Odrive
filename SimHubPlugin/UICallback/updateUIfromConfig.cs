@@ -156,12 +156,12 @@ namespace User.PluginSdkDemo
             if (Plugin._serialPort[indexOfSelectedPedal_u].IsOpen == true)
             {
                 ConnectToPedal.IsChecked = true;
-                btn_pedal_connect.Content = "Disconnect From Pedal";
+                btn_pedal_connect.Content = "Disconnect";
             }
             else
             {
                 ConnectToPedal.IsChecked = false;
-                btn_pedal_connect.Content = "Connect To Pedal";
+                btn_pedal_connect.Content = "Connect";
             }
 
 
