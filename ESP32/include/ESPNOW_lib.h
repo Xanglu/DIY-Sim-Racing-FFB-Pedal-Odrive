@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include "ESPNowW.h"
 #include "DiyActivePedal_types.h"
+
+//#define ESPNow_debug_rudder
 //#define ESPNow_debug
 #define ESPNOW_LOG_MAGIC_KEY 0x99
 #define ESPNOW_LOG_MAGIC_KEY_2 0x97
