@@ -1106,17 +1106,17 @@ void pedalUpdateTask( void * pvParameters )
     {
       stepper->servoIdleAction();
       stepper->servoStatus = SERVO_IDLE_NOT_CONNECTED;
-#ifdef USING_BUZZER
+      #ifdef USING_BUZZER
         Buzzer.single_beep_tone(770, 100);
-#endif
+      #endif
       delay(300);
-#ifdef USING_LED
+      #ifdef USING_LED
         pixels.setPixelColor(0, 0xff, 0x00, 0x00); // show red
         pixels.show();
-#endif
-#ifdef USING_BUZZER
+      #endif
+      #ifdef USING_BUZZER
         Buzzer.single_beep_tone(770, 100);
-#endif
+      #endif
       Serial.println("Servo idle timeout reached. To restart pedal, please apply pressure.");
     }
 
@@ -1185,7 +1185,7 @@ void pedalUpdateTask( void * pvParameters )
     dap_calculationVariables_st.current_pedal_position = Position_Next;
 
     //Rudder initialzing and de initializing
-#ifdef ESPNOW_Enable
+    #ifdef ESPNOW_Enable
     if(dap_calculationVariables_st.Rudder_status)
     {
       if(Rudder_initializing)
@@ -1231,7 +1231,7 @@ void pedalUpdateTask( void * pvParameters )
       moveSlowlyToPosition_b=false;
       Serial.println("Rudder deinitialized");
     }
-#endif
+    #endif
 
     //Serial.println(Position_check);
     if(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.BP_trigger==1)
@@ -1289,27 +1289,27 @@ void pedalUpdateTask( void * pvParameters )
   // Move to new position
   if (!moveSlowlyToPosition_b)
   {
-#if defined(OTA_update_ESP32) || defined(OTA_update)
+    #if defined(OTA_update_ESP32) || defined(OTA_update)
       if(OTA_status==false)
       {
         stepper->moveTo(Position_Next, false);
       }
-#else
+    #else
       stepper->moveTo(Position_Next, false);
-#endif
+    #endif
   }
   else
   {
-#if defined(OTA_update_ESP32) || defined(OTA_update)
+    #if defined(OTA_update_ESP32) || defined(OTA_update)
       if(OTA_status==false)
       {
         moveSlowlyToPosition_b = false;
         stepper->moveSlowlyToPos(Position_Next);
       }
-#else
+    #else
       moveSlowlyToPosition_b = false;
       stepper->moveSlowlyToPos(Position_Next);
-#endif
+    #endif
 
   }
   
@@ -1365,18 +1365,18 @@ void pedalUpdateTask( void * pvParameters )
     }
 
     // provide joystick output on PIN
-#ifdef Using_analog_output
+    #ifdef Using_analog_output
       int dac_value=(int)(joystickNormalizedToInt32*255/10000);
       dacWrite(D_O,dac_value);
-#endif
+    #endif
 
-#ifdef Using_analog_output_ESP32_S3
+    #ifdef Using_analog_output_ESP32_S3
       if(MCP_status)
       {
         int dac_value=(int)(joystickNormalizedToInt32*4096*0.9/10000);//limit the max to 5V*0.9=4.5V to prevent the overvolatage
         dac.setVoltage(dac_value, false);
       }
-#endif
+    #endif
 
     
     float normalizedPedalReading_fl32 = 0.0f;
@@ -1436,13 +1436,13 @@ void pedalUpdateTask( void * pvParameters )
     dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8=0;
     //servo status update
     dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.servoStatus=stepper->servoStatus;
-#ifdef ESPNOW_Enable
-    if(ESPNow_error_code!=0)
-    {
-      dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8=ESPNow_error_code;
-      ESPNow_error_code=0;
-    }
-#endif
+    #ifdef ESPNOW_Enable
+      if(ESPNow_error_code!=0)
+      {
+        dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8=ESPNow_error_code;
+        ESPNow_error_code=0;
+      }
+    #endif
     //dap_state_basic_st.payloadPedalState_Basic_.erroe_code_u8=200;
     /*if(isv57.isv57_update_parameter_b)
     {
@@ -1479,7 +1479,7 @@ void pedalUpdateTask( void * pvParameters )
       semaphore_updatePedalStates = xSemaphoreCreateMutex();
     }
 
-#ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
+    #ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
       if( controlTask_stackSizeIdx_u32 == 1000)
       {
         UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
@@ -1488,7 +1488,7 @@ void pedalUpdateTask( void * pvParameters )
         controlTask_stackSizeIdx_u32 = 0;
       }
       controlTask_stackSizeIdx_u32++;
-#endif
+    #endif
 
   }
 }

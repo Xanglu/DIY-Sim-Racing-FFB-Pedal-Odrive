@@ -2,7 +2,8 @@
 #define Rudder_timeout 1500
 #include "DiyActivePedal_types.h"
 #include "MovingAverageFilter.h"
-MovingAverageFilter averagefilter_rudder(50);
+#include "SignalFilter.h"
+MovingAverageFilter averagefilter_rudder(100);
 MovingAverageFilter averagefilter_rudder_force(50);
 class Rudder{
   public:
@@ -23,8 +24,12 @@ class Rudder{
   float position_ratio_sync;
   float position_ratio_current;
   int debug_count=0;
+  KalmanFilter* kalman_rudder = NULL;
   //bool IsReady = false;
-
+  Rudder()
+  {
+    kalman_rudder=new KalmanFilter(3.0f);
+  }
   void offset_calculate(DAP_calculationVariables_st* calcVars_st)
   {
     current_pedal_position=calcVars_st->current_pedal_position;
@@ -49,7 +54,8 @@ class Rudder{
       {
         offset_raw=0;
       }
-      offset_filter=averagefilter_rudder.process(offset_raw+Center_offset);
+      offset_filter=(int32_t)kalman_rudder->filteredValue(offset_raw+Center_offset,0.0f,1);
+      //offset_filter=averagefilter_rudder.process(offset_raw+Center_offset);
     }
     else
     {
