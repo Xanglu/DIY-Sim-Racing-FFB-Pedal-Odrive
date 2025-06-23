@@ -114,10 +114,10 @@ namespace User.PluginSdkDemo
 
                 Basic_WIfi_info* v_2 = &tmp_2;
                 byte* p_2 = (byte*)v_2;
-                TextBox_serialMonitor_bridge.Text += "\nwifi info sent\n\r";
+                TextBox_serialMonitor_bridge.Text += "\nSending wifi info to Bridge for OTA.\n\r";
 
                 length = sizeof(Basic_WIfi_info);
-                TextBox_serialMonitor_bridge.Text += "\nLength:" + length;
+                //TextBox_serialMonitor_bridge.Text += "\nLength:" + length;
                 byte[] newBuffer_2 = new byte[length];
                 newBuffer_2 = Plugin.getBytes_Basic_Wifi_info(tmp_2);
                 if (Plugin.ESPsync_serialPort.IsOpen)
@@ -699,7 +699,7 @@ namespace User.PluginSdkDemo
                 System.Windows.MessageBox.Show(MSG_tmp, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            MSG_tmp += "OTA-Pull function only support V4/Gilphilbert board, for V3/Speedcrafter board user, please connect";
+            MSG_tmp += "OTA-Pull function only support V4/V5/Gilphilbert pcba v1.2/pcba v2.0 board.\nAfter enable OTA-Pull, you need wait for 3-5 minutes and Pedal will auto restart after update.\nThe OTA log will showed in serial monitor with USB connection.\nV3/Speedcrafter board user, please connect to ";
             if (indexOfSelectedPedal_u == 0)
             {
                 MSG_tmp += "FFBPedalClutch";
@@ -714,88 +714,92 @@ namespace User.PluginSdkDemo
             }
             MSG_tmp += " wifi hotspot, open 192.168.2.1 in web browser to upload firmware.bin";
 
-            System.Windows.MessageBox.Show(MSG_tmp, "OTA warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-
-            if (SSID_PASS_check)
+            //System.Windows.MessageBox.Show(MSG_tmp, "OTA warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            var result = System.Windows.MessageBox.Show(MSG_tmp, "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+            if (result == MessageBoxResult.OK)
             {
-                tmp_2.SSID_Length = (byte)SSID.Length;
-                tmp_2.PASS_Length = (byte)PASS.Length;
-                tmp_2.device_ID = (byte)indexOfSelectedPedal_u;
-                tmp_2.payload_Type = (Byte)Constants.Basic_Wifi_info_type;
-
-                byte[] array_ssid = Encoding.ASCII.GetBytes(SSID);
-                //TextBox_serialMonitor_bridge.Text += "SSID:";
-                for (int i = 0; i < SSID.Length; i++)
+                if (SSID_PASS_check)
                 {
-                    tmp_2.WIFI_SSID[i] = array_ssid[i];
-                    //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_SSID[i] + ",";
-                }
-                //TextBox_serialMonitor_bridge.Text += "\nPASS:";
-                byte[] array_pass = Encoding.ASCII.GetBytes(PASS);
-                for (int i = 0; i < PASS.Length; i++)
-                {
-                    tmp_2.WIFI_PASS[i] = array_pass[i];
-                    //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_PASS[i] + ",";
-                }
+                    tmp_2.SSID_Length = (byte)SSID.Length;
+                    tmp_2.PASS_Length = (byte)PASS.Length;
+                    tmp_2.device_ID = (byte)indexOfSelectedPedal_u;
+                    tmp_2.payload_Type = (Byte)Constants.Basic_Wifi_info_type;
 
-                Basic_WIfi_info* v_2 = &tmp_2;
-                byte* p_2 = (byte*)v_2;
-                TextBox_serialMonitor_bridge.Text += "\nwifi info sent\n\r";
-
-                length = sizeof(Basic_WIfi_info);
-                TextBox_serialMonitor_bridge.Text += "\nLength:" + length;
-                byte[] newBuffer_2 = new byte[length];
-                newBuffer_2 = Plugin.getBytes_Basic_Wifi_info(tmp_2);
-                if (Plugin.Settings.Pedal_ESPNow_Sync_flag[indexOfSelectedPedal_u])
-                {
-                    if (Plugin.ESPsync_serialPort.IsOpen)
+                    byte[] array_ssid = Encoding.ASCII.GetBytes(SSID);
+                    //TextBox_serialMonitor_bridge.Text += "SSID:";
+                    for (int i = 0; i < SSID.Length; i++)
                     {
-                        try
-                        {
-                            // clear inbuffer 
-                            Plugin.ESPsync_serialPort.DiscardInBuffer();
+                        tmp_2.WIFI_SSID[i] = array_ssid[i];
+                        //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_SSID[i] + ",";
+                    }
+                    //TextBox_serialMonitor_bridge.Text += "\nPASS:";
+                    byte[] array_pass = Encoding.ASCII.GetBytes(PASS);
+                    for (int i = 0; i < PASS.Length; i++)
+                    {
+                        tmp_2.WIFI_PASS[i] = array_pass[i];
+                        //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_PASS[i] + ",";
+                    }
 
-                            // send query command
-                            Plugin.ESPsync_serialPort.Write(newBuffer_2, 0, newBuffer_2.Length);
-                        }
-                        catch (Exception caughtEx)
+                    Basic_WIfi_info* v_2 = &tmp_2;
+                    byte* p_2 = (byte*)v_2;
+                    TextBox_serialMonitor_bridge.Text += "\nSending WIfi info for OTA to Pedal\n\r";
+
+                    length = sizeof(Basic_WIfi_info);
+                    //TextBox_serialMonitor_bridge.Text += "\nLength:" + length;
+                    byte[] newBuffer_2 = new byte[length];
+                    newBuffer_2 = Plugin.getBytes_Basic_Wifi_info(tmp_2);
+                    if (Plugin.Settings.Pedal_ESPNow_Sync_flag[indexOfSelectedPedal_u])
+                    {
+                        if (Plugin.ESPsync_serialPort.IsOpen)
                         {
-                            string errorMessage = caughtEx.Message;
-                            //TextBox_debugOutput.Text = errorMessage;
-                            if (_serial_monitor_window != null)
+                            try
                             {
-                                _serial_monitor_window.TextBox_SerialMonitor.Text += errorMessage + "\n";
-                                _serial_monitor_window.TextBox_SerialMonitor.ScrollToEnd();
+                                // clear inbuffer 
+                                Plugin.ESPsync_serialPort.DiscardInBuffer();
+
+                                // send query command
+                                Plugin.ESPsync_serialPort.Write(newBuffer_2, 0, newBuffer_2.Length);
                             }
-                            //TextBox_serialMonitor.Text+= errorMessage+"\n";
+                            catch (Exception caughtEx)
+                            {
+                                string errorMessage = caughtEx.Message;
+                                //TextBox_debugOutput.Text = errorMessage;
+                                if (_serial_monitor_window != null)
+                                {
+                                    _serial_monitor_window.TextBox_SerialMonitor.Text += errorMessage + "\n";
+                                    _serial_monitor_window.TextBox_SerialMonitor.ScrollToEnd();
+                                }
+                                //TextBox_serialMonitor.Text+= errorMessage+"\n";
+                            }
                         }
                     }
-                }
-                else
-                {
-                    if (Plugin._serialPort[indexOfSelectedPedal_u].IsOpen)
+                    else
                     {
-                        try
+                        if (Plugin._serialPort[indexOfSelectedPedal_u].IsOpen)
                         {
-                            // clear inbuffer 
-                            Plugin._serialPort[indexOfSelectedPedal_u].DiscardInBuffer();
-
-                            // send query command
-                            Plugin._serialPort[indexOfSelectedPedal_u].Write(newBuffer_2, 0, newBuffer_2.Length);
-                        }
-                        catch (Exception caughtEx)
-                        {
-                            string errorMessage = caughtEx.Message;
-                            //TextBox_debugOutput.Text = errorMessage;
-                            if (_serial_monitor_window != null)
+                            try
                             {
-                                _serial_monitor_window.TextBox_SerialMonitor.Text += errorMessage + "\n";
+                                // clear inbuffer 
+                                Plugin._serialPort[indexOfSelectedPedal_u].DiscardInBuffer();
+
+                                // send query command
+                                Plugin._serialPort[indexOfSelectedPedal_u].Write(newBuffer_2, 0, newBuffer_2.Length);
                             }
-                            //TextBox_serialMonitor.Text += errorMessage + "\n";
+                            catch (Exception caughtEx)
+                            {
+                                string errorMessage = caughtEx.Message;
+                                //TextBox_debugOutput.Text = errorMessage;
+                                if (_serial_monitor_window != null)
+                                {
+                                    _serial_monitor_window.TextBox_SerialMonitor.Text += errorMessage + "\n";
+                                }
+                                //TextBox_serialMonitor.Text += errorMessage + "\n";
+                            }
                         }
                     }
                 }
             }
+            
         }
 
         unsafe private void btn_Bridge_restart_Click(object sender, RoutedEventArgs e)
