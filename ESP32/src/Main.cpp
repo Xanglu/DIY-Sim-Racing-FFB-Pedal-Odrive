@@ -23,6 +23,7 @@
 #include "Arduino.h"
 #include "Main.h"
 #include "Version_Board.h"
+#include "PedalInfoBuilder.h"
 #ifdef Using_analog_output_ESP32_S3
 #include <Wire.h>
 #include <Adafruit_MCP4725.h>
@@ -1090,11 +1091,11 @@ void pedalUpdateTask( void * pvParameters )
     // wakeup process
     if ((filteredReading > STEPPER_WAKEUP_FORCE) && (stepper->servoStatus == SERVO_IDLE_NOT_CONNECTED))
     {
-#ifdef USING_BUZZER
+      #ifdef USING_BUZZER
         Buzzer.single_beep_tone(770, 100);
         delay(300);
         Buzzer.single_beep_tone(770, 100);
-#endif
+      #endif
       Serial.println("Wake up servo, restart esp.");
       delay(1000);
       ESP.restart();
@@ -2431,12 +2432,22 @@ void ESPNOW_SyncTask( void * pvParameters )
       if(printPedalInfo_b)
       {
         printPedalInfo_b=false;
+        /*
         char logString[200];
         snprintf(logString, sizeof(logString),
                  "Pedal ID: %d\nBoard: %s\nLoadcell shift= %.3f kg\nLoadcell variance= %.3f kg\nPSU voltage:%.1f V\nMax endstop:%lu\nCurrentPos:%d\0",
                  espnow_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage()/10.0f),dap_calculationVariables_st.stepperPosMaxEndstop,dap_calculationVariables_st.current_pedal_position);
         Serial.println(logString);
         sendESPNOWLog(logString, strnlen(logString, sizeof(logString)));
+        */
+        pedalInfoBuilder.BuildString(espnow_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage()/10.0f),dap_calculationVariables_st.stepperPosMaxEndstop,dap_calculationVariables_st.current_pedal_position);
+        Serial.println(pedalInfoBuilder.logString);
+        sendESPNOWLog(pedalInfoBuilder.logString, strnlen(pedalInfoBuilder.logString, sizeof(pedalInfoBuilder.logString)));
+        pedalInfoBuilder.BuildESPNOWInfo(espnow_dap_config_st.payLoadPedalConfig_.pedal_type,rssi);
+        Serial.println(pedalInfoBuilder.logESPNOWString);
+        delay(3);
+        sendESPNOWLog(pedalInfoBuilder.logESPNOWString, strnlen(pedalInfoBuilder.logESPNOWString, sizeof(pedalInfoBuilder.logESPNOWString)));
+
       }
       if(Get_Rudder_action_b)
       {

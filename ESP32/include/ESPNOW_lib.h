@@ -20,7 +20,7 @@ uint8_t esp_Mac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 uint8_t* Recv_mac;
 uint16_t ESPNow_send=0;
 uint16_t ESPNow_recieve=0;
-
+int32_t rssi[4]={0,0,0,0};//clutch, brake,throttle,bridge
 //bool MAC_get=false;
 bool ESPNOW_status =false;
 bool ESPNow_initial_status=false;
@@ -474,6 +474,45 @@ void OnSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
 
 }
+
+// The callback that does the magic
+void promiscuous_rx_cb(void *buf, wifi_promiscuous_pkt_type_t type) {
+  // All espnow traffic uses action frames which are a subtype of the mgmnt frames so filter out everything else.
+  if (type != WIFI_PKT_MGMT)
+    return;
+
+  const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buf;
+  //const wifi_ieee80211_packet_t *ipkt = (wifi_ieee80211_packet_t *)ppkt->payload;
+  //const wifi_ieee80211_mac_hdr_t *hdr = &ipkt->hdr;
+  const uint8_t* payload = ppkt->payload;
+  if (ppkt->rx_ctrl.sig_len > 24)
+  {
+    const uint8_t *addr_DESTINATION = payload + 4;   
+    const uint8_t *addr_SOURCE = payload + 10;  // 傳送端 MAC
+    uint8_t addr_package[6];
+    memcpy(addr_package, addr_SOURCE, 6);
+    if(MacCheck(addr_package, Clu_mac))
+    {
+      rssi[0]=ppkt->rx_ctrl.rssi;
+    }
+    if(MacCheck(addr_package, Brk_mac))
+    {
+      rssi[1]=ppkt->rx_ctrl.rssi;
+    }
+    if(MacCheck(addr_package, Gas_mac))
+    {
+      rssi[2]=ppkt->rx_ctrl.rssi;
+    }
+    if(MacCheck(addr_package, esp_Host))
+    {
+      rssi[3]=ppkt->rx_ctrl.rssi;
+    }
+  }
+  
+  //int rssi = ppkt->rx_ctrl.rssi;
+  //rssi_display = rssi;
+  
+}
 void ESPNow_initialize()
 {
   DAP_config_st dap_config_espnow_init_st = global_dap_config_class.getConfig();
@@ -598,6 +637,9 @@ void ESPNow_initialize()
     }
     ESPNow.reg_recv_cb(onRecv);
     ESPNow.reg_send_cb(OnSent);
+    //rssi calculate
+    esp_wifi_set_promiscuous(true);
+    esp_wifi_set_promiscuous_rx_cb(&promiscuous_rx_cb);
     ESPNow_initial_status=true;
     ESPNOW_status=true;
     Serial.println("ESPNow Initialized");
