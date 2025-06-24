@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
@@ -1221,6 +1222,95 @@ namespace User.PluginSdkDemo
             byte* p = (byte*)v;
             tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
             Plugin.SendPedalAction(tmp, (byte)indexOfSelectedPedal_u);
+        }
+
+        private void btn_Plugin_OTA_Click(object sender, RoutedEventArgs e)
+        {
+            string downloadUrl;
+            string MSG_tmp = "Plugin will update from ";
+            switch (Plugin._calculations.UpdateChannel)
+            {
+                case 0:
+                    downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/main/OTA/Plugin/DiyActivePedal.dll";
+                    MSG_tmp += "Mainline release channel. ";
+                    break;
+                case 1:
+                    downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/Plugin/DiyActivePedal.dll";
+                    MSG_tmp += "Dev-build channel. ";
+                    break;
+                case 2:
+                    downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/DailyBuild/plugin/DiyActivePedal.dll";
+                    MSG_tmp += "Daily-build channel. ";
+                    break;
+                default:
+                    downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/main/OTA/Plugin/DiyActivePedal.dll";
+                    MSG_tmp += "Mainline release channel. ";
+                    break;
+            }
+            
+            string targetPath =  Directory.GetCurrentDirectory()+"\\";
+            //System.Windows.MessageBox.Show(targetPath);
+            //targetPath = "C:\\Program Files (x86)\\SimHub\\";
+            
+
+
+            MSG_tmp += "The update requires administrators permission to delete the original plugin and download the new one. If you agree, please click OK.";
+            var result = System.Windows.MessageBox.Show(MSG_tmp, "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+            if (result == MessageBoxResult.OK)
+            {
+                string exeName = "SimHubWPF.exe";
+                string exePath = targetPath + exeName;
+                string targetDllPath = targetPath + "DiyActivePedal.dll";
+
+
+                string psScript = $@"
+                $processName = 'SimHubWPF'
+                $downloadUrl = '{downloadUrl}'
+                $targetDllPath = '{targetDllPath}'
+                $exePath = '{exePath}'
+                $tempPath = $env:TEMP + '\plugin_temp.dll'
+                Write-Host 'Closing Simhub...'
+                $procs = Get-Process -Name $processName -ErrorAction SilentlyContinue
+                foreach ($proc in $procs) {{
+                    Stop-Process -Id $proc.Id -Force
+                    $proc.WaitForExit()
+                }}
+                Start-Sleep -Seconds 2
+
+                Write-Host 'Download new Plugin...'
+                Invoke-WebRequest -Uri $downloadUrl -OutFile $tempPath -UseBasicParsing
+
+                Write-Host 'Backup .dll file...'
+                if (Test-Path $targetDllPath) {{
+                    Copy-Item -Path $targetDllPath -Destination ($targetDllPath + '.bak') -Force
+                }}
+                Write-Host 'Copy plugin to folder...'
+                Copy-Item -Path $tempPath -Destination $targetDllPath -Force
+                Write-Host 'Restart Simhub...'
+                Start-Process -FilePath $exePath
+                ";
+
+
+                string escapedScript = psScript.Replace("\"", "`\"").Replace("`r", "").Replace("`n", "; ");
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"{escapedScript}\"",
+                    Verb = "runas", // force run with admin
+                    UseShellExecute = true
+                };
+
+                try
+                {
+                    Process.Start(psi);
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
+            
         }
     }
 }
