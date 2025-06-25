@@ -1,0 +1,14 @@
+{
+  "main": {
+    "version": "0.89.99",
+    "changelog": "Main release changelog"
+  },
+  "dev-build": {
+    "version": "0.90.06",
+    "changelog": "Dev build changelog"
+  },
+  "daily-build": {
+    "version": "0.90.07",
+    "changelog": "Daily build changelog"
+  }
+}
