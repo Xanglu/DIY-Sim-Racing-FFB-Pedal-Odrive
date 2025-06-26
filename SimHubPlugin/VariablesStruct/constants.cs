@@ -20,6 +20,7 @@ namespace User.PluginSdkDemo
         public const uint bridgeStatePayloadType = 210;
         public const uint Basic_Wifi_info_type = 220;
         public const string pluginVersion = "0.90.07";
+        public const string version_control_url = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/version_control.json";
     }
 
     public enum enumServoStatus
@@ -49,4 +50,5 @@ namespace User.PluginSdkDemo
         ESP_BOOT_INTO_DOWNLOAD_MODE,
         PRINT_PEDAL_INFO
     };
+    
 }

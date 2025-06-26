@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using static User.PluginSdkDemo.DIY_FFB_Pedal;
+using User.PluginSdkDemo.UIFunction;
 
 namespace User.PluginSdkDemo
 {
@@ -61,82 +62,91 @@ namespace User.PluginSdkDemo
 
         unsafe private void btn_Bridge_OTA_Click(object sender, RoutedEventArgs e)
         {
-            Basic_WIfi_info tmp_2;
-            int length;
-            string SSID = Plugin.Settings.SSID_string;
-            string PASS = Plugin.Settings.PASS_string;
-            bool SSID_PASS_check = true;
+            UpdateSettingWindow sideWindow = new UpdateSettingWindow(Plugin.Settings, Plugin._calculations);
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            sideWindow.Left = screenWidth / 2 - sideWindow.Width / 2;
+            sideWindow.Top = screenHeight / 2 - sideWindow.Height / 2;
+            if (sideWindow.ShowDialog() == true)
+            {
+                Basic_WIfi_info tmp_2;
+                int length;
+                string SSID = Plugin.Settings.SSID_string;
+                string PASS = Plugin.Settings.PASS_string;
+                bool SSID_PASS_check = true;
 
-            if (Plugin._calculations.ForceUpdate_b == true)
-            {
-                tmp_2.wifi_action = 1;
-            }
-            if (Plugin._calculations.UpdateChannel == 0)
-            {
-                tmp_2.mode_select = 1;
-            }
-            if (Plugin._calculations.UpdateChannel == 1)
-            {
-                tmp_2.mode_select = 2;
-            }
-            if (Plugin._calculations.UpdateChannel == 2)
-            {
-                tmp_2.mode_select = 3;
-            }
-            if (SSID.Length > 30 || PASS.Length > 30)
-            {
-                SSID_PASS_check = false;
-                String MSG_tmp;
-                MSG_tmp = "ERROR! SSID or Password length larger than 30 bytes";
-                System.Windows.MessageBox.Show(MSG_tmp, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-
-            if (SSID_PASS_check)
-            {
-                tmp_2.SSID_Length = (byte)SSID.Length;
-                tmp_2.PASS_Length = (byte)PASS.Length;
-                tmp_2.device_ID = 99;
-                tmp_2.payload_Type = (Byte)Constants.Basic_Wifi_info_type;
-
-                byte[] array_ssid = Encoding.ASCII.GetBytes(SSID);
-                //TextBox_serialMonitor_bridge.Text += "SSID:";
-                for (int i = 0; i < SSID.Length; i++)
+                if (Plugin._calculations.ForceUpdate_b == true)
                 {
-                    tmp_2.WIFI_SSID[i] = array_ssid[i];
-                    //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_SSID[i] + ",";
+                    tmp_2.wifi_action = 1;
                 }
-                //TextBox_serialMonitor_bridge.Text += "\nPASS:";
-                byte[] array_pass = Encoding.ASCII.GetBytes(PASS);
-                for (int i = 0; i < PASS.Length; i++)
+                if (Plugin._calculations.UpdateChannel == 0)
                 {
-                    tmp_2.WIFI_PASS[i] = array_pass[i];
-                    //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_PASS[i] + ",";
+                    tmp_2.mode_select = 1;
+                }
+                if (Plugin._calculations.UpdateChannel == 1)
+                {
+                    tmp_2.mode_select = 2;
+                }
+                if (Plugin._calculations.UpdateChannel == 2)
+                {
+                    tmp_2.mode_select = 3;
+                }
+                if (SSID.Length > 30 || PASS.Length > 30)
+                {
+                    SSID_PASS_check = false;
+                    String MSG_tmp;
+                    MSG_tmp = "ERROR! SSID or Password length larger than 30 bytes";
+                    System.Windows.MessageBox.Show(MSG_tmp, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
 
-                Basic_WIfi_info* v_2 = &tmp_2;
-                byte* p_2 = (byte*)v_2;
-                TextBox_serialMonitor_bridge.Text += "\nSending wifi info to Bridge for OTA.\n\r";
-
-                length = sizeof(Basic_WIfi_info);
-                //TextBox_serialMonitor_bridge.Text += "\nLength:" + length;
-                byte[] newBuffer_2 = new byte[length];
-                newBuffer_2 = Plugin.getBytes_Basic_Wifi_info(tmp_2);
-                if (Plugin.ESPsync_serialPort.IsOpen)
+                if (SSID_PASS_check)
                 {
-                    try
+                    tmp_2.SSID_Length = (byte)SSID.Length;
+                    tmp_2.PASS_Length = (byte)PASS.Length;
+                    tmp_2.device_ID = 99;
+                    tmp_2.payload_Type = (Byte)Constants.Basic_Wifi_info_type;
+
+                    byte[] array_ssid = Encoding.ASCII.GetBytes(SSID);
+                    //TextBox_serialMonitor_bridge.Text += "SSID:";
+                    for (int i = 0; i < SSID.Length; i++)
                     {
-                        // clear inbuffer 
-                        Plugin.ESPsync_serialPort.DiscardInBuffer();
-                        // send query command
-                        Plugin.ESPsync_serialPort.Write(newBuffer_2, 0, newBuffer_2.Length);
+                        tmp_2.WIFI_SSID[i] = array_ssid[i];
+                        //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_SSID[i] + ",";
                     }
-                    catch (Exception caughtEx)
+                    //TextBox_serialMonitor_bridge.Text += "\nPASS:";
+                    byte[] array_pass = Encoding.ASCII.GetBytes(PASS);
+                    for (int i = 0; i < PASS.Length; i++)
                     {
-                        string errorMessage = caughtEx.Message;
-                        TextBox_debugOutput.Text = errorMessage;
+                        tmp_2.WIFI_PASS[i] = array_pass[i];
+                        //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_PASS[i] + ",";
+                    }
+
+                    Basic_WIfi_info* v_2 = &tmp_2;
+                    byte* p_2 = (byte*)v_2;
+                    TextBox_serialMonitor_bridge.Text += "\nSending wifi info to Bridge for OTA.\n\r";
+
+                    length = sizeof(Basic_WIfi_info);
+                    //TextBox_serialMonitor_bridge.Text += "\nLength:" + length;
+                    byte[] newBuffer_2 = new byte[length];
+                    newBuffer_2 = Plugin.getBytes_Basic_Wifi_info(tmp_2);
+                    if (Plugin.ESPsync_serialPort.IsOpen)
+                    {
+                        try
+                        {
+                            // clear inbuffer 
+                            Plugin.ESPsync_serialPort.DiscardInBuffer();
+                            // send query command
+                            Plugin.ESPsync_serialPort.Write(newBuffer_2, 0, newBuffer_2.Length);
+                        }
+                        catch (Exception caughtEx)
+                        {
+                            string errorMessage = caughtEx.Message;
+                            TextBox_debugOutput.Text = errorMessage;
+                        }
                     }
                 }
             }
+            
 
         }
 
@@ -669,137 +679,146 @@ namespace User.PluginSdkDemo
 
         unsafe private void btn_OTA_enable_Click(object sender, RoutedEventArgs e)
         {
-
-            Basic_WIfi_info tmp_2;
-            int length;
-            string SSID = Plugin.Settings.SSID_string;
-            string PASS = Plugin.Settings.PASS_string;
-            string MSG_tmp = "";
-            bool SSID_PASS_check = true;
-            if (Plugin._calculations.ForceUpdate_b == true)
+            UpdateSettingWindow sideWindow = new UpdateSettingWindow(Plugin.Settings, Plugin._calculations);
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            sideWindow.Left = screenWidth / 2 - sideWindow.Width / 2;
+            sideWindow.Top = screenHeight / 2 - sideWindow.Height / 2;
+            if (sideWindow.ShowDialog() == true)
             {
-                tmp_2.wifi_action = 1;
-            }
-            if (Plugin._calculations.UpdateChannel == 0)
-            {
-                tmp_2.mode_select = 1;
-            }
-            if (Plugin._calculations.UpdateChannel == 1)
-            {
-                tmp_2.mode_select = 2;
-            }
-            if (Plugin._calculations.UpdateChannel == 2)
-            {
-                tmp_2.mode_select = 3;
-            }
-            if (SSID.Length > 30 || PASS.Length > 30)
-            {
-                SSID_PASS_check = false;
-
-                MSG_tmp = "ERROR! SSID or Password length must less than 30 bytes";
-                System.Windows.MessageBox.Show(MSG_tmp, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            MSG_tmp += "OTA-Pull function only support V4/V5/Gilphilbert pcba v1.2/pcba v2.0 board.\nAfter enable OTA-Pull, you need wait for 3-5 minutes and Pedal will auto restart after update.\nThe OTA log will showed in serial monitor with USB connection.\nV3/Speedcrafter board user, please connect to ";
-            if (indexOfSelectedPedal_u == 0)
-            {
-                MSG_tmp += "FFBPedalClutch";
-            }
-            if (indexOfSelectedPedal_u == 1)
-            {
-                MSG_tmp += "FFBPedalBrake";
-            }
-            if (indexOfSelectedPedal_u == 2)
-            {
-                MSG_tmp += "FFBPedalGas";
-            }
-            MSG_tmp += " wifi hotspot, open 192.168.2.1 in web browser to upload firmware.bin";
-
-            //System.Windows.MessageBox.Show(MSG_tmp, "OTA warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-            var result = System.Windows.MessageBox.Show(MSG_tmp, "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Question);
-            if (result == MessageBoxResult.OK)
-            {
-                if (SSID_PASS_check)
+                Basic_WIfi_info tmp_2;
+                int length;
+                string SSID = Plugin.Settings.SSID_string;
+                string PASS = Plugin.Settings.PASS_string;
+                string MSG_tmp = "";
+                bool SSID_PASS_check = true;
+                if (Plugin._calculations.ForceUpdate_b == true)
                 {
-                    tmp_2.SSID_Length = (byte)SSID.Length;
-                    tmp_2.PASS_Length = (byte)PASS.Length;
-                    tmp_2.device_ID = (byte)indexOfSelectedPedal_u;
-                    tmp_2.payload_Type = (Byte)Constants.Basic_Wifi_info_type;
+                    tmp_2.wifi_action = 1;
+                }
+                if (Plugin._calculations.UpdateChannel == 0)
+                {
+                    tmp_2.mode_select = 1;
+                }
+                if (Plugin._calculations.UpdateChannel == 1)
+                {
+                    tmp_2.mode_select = 2;
+                }
+                if (Plugin._calculations.UpdateChannel == 2)
+                {
+                    tmp_2.mode_select = 3;
+                }
+                if (SSID.Length > 30 || PASS.Length > 30)
+                {
+                    SSID_PASS_check = false;
 
-                    byte[] array_ssid = Encoding.ASCII.GetBytes(SSID);
-                    //TextBox_serialMonitor_bridge.Text += "SSID:";
-                    for (int i = 0; i < SSID.Length; i++)
-                    {
-                        tmp_2.WIFI_SSID[i] = array_ssid[i];
-                        //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_SSID[i] + ",";
-                    }
-                    //TextBox_serialMonitor_bridge.Text += "\nPASS:";
-                    byte[] array_pass = Encoding.ASCII.GetBytes(PASS);
-                    for (int i = 0; i < PASS.Length; i++)
-                    {
-                        tmp_2.WIFI_PASS[i] = array_pass[i];
-                        //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_PASS[i] + ",";
-                    }
+                    MSG_tmp = "ERROR! SSID or Password length must less than 30 bytes";
+                    System.Windows.MessageBox.Show(MSG_tmp, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                MSG_tmp += "OTA-Pull function only support V4/V5/Gilphilbert pcba v1.2/pcba v2.0 board.\nAfter enable OTA-Pull, you need wait for 3-5 minutes and Pedal will auto restart after update.\nThe OTA log will showed in serial monitor with USB connection.\nV3/Speedcrafter board user, please connect to ";
+                if (indexOfSelectedPedal_u == 0)
+                {
+                    MSG_tmp += "FFBPedalClutch";
+                }
+                if (indexOfSelectedPedal_u == 1)
+                {
+                    MSG_tmp += "FFBPedalBrake";
+                }
+                if (indexOfSelectedPedal_u == 2)
+                {
+                    MSG_tmp += "FFBPedalGas";
+                }
+                MSG_tmp += " wifi hotspot, open 192.168.2.1 in web browser to upload firmware.bin";
 
-                    Basic_WIfi_info* v_2 = &tmp_2;
-                    byte* p_2 = (byte*)v_2;
-                    TextBox_serialMonitor_bridge.Text += "\nSending WIfi info for OTA to Pedal\n\r";
-
-                    length = sizeof(Basic_WIfi_info);
-                    //TextBox_serialMonitor_bridge.Text += "\nLength:" + length;
-                    byte[] newBuffer_2 = new byte[length];
-                    newBuffer_2 = Plugin.getBytes_Basic_Wifi_info(tmp_2);
-                    if (Plugin.Settings.Pedal_ESPNow_Sync_flag[indexOfSelectedPedal_u])
+                //System.Windows.MessageBox.Show(MSG_tmp, "OTA warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                var result = System.Windows.MessageBox.Show(MSG_tmp, "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+                if (result == MessageBoxResult.OK)
+                {
+                    if (SSID_PASS_check)
                     {
-                        if (Plugin.ESPsync_serialPort.IsOpen)
+                        tmp_2.SSID_Length = (byte)SSID.Length;
+                        tmp_2.PASS_Length = (byte)PASS.Length;
+                        tmp_2.device_ID = (byte)indexOfSelectedPedal_u;
+                        tmp_2.payload_Type = (Byte)Constants.Basic_Wifi_info_type;
+
+                        byte[] array_ssid = Encoding.ASCII.GetBytes(SSID);
+                        //TextBox_serialMonitor_bridge.Text += "SSID:";
+                        for (int i = 0; i < SSID.Length; i++)
                         {
-                            try
-                            {
-                                // clear inbuffer 
-                                Plugin.ESPsync_serialPort.DiscardInBuffer();
+                            tmp_2.WIFI_SSID[i] = array_ssid[i];
+                            //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_SSID[i] + ",";
+                        }
+                        //TextBox_serialMonitor_bridge.Text += "\nPASS:";
+                        byte[] array_pass = Encoding.ASCII.GetBytes(PASS);
+                        for (int i = 0; i < PASS.Length; i++)
+                        {
+                            tmp_2.WIFI_PASS[i] = array_pass[i];
+                            //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_PASS[i] + ",";
+                        }
 
-                                // send query command
-                                Plugin.ESPsync_serialPort.Write(newBuffer_2, 0, newBuffer_2.Length);
-                            }
-                            catch (Exception caughtEx)
+                        Basic_WIfi_info* v_2 = &tmp_2;
+                        byte* p_2 = (byte*)v_2;
+                        TextBox_serialMonitor_bridge.Text += "\nSending WIfi info for OTA to Pedal\n\r";
+
+                        length = sizeof(Basic_WIfi_info);
+                        //TextBox_serialMonitor_bridge.Text += "\nLength:" + length;
+                        byte[] newBuffer_2 = new byte[length];
+                        newBuffer_2 = Plugin.getBytes_Basic_Wifi_info(tmp_2);
+                        if (Plugin.Settings.Pedal_ESPNow_Sync_flag[indexOfSelectedPedal_u])
+                        {
+                            if (Plugin.ESPsync_serialPort.IsOpen)
                             {
-                                string errorMessage = caughtEx.Message;
-                                //TextBox_debugOutput.Text = errorMessage;
-                                if (_serial_monitor_window != null)
+                                try
                                 {
-                                    _serial_monitor_window.TextBox_SerialMonitor.Text += errorMessage + "\n";
-                                    _serial_monitor_window.TextBox_SerialMonitor.ScrollToEnd();
+                                    // clear inbuffer 
+                                    Plugin.ESPsync_serialPort.DiscardInBuffer();
+
+                                    // send query command
+                                    Plugin.ESPsync_serialPort.Write(newBuffer_2, 0, newBuffer_2.Length);
                                 }
-                                //TextBox_serialMonitor.Text+= errorMessage+"\n";
+                                catch (Exception caughtEx)
+                                {
+                                    string errorMessage = caughtEx.Message;
+                                    //TextBox_debugOutput.Text = errorMessage;
+                                    if (_serial_monitor_window != null)
+                                    {
+                                        _serial_monitor_window.TextBox_SerialMonitor.Text += errorMessage + "\n";
+                                        _serial_monitor_window.TextBox_SerialMonitor.ScrollToEnd();
+                                    }
+                                    //TextBox_serialMonitor.Text+= errorMessage+"\n";
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        if (Plugin._serialPort[indexOfSelectedPedal_u].IsOpen)
+                        else
                         {
-                            try
+                            if (Plugin._serialPort[indexOfSelectedPedal_u].IsOpen)
                             {
-                                // clear inbuffer 
-                                Plugin._serialPort[indexOfSelectedPedal_u].DiscardInBuffer();
-
-                                // send query command
-                                Plugin._serialPort[indexOfSelectedPedal_u].Write(newBuffer_2, 0, newBuffer_2.Length);
-                            }
-                            catch (Exception caughtEx)
-                            {
-                                string errorMessage = caughtEx.Message;
-                                //TextBox_debugOutput.Text = errorMessage;
-                                if (_serial_monitor_window != null)
+                                try
                                 {
-                                    _serial_monitor_window.TextBox_SerialMonitor.Text += errorMessage + "\n";
+                                    // clear inbuffer 
+                                    Plugin._serialPort[indexOfSelectedPedal_u].DiscardInBuffer();
+
+                                    // send query command
+                                    Plugin._serialPort[indexOfSelectedPedal_u].Write(newBuffer_2, 0, newBuffer_2.Length);
                                 }
-                                //TextBox_serialMonitor.Text += errorMessage + "\n";
+                                catch (Exception caughtEx)
+                                {
+                                    string errorMessage = caughtEx.Message;
+                                    //TextBox_debugOutput.Text = errorMessage;
+                                    if (_serial_monitor_window != null)
+                                    {
+                                        _serial_monitor_window.TextBox_SerialMonitor.Text += errorMessage + "\n";
+                                    }
+                                    //TextBox_serialMonitor.Text += errorMessage + "\n";
+                                }
                             }
                         }
                     }
                 }
             }
+
+            
             
         }
 
@@ -1226,44 +1245,51 @@ namespace User.PluginSdkDemo
 
         private void btn_Plugin_OTA_Click(object sender, RoutedEventArgs e)
         {
-            string downloadUrl;
-            string MSG_tmp = "Plugin will update from ";
-            switch (Plugin._calculations.UpdateChannel)
+            UpdateSettingWindow sideWindow = new UpdateSettingWindow(Plugin.Settings, Plugin._calculations);
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            sideWindow.Left = screenWidth / 2 - sideWindow.Width / 2;
+            sideWindow.Top = screenHeight / 2 - sideWindow.Height / 2;
+            if (sideWindow.ShowDialog() == true)
             {
-                case 0:
-                    downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/main/OTA/Plugin/DiyActivePedal.dll";
-                    MSG_tmp += "Mainline release channel. ";
-                    break;
-                case 1:
-                    downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/Plugin/DiyActivePedal.dll";
-                    MSG_tmp += "Dev-build channel. ";
-                    break;
-                case 2:
-                    downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/DailyBuild/plugin/DiyActivePedal.dll";
-                    MSG_tmp += "Daily-build channel. ";
-                    break;
-                default:
-                    downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/main/OTA/Plugin/DiyActivePedal.dll";
-                    MSG_tmp += "Mainline release channel. ";
-                    break;
-            }
-            
-            string targetPath =  Directory.GetCurrentDirectory()+"\\";
-            //System.Windows.MessageBox.Show(targetPath);
-            //targetPath = "C:\\Program Files (x86)\\SimHub\\";
-            
+                string downloadUrl;
+                string MSG_tmp = "Plugin will update from ";
+                switch (Plugin._calculations.UpdateChannel)
+                {
+                    case 0:
+                        downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/main/OTA/Plugin/DiyActivePedal.dll";
+                        MSG_tmp += "Mainline release channel. ";
+                        break;
+                    case 1:
+                        downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/Plugin/DiyActivePedal.dll";
+                        MSG_tmp += "Dev-build channel. ";
+                        break;
+                    case 2:
+                        downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/DailyBuild/plugin/DiyActivePedal.dll";
+                        MSG_tmp += "Daily-build channel. ";
+                        break;
+                    default:
+                        downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/main/OTA/Plugin/DiyActivePedal.dll";
+                        MSG_tmp += "Mainline release channel. ";
+                        break;
+                }
+
+                string targetPath = Directory.GetCurrentDirectory() + "\\";
+                //System.Windows.MessageBox.Show(targetPath);
+                //targetPath = "C:\\Program Files (x86)\\SimHub\\";
 
 
-            MSG_tmp += "The update requires administrators permission to delete the original plugin and download the new one. If you agree, please click OK.";
-            var result = System.Windows.MessageBox.Show(MSG_tmp, "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Question);
-            if (result == MessageBoxResult.OK)
-            {
-                string exeName = "SimHubWPF.exe";
-                string exePath = targetPath + exeName;
-                string targetDllPath = targetPath + "DiyActivePedal.dll";
+
+                MSG_tmp += "The update requires administrators permission to delete the original plugin and download the new one. If you agree, please click OK.";
+                var result = System.Windows.MessageBox.Show(MSG_tmp, "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+                if (result == MessageBoxResult.OK)
+                {
+                    string exeName = "SimHubWPF.exe";
+                    string exePath = targetPath + exeName;
+                    string targetDllPath = targetPath + "DiyActivePedal.dll";
 
 
-                string psScript = $@"
+                    string psScript = $@"
                 $processName = 'SimHubWPF'
                 $downloadUrl = '{downloadUrl}'
                 $targetDllPath = '{targetDllPath}'
@@ -1291,25 +1317,27 @@ namespace User.PluginSdkDemo
                 ";
 
 
-                string escapedScript = psScript.Replace("\"", "`\"").Replace("`r", "").Replace("`n", "; ");
+                    string escapedScript = psScript.Replace("\"", "`\"").Replace("`r", "").Replace("`n", "; ");
 
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"{escapedScript}\"",
-                    Verb = "runas", // force run with admin
-                    UseShellExecute = true
-                };
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"{escapedScript}\"",
+                        Verb = "runas", // force run with admin
+                        UseShellExecute = true
+                    };
 
-                try
-                {
-                    Process.Start(psi);
-                }
-                catch (Exception ex)
-                {
+                    try
+                    {
+                        Process.Start(psi);
+                    }
+                    catch (Exception ex)
+                    {
 
+                    }
                 }
             }
+            
             
         }
     }

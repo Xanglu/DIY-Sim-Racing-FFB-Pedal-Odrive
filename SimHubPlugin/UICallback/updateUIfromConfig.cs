@@ -95,7 +95,7 @@ namespace User.PluginSdkDemo
                 EffectsRPMRudder_Tab.Settings = Plugin.Settings;
                 EffectRudderACC_Tab.Settings = Plugin.Settings;
                 SystemProfile_Tab.Settings = Plugin.Settings;
-                SettingOTA_Tab.Settings = Plugin.Settings;
+                //SettingOTA_Tab.Settings = Plugin.Settings;
                 SystemLicense_Tab.Settings = Plugin.Settings;
                 SystemSetting_Section.Settings = Plugin.Settings;
                 SystemInfo.Settings = Plugin.Settings;
@@ -110,7 +110,7 @@ namespace User.PluginSdkDemo
                 PedalSettingsSection.calculation = Plugin._calculations;
                 CurveRudderForce_Tab.calculation = Plugin._calculations;
                 SystemProfile_Tab.calculation = Plugin._calculations;
-                SettingOTA_Tab.calculation = Plugin._calculations;
+                //SettingOTA_Tab.calculation = Plugin._calculations;
                 SystemInfo.calculation = Plugin._calculations;
                 PedalInfo.calculation = Plugin._calculations;
                 RudderInfo.calculation = Plugin._calculations;

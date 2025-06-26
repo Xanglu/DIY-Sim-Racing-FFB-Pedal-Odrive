@@ -268,6 +268,9 @@
     <Compile Include="UIFunction\SystemSetting_Profiles.xaml.cs">
       <DependentUpon>SystemSetting_Profiles.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UIFunction\UpdateSettingWindow.xaml.cs">
+      <DependentUpon>UpdateSettingWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VariablesStruct\Basic_WIfi_info.cs" />
     <Compile Include="VariablesStruct\CalculationVariables.cs" />
     <Compile Include="VariablesStruct\constants.cs" />
@@ -419,6 +422,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UIFunction\SystemSetting_Profiles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UIFunction\UpdateSettingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
