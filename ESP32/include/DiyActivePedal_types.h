@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include "Arduino.h"
-
+#include "CubicInterpolatorFloat.h"
 // define the payload revision
 #define DAP_VERSION_CONFIG 149
 
@@ -314,7 +314,9 @@ struct DAP_calculationVariables_st
   float stepperPosRange_default;
   uint32_t stepsPerMotorRevolution;
   uint8_t TrackCondition;
-
+  float *interpolatorA= nullptr;
+  float *interpolatorB = nullptr;
+  Cubic _cubic;
   void updateFromConfig(DAP_config_st& config_st);
   void updateEndstops(long newMinEndstop, long newMaxEndstop);
   void updateStiffness();

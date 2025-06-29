@@ -156,16 +156,36 @@ void DAP_config_st::loadConfigFromEprom(DAP_config_st& config_st)
 
 
 
-void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st) {
+void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st) 
+{
   startPosRel = ((float)config_st.payLoadPedalConfig_.pedalStartPosition) / 100.0f;
   endPosRel = ((float)config_st.payLoadPedalConfig_.pedalEndPosition) / 100.0f;
+  //cubic interpolator
+  float travelSegment[6]={0.0f,20.0f,40.0f,60.0f,80.0f,100.0f};
+  float force[6];
+  force[0] = config_st.payLoadPedalConfig_.relativeForce_p000;
+  force[1] = config_st.payLoadPedalConfig_.relativeForce_p020;
+  force[2] = config_st.payLoadPedalConfig_.relativeForce_p040;
+  force[3] = config_st.payLoadPedalConfig_.relativeForce_p060;
+  force[4] = config_st.payLoadPedalConfig_.relativeForce_p080;
+  force[5] = config_st.payLoadPedalConfig_.relativeForce_p100;
+  _cubic.Interpolate1D(travelSegment, force, 6, 6);
+  interpolatorA = _cubic._result.a;
+  interpolatorB = _cubic._result.b;
 
-
-  if (startPosRel  ==  endPosRel)
+  for (int i = 0; i < 5; ++i)
   {
-    endPosRel =   startPosRel + 1 / 100;
+    Serial.printf("original a=%.3f, b=%.3f\n", config_st.payLoadPedalConfig_.cubic_spline_param_a_array[i], config_st.payLoadPedalConfig_.cubic_spline_param_b_array[i]);
+    Serial.printf("ESP calculated a=%.3f, b=%.3f\n", interpolatorA[i], interpolatorB[i]);
   }
   
+
+
+  if (startPosRel == endPosRel)
+  {
+    endPosRel = startPosRel + 1 / 100;
+  }
+
   absFrequency = ((float)config_st.payLoadPedalConfig_.absFrequency);
   absAmplitude = ((float)config_st.payLoadPedalConfig_.absAmplitude) / 20.0f; // in kg or percent
 
@@ -173,19 +193,19 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st) {
   RPM_max_freq = ((float)config_st.payLoadPedalConfig_.RPM_max_freq);
   RPM_min_freq = ((float)config_st.payLoadPedalConfig_.RPM_min_freq);
   RPM_AMP = ((float)config_st.payLoadPedalConfig_.RPM_AMP) / 100.0f;
-  //Bite point effect;
-  
-  BP_trigger_value=(float)config_st.payLoadPedalConfig_.BP_trigger_value;
-  BP_amp=((float)config_st.payLoadPedalConfig_.BP_amp) / 100.0f;
-  BP_freq=(float)config_st.payLoadPedalConfig_.BP_freq;
-  WS_amp=((float)config_st.payLoadPedalConfig_.WS_amp) / 20.0f;
-  WS_freq=(float)config_st.payLoadPedalConfig_.WS_freq;
+  // Bite point effect;
+
+  BP_trigger_value = (float)config_st.payLoadPedalConfig_.BP_trigger_value;
+  BP_amp = ((float)config_st.payLoadPedalConfig_.BP_amp) / 100.0f;
+  BP_freq = (float)config_st.payLoadPedalConfig_.BP_freq;
+  WS_amp = ((float)config_st.payLoadPedalConfig_.WS_amp) / 20.0f;
+  WS_freq = (float)config_st.payLoadPedalConfig_.WS_freq;
   // update force variables
   Force_Min = ((float)config_st.payLoadPedalConfig_.preloadForce);
-  Force_Max = ((float)config_st.payLoadPedalConfig_.maxForce); 
+  Force_Max = ((float)config_st.payLoadPedalConfig_.maxForce);
   Force_Range = Force_Max - Force_Min;
-  Force_Max_default=((float)config_st.payLoadPedalConfig_.maxForce); 
-  pedal_type=config_st.payLoadPedalConfig_.pedal_type;
+  Force_Max_default = ((float)config_st.payLoadPedalConfig_.maxForce);
+  pedal_type = config_st.payLoadPedalConfig_.pedal_type;
 
   // calculate steps per motor revolution
   float helper = MAXIMUM_STEPPER_SPEED / (MAXIMUM_STEPPER_RPM / SECONDS_PER_MINUTE);
@@ -193,13 +213,12 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st) {
   helper = constrain(helper, 2000, 10000);
   stepsPerMotorRevolution = helper;
 
-  // // when spindle pitch is smaller than 8, choose coarse microstepping
-  // if ( 8 > config_st.payLoadPedalConfig_.spindlePitch_mmPerRev_u8)
-  // {stepsPerMotorRevolution = 3200;}
-  // else{stepsPerMotorRevolution = 6400;}
+    // // when spindle pitch is smaller than 8, choose coarse microstepping
+    // if ( 8 > config_st.payLoadPedalConfig_.spindlePitch_mmPerRev_u8)
+    // {stepsPerMotorRevolution = 3200;}
+    // else{stepsPerMotorRevolution = 6400;}
 
-  // stepsPerMotorRevolution = 3750;
-  
+    // stepsPerMotorRevolution = 3750;
 }
 
 void DAP_calculationVariables_st::dynamic_update()
