@@ -9,7 +9,7 @@
 
 bool OTA_enable_b =false;
 bool OTA_status =false;
-struct Basic_WIfi_info
+struct DAP_otaWifiInfo_st
 { 
     uint8_t payloadType;
     uint8_t device_ID;
@@ -20,8 +20,7 @@ struct Basic_WIfi_info
     uint8_t WIFI_SSID[30];
     uint8_t WIFI_PASS[30];
 };
-
-Basic_WIfi_info _basic_wifi_info;
+DAP_otaWifiInfo_st _dap_OtaWifiInfo_st;
 char* SSID;
 char* PASS;
 

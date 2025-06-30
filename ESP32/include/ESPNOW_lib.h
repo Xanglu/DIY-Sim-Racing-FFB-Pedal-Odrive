@@ -456,9 +456,9 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
             
               
       }
-      if(data_len==sizeof(Basic_WIfi_info))
+      if(data_len==sizeof(DAP_otaWifiInfo_st))
       {        
-        memcpy(&_basic_wifi_info, data, sizeof(Basic_WIfi_info));
+        memcpy(&_dap_OtaWifiInfo_st, data, sizeof(DAP_otaWifiInfo_st));
         OTA_update_action_b=true;
       }
       
@@ -488,7 +488,7 @@ void promiscuous_rx_cb(void *buf, wifi_promiscuous_pkt_type_t type) {
   if (ppkt->rx_ctrl.sig_len > 24)
   {
     const uint8_t *addr_DESTINATION = payload + 4;   
-    const uint8_t *addr_SOURCE = payload + 10;  // 傳送端 MAC
+    const uint8_t *addr_SOURCE = payload + 10;  
     uint8_t addr_package[6];
     memcpy(addr_package, addr_SOURCE, 6);
     if(MacCheck(addr_package, Clu_mac))

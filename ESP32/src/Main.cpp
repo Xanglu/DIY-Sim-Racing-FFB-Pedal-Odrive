@@ -1893,18 +1893,18 @@ void serialCommunicationTask( void * pvParameters )
             }
 
             break;
-          case sizeof(Basic_WIfi_info) : 
+          case sizeof(DAP_otaWifiInfo_st) : 
           Serial.println("get basic wifi info");
-          Serial.readBytes((char*)&_basic_wifi_info, sizeof(Basic_WIfi_info));
+          Serial.readBytes((char*)&_dap_OtaWifiInfo_st, sizeof(DAP_otaWifiInfo_st));
           #ifdef OTA_update
-            if(_basic_wifi_info.device_ID == sct_dap_config_st.payLoadPedalConfig_.pedal_type)
+            if(_dap_OtaWifiInfo_st.device_ID == sct_dap_config_st.payLoadPedalConfig_.pedal_type)
             {
-              SSID=new char[_basic_wifi_info.SSID_Length+1];
-              PASS=new char[_basic_wifi_info.PASS_Length+1];
-              memcpy(SSID,_basic_wifi_info.WIFI_SSID,_basic_wifi_info.SSID_Length);
-              memcpy(PASS,_basic_wifi_info.WIFI_PASS,_basic_wifi_info.PASS_Length);
-              SSID[_basic_wifi_info.SSID_Length]=0;
-              PASS[_basic_wifi_info.PASS_Length]=0;
+              SSID=new char[_dap_OtaWifiInfo_st.SSID_Length+1];
+              PASS=new char[_dap_OtaWifiInfo_st.PASS_Length+1];
+              memcpy(SSID,_dap_OtaWifiInfo_st.WIFI_SSID,_dap_OtaWifiInfo_st.SSID_Length);
+              memcpy(PASS,_dap_OtaWifiInfo_st.WIFI_PASS,_dap_OtaWifiInfo_st.PASS_Length);
+              SSID[_dap_OtaWifiInfo_st.SSID_Length]=0;
+              PASS[_dap_OtaWifiInfo_st.PASS_Length]=0;
               OTA_enable_b=true;
             }
           #endif
@@ -2110,7 +2110,7 @@ void OTATask( void * pvParameters )
           ota.SetCallback(OTAcallback);
           ota.OverrideBoard(CONTROL_BOARD);
           char* version_tag;
-          if(_basic_wifi_info.wifi_action==1)
+          if(_dap_OtaWifiInfo_st.wifi_action==1)
           {
             const char* str ="0.0.0";
             version_tag=new char[strlen(str) + 1];
@@ -2123,7 +2123,7 @@ void OTATask( void * pvParameters )
             strcpy(version_tag, DAP_FIRMWARE_VERSION);
             //version_tag=DAP_FIRMWARE_VERSION;
           }
-          switch (_basic_wifi_info.mode_select)
+          switch (_dap_OtaWifiInfo_st.mode_select)
           {
             case 1:
               Serial.printf("Flashing to latest Main, checking %s to see if an update is available...\n", JSON_URL_main);
@@ -2414,16 +2414,16 @@ void ESPNOW_SyncTask( void * pvParameters )
         OTA_enable_start=true;
         ESPNow_OTA_enable=false;
         Serial.println("get basic wifi info");
-        Serial.readBytes((char*)&_basic_wifi_info, sizeof(Basic_WIfi_info));
+        Serial.readBytes((char*)&_dap_OtaWifiInfo_st, sizeof(DAP_otaWifiInfo_st));
         #ifdef OTA_update
-          if(_basic_wifi_info.device_ID == espnow_dap_config_st.payLoadPedalConfig_.pedal_type)
+          if(_dap_OtaWifiInfo_st.device_ID == espnow_dap_config_st.payLoadPedalConfig_.pedal_type)
           {
-            SSID=new char[_basic_wifi_info.SSID_Length+1];
-            PASS=new char[_basic_wifi_info.PASS_Length+1];
-            memcpy(SSID,_basic_wifi_info.WIFI_SSID,_basic_wifi_info.SSID_Length);
-            memcpy(PASS,_basic_wifi_info.WIFI_PASS,_basic_wifi_info.PASS_Length);
-            SSID[_basic_wifi_info.SSID_Length]=0;
-            PASS[_basic_wifi_info.PASS_Length]=0;
+            SSID=new char[_dap_OtaWifiInfo_st.SSID_Length+1];
+            PASS=new char[_dap_OtaWifiInfo_st.PASS_Length+1];
+            memcpy(SSID,_dap_OtaWifiInfo_st.WIFI_SSID,_dap_OtaWifiInfo_st.SSID_Length);
+            memcpy(PASS,_dap_OtaWifiInfo_st.WIFI_PASS,_dap_OtaWifiInfo_st.PASS_Length);
+            SSID[_dap_OtaWifiInfo_st.SSID_Length]=0;
+            PASS[_dap_OtaWifiInfo_st.PASS_Length]=0;
             OTA_enable_b=true;
           }
           #endif

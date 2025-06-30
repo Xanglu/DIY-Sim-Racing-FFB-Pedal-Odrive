@@ -172,12 +172,13 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st)
   _cubic.Interpolate1D(travelSegment, force, 6, 6);
   interpolatorA = _cubic._result.a;
   interpolatorB = _cubic._result.b;
-
+  /*
   for (int i = 0; i < 5; ++i)
   {
     Serial.printf("original a=%.3f, b=%.3f\n", config_st.payLoadPedalConfig_.cubic_spline_param_a_array[i], config_st.payLoadPedalConfig_.cubic_spline_param_b_array[i]);
     Serial.printf("ESP calculated a=%.3f, b=%.3f\n", interpolatorA[i], interpolatorB[i]);
   }
+  */
   
 
 

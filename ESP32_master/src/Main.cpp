@@ -482,8 +482,8 @@ void setup()
   //initialize wifi 
   for(uint i=0;i<30;i++)
   {
-    _basic_wifi_info.WIFI_PASS[i]=0;
-    _basic_wifi_info.WIFI_SSID[i]=0;
+    _dap_OtaWifiInfo_st.WIFI_PASS[i]=0;
+    _dap_OtaWifiInfo_st.WIFI_SSID[i]=0;
   }
   
   
@@ -693,18 +693,18 @@ void ESPNOW_SyncTask( void * pvParameters )
     //forward the basic wifi info for pedals
     if(pedal_OTA_action_b)
     {
-      switch(_basic_wifi_info.device_ID)
+      switch(_dap_OtaWifiInfo_st.device_ID)
       {
         case 0:
-          ESPNow.send_message(Clu_mac,(uint8_t *) &_basic_wifi_info,sizeof(Basic_WIfi_info));
+          ESPNow.send_message(Clu_mac,(uint8_t *) &_dap_OtaWifiInfo_st,sizeof(DAP_otaWifiInfo_st));
           Serial.println("[L]Forward to Clutch");
         break;
         case 1:
-          ESPNow.send_message(Brk_mac,(uint8_t *) &_basic_wifi_info,sizeof(Basic_WIfi_info));
+          ESPNow.send_message(Brk_mac,(uint8_t *) &_dap_OtaWifiInfo_st,sizeof(DAP_otaWifiInfo_st));
           Serial.println("[L]Forward to Brake");
         break;
         case 2:
-          ESPNow.send_message(Gas_mac,(uint8_t *) &_basic_wifi_info,sizeof(Basic_WIfi_info));
+          ESPNow.send_message(Gas_mac,(uint8_t *) &_dap_OtaWifiInfo_st,sizeof(DAP_otaWifiInfo_st));
           Serial.println("[L]Forward to Throttle");
         break;
       }
@@ -929,18 +929,18 @@ void Serial_Task( void * pvParameters)
             }
           }
         break;
-      case sizeof(Basic_WIfi_info):
+      case sizeof(DAP_otaWifiInfo_st):
         Serial.println("[L]get basic wifi info");
-        Serial.readBytes((char *)&_basic_wifi_info, sizeof(Basic_WIfi_info));
+        Serial.readBytes((char *)&_dap_OtaWifiInfo_st, sizeof(DAP_otaWifiInfo_st));
         #ifdef OTA_Update
-        if (_basic_wifi_info.device_ID == deviceID)
+        if (_dap_OtaWifiInfo_st.device_ID == deviceID)
         {
-          SSID = new char[_basic_wifi_info.SSID_Length + 1];
-          PASS = new char[_basic_wifi_info.PASS_Length + 1];
-          memcpy(SSID, _basic_wifi_info.WIFI_SSID, _basic_wifi_info.SSID_Length);
-          memcpy(PASS, _basic_wifi_info.WIFI_PASS, _basic_wifi_info.PASS_Length);
-          SSID[_basic_wifi_info.SSID_Length] = 0;
-          PASS[_basic_wifi_info.PASS_Length] = 0;
+          SSID = new char[_dap_OtaWifiInfo_st.SSID_Length + 1];
+          PASS = new char[_dap_OtaWifiInfo_st.PASS_Length + 1];
+          memcpy(SSID, _dap_OtaWifiInfo_st.WIFI_SSID, _dap_OtaWifiInfo_st.SSID_Length);
+          memcpy(PASS, _dap_OtaWifiInfo_st.WIFI_PASS, _dap_OtaWifiInfo_st.PASS_Length);
+          SSID[_dap_OtaWifiInfo_st.SSID_Length] = 0;
+          PASS[_dap_OtaWifiInfo_st.PASS_Length] = 0;
           /*
           Serial.print("[L]SSID(uint)=");
           for(uint i=0; i<_basic_wifi_info.SSID_Length;i++)
@@ -1321,12 +1321,12 @@ void OTATask( void * pvParameters )
             ota.SetCallback(OTAcallback);
             ota.OverrideBoard(BRIDGE_BOARD);
             Version_tag=BRIDGE_FIRMWARE_VERSION;
-            if(_basic_wifi_info.wifi_action==1)
+            if(_dap_OtaWifiInfo_st.wifi_action==1)
             {
               Version_tag="0.0.0";
               Serial.println("Force update");
             }
-            switch (_basic_wifi_info.mode_select)
+            switch (_dap_OtaWifiInfo_st.mode_select)
             {
               case 1:
                 Serial.printf("[L]Flashing to latest Main, checking %s to see if an update is available...\n", JSON_URL_main);
