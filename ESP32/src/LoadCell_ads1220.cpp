@@ -19,8 +19,15 @@ float refVoltageInMV_fl32 = 5000.0f;
 
 
 ADS1220_WE& ADC() {
+  
+  // Init custom SPI
+  static SPIClass adsSPI(FSPI);  // Or use VSPI or HSPI for ESP32
+  adsSPI.begin(FFB_ADS1220_SCLK, FFB_ADS1220_DOUT, FFB_ADS1220_DIN, FFB_ADS1220_CS);
 
-  static ADS1220_WE adc(FFB_ADS1220_CS, FFB_ADS1220_DRDY);
+
+  static ADS1220_WE adc(&adsSPI, FFB_ADS1220_CS, FFB_ADS1220_DRDY, true);
+  
+  //static ADS1220_WE adc(FFB_ADS1220_CS, FFB_ADS1220_DRDY);
 
   static bool firstTime = true;
   if (firstTime) {
@@ -64,10 +71,23 @@ ADS1220_WE& ADC() {
     adc.setFIRFilter(ADS1220_50HZ_60HZ);
 
     // set 
-    adc.setDrdyMode(ADS1220_DOUT_DRDY);
-
+    //adc.setDrdyMode(ADS1220_DOUT_DRDY);
+    adc.setDrdyMode(ADS1220_DRDY);
 
     Serial.println("ADC Started");
+
+    // Wait for DRDY to signal data ready
+    /*while (digitalRead(ADS1220_DRDY) == HIGH) {
+      delayMicroseconds(10);  // short wait to reduce CPU spin
+    }*/
+
+    //Serial.println("DRDY LOW");
+
+    // Read the voltage from the ADS1220
+    float voltage_mV = adc.getVoltage_mV();
+
+    Serial.println("Measured voltage: ");
+    Serial.println(voltage_mV);
     
     firstTime = false;
   }
@@ -112,10 +132,21 @@ void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
 float LoadCell_ADS1220::getReadingKg() const {
   ADS1220_WE& adc = ADC();
 
+
+  // Serial.println("Wait for DRDY");
+
+  // float refVolt_fl32 = adc.getVRef_V();
+  //   refVoltageInMV_fl32 = refVolt_fl32 * 1000.0f; // convert to mV
+  //   Serial.print("Reference voltage: ");
+  //   Serial.println(refVolt_fl32);
+
+
   // Wait for DRDY to signal data ready
-  while (digitalRead(ADS1220_DRDY) == HIGH) {
+  /*while (digitalRead(ADS1220_DRDY) == HIGH) {
     delayMicroseconds(10);  // short wait to reduce CPU spin
-  }
+  }*/
+
+  //Serial.println("DRDY LOW");
 
   // Read the voltage from the ADS1220
   float voltage_mV = adc.getVoltage_mV();

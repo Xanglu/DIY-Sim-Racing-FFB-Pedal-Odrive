@@ -475,8 +475,9 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 
   // level shifter is present on this PCB design
   #define SENSORLESS_HOMING true
-  #define ISV57_TXPIN 1
-  #define ISV57_RXPIN 2
+
+  #define ISV57_TXPIN 2
+  #define ISV57_RXPIN 1
 
   #define BRAKE_RESISTOR_PIN 35
   
