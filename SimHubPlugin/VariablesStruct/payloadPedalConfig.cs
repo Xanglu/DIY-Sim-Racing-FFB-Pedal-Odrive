@@ -4,12 +4,13 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace User.PluginSdkDemo
 {
     //[StructLayout(LayoutKind.Sequential, Pack = 1)]
     
-    public struct payloadPedalConfig
+    unsafe public struct payloadPedalConfig
     {
         // configure pedal start and endpoint
         // In percent
@@ -28,7 +29,31 @@ namespace User.PluginSdkDemo
         public byte relativeForce_p060;
         public byte relativeForce_p080;
         public byte relativeForce_p100;
-
+        public byte quantityOfControl;
+        public byte relativeForce00;
+        public byte relativeForce01;
+        public byte relativeForce02;
+        public byte relativeForce03;
+        public byte relativeForce04;
+        public byte relativeForce05;
+        public byte relativeForce06;
+        public byte relativeForce07;
+        public byte relativeForce08;
+        public byte relativeForce09;
+        public byte relativeForce10;
+        
+        public byte relativeTravel00;
+        public byte relativeTravel01;
+        public byte relativeTravel02;
+        public byte relativeTravel03;
+        public byte relativeTravel04;
+        public byte relativeTravel05;
+        public byte relativeTravel06;
+        public byte relativeTravel07;
+        public byte relativeTravel08;
+        public byte relativeTravel09;
+        public byte relativeTravel10;
+        
         // parameter to configure damping
         public byte dampingPress;
         public byte dampingPull;
@@ -72,6 +97,7 @@ namespace User.PluginSdkDemo
         public byte CV_amp_2;
         public byte CV_freq_2;
         // cubic spline params
+        /*
         public float cubic_spline_param_a_0;
         public float cubic_spline_param_a_1;
         public float cubic_spline_param_a_2;
@@ -83,7 +109,7 @@ namespace User.PluginSdkDemo
         public float cubic_spline_param_b_2;
         public float cubic_spline_param_b_3;
         public float cubic_spline_param_b_4;
-
+        */
         // PID settings
         public float PID_p_gain;
         public float PID_i_gain;

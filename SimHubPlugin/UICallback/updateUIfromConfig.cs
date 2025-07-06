@@ -73,6 +73,8 @@ namespace User.PluginSdkDemo
                 EffectsCustom1_tab.dap_config_st = tmp_struct;
                 EffectsCustom2_Tab.dap_config_st = tmp_struct;
                 PedalForceTravel_Tab.dap_config_st = tmp_struct;
+
+
                 PedalKinematics_Tab.dap_config_st = tmp_struct;
                 PedalSettingsSection.dap_config_st = tmp_struct;
                 var tmp_rudder = dap_config_st_rudder;
@@ -89,6 +91,7 @@ namespace User.PluginSdkDemo
                 EffectsRoadImpact_Tab.Settings = Plugin.Settings;
                 EffectsCustom1_tab.Settings = Plugin.Settings;
                 EffectsCustom2_Tab.Settings = Plugin.Settings;
+
                 PedalForceTravel_Tab.Settings = Plugin.Settings;
                 PedalKinematics_Tab.Settings = Plugin.Settings;
                 PedalSettingsSection.Settings = Plugin.Settings;

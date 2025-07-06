@@ -19,7 +19,7 @@ namespace User.PluginSdkDemo
         public bool Update_CV1_textbox { get; set; }
         public bool Update_CV2_textbox { get; set; }
 
-        public double[] Force_curve_Y = new double[100];
+        public double[] Force_curve_Y = new double[101];
 
         public int current_pedal_travel_state { get; set; }
         public byte pedal_state_in_ratio { get; set; }

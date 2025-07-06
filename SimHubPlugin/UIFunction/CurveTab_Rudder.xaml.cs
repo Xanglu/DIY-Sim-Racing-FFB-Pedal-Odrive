@@ -178,22 +178,22 @@ namespace User.PluginSdkDemo.UIFunction
                 double control_rect_value_max = 100;
 
                 double dyy_rudder = canvas_rudder_curve.Height / control_rect_value_max;
-                Canvas.SetTop(rect0_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce_p000 - rect0_rudder.Height / 2);
+                Canvas.SetTop(rect0_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce00 - rect0_rudder.Height / 2);
                 Canvas.SetLeft(rect0_rudder, 0 * canvas_rudder_curve.Width / 5 - rect0_rudder.Width / 2);
 
-                Canvas.SetTop(rect1_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce_p020 - rect1_rudder.Height / 2);
+                Canvas.SetTop(rect1_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce01 - rect1_rudder.Height / 2);
                 Canvas.SetLeft(rect1_rudder, 1 * canvas_rudder_curve.Width / 5 - rect1_rudder.Width / 2);
 
-                Canvas.SetTop(rect2_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce_p040 - rect2_rudder.Height / 2);
+                Canvas.SetTop(rect2_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce02 - rect2_rudder.Height / 2);
                 Canvas.SetLeft(rect2_rudder, 2 * canvas_rudder_curve.Width / 5 - rect2_rudder.Width / 2);
 
-                Canvas.SetTop(rect3_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce_p060 - rect3_rudder.Height / 2);
+                Canvas.SetTop(rect3_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce03 - rect3_rudder.Height / 2);
                 Canvas.SetLeft(rect3_rudder, 3 * canvas_rudder_curve.Width / 5 - rect3_rudder.Width / 2);
 
-                Canvas.SetTop(rect4_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce_p080 - rect4_rudder.Height / 2);
+                Canvas.SetTop(rect4_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce04 - rect4_rudder.Height / 2);
                 Canvas.SetLeft(rect4_rudder, 4 * canvas_rudder_curve.Width / 5 - rect4_rudder.Width / 2);
 
-                Canvas.SetTop(rect5_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce_p100 - rect5_rudder.Height / 2);
+                Canvas.SetTop(rect5_rudder, canvas_rudder_curve.Height - dyy_rudder * dap_config_st.payloadPedalConfig_.relativeForce05 - rect5_rudder.Height / 2);
                 Canvas.SetLeft(rect5_rudder, 5 * canvas_rudder_curve.Width / 5 - rect5_rudder.Width / 2);
                 text_point_pos_rudder.Visibility = Visibility.Hidden;
                 Update_BrakeForceCurve();
@@ -206,12 +206,12 @@ namespace User.PluginSdkDemo.UIFunction
         private void btn_linearcurve_rudder_Click(object sender, RoutedEventArgs e)
         {
             var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.relativeForce_p000 = 0;
-            tmp.payloadPedalConfig_.relativeForce_p020 = 20;
-            tmp.payloadPedalConfig_.relativeForce_p040 = 40;
-            tmp.payloadPedalConfig_.relativeForce_p060 = 60;
-            tmp.payloadPedalConfig_.relativeForce_p080 = 80;
-            tmp.payloadPedalConfig_.relativeForce_p100 = 100;
+            tmp.payloadPedalConfig_.relativeForce00 = 0;
+            tmp.payloadPedalConfig_.relativeForce01 = 20;
+            tmp.payloadPedalConfig_.relativeForce02 = 40;
+            tmp.payloadPedalConfig_.relativeForce03 = 60;
+            tmp.payloadPedalConfig_.relativeForce04 = 80;
+            tmp.payloadPedalConfig_.relativeForce05 = 100;
             dap_config_st = tmp;
             Update_BrakeForceCurve();
             ConfigChangedEvent(dap_config_st);
@@ -220,12 +220,12 @@ namespace User.PluginSdkDemo.UIFunction
         private void btn_Scurve_rudder_Click(object sender, RoutedEventArgs e)
         {
             var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.relativeForce_p000 = 0;
-            tmp.payloadPedalConfig_.relativeForce_p020 = 7;
-            tmp.payloadPedalConfig_.relativeForce_p040 = 28;
-            tmp.payloadPedalConfig_.relativeForce_p060 = 70;
-            tmp.payloadPedalConfig_.relativeForce_p080 = 93;
-            tmp.payloadPedalConfig_.relativeForce_p100 = 100;
+            tmp.payloadPedalConfig_.relativeForce00 = 0;
+            tmp.payloadPedalConfig_.relativeForce01 = 7;
+            tmp.payloadPedalConfig_.relativeForce02 = 28;
+            tmp.payloadPedalConfig_.relativeForce03 = 70;
+            tmp.payloadPedalConfig_.relativeForce04 = 93;
+            tmp.payloadPedalConfig_.relativeForce05 = 100;
             dap_config_st = tmp;
             Update_BrakeForceCurve();
             ConfigChangedEvent(dap_config_st);
@@ -234,12 +234,12 @@ namespace User.PluginSdkDemo.UIFunction
         private void btn_10xcurve_rudder_Click(object sender, RoutedEventArgs e)
         {
             var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.relativeForce_p000 = 0;
-            tmp.payloadPedalConfig_.relativeForce_p020 = 43;
-            tmp.payloadPedalConfig_.relativeForce_p040 = 69;
-            tmp.payloadPedalConfig_.relativeForce_p060 = 85;
-            tmp.payloadPedalConfig_.relativeForce_p080 = 95;
-            tmp.payloadPedalConfig_.relativeForce_p100 = 100;
+            tmp.payloadPedalConfig_.relativeForce00 = 0;
+            tmp.payloadPedalConfig_.relativeForce01 = 43;
+            tmp.payloadPedalConfig_.relativeForce02 = 69;
+            tmp.payloadPedalConfig_.relativeForce03 = 85;
+            tmp.payloadPedalConfig_.relativeForce04 = 95;
+            tmp.payloadPedalConfig_.relativeForce05 = 100;
             dap_config_st = tmp;
             Update_BrakeForceCurve();
             ConfigChangedEvent(dap_config_st);
@@ -248,12 +248,12 @@ namespace User.PluginSdkDemo.UIFunction
         private void btn_logcurve_rudder_Click(object sender, RoutedEventArgs e)
         {
             var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.relativeForce_p000 = 0;
-            tmp.payloadPedalConfig_.relativeForce_p020 = 6;
-            tmp.payloadPedalConfig_.relativeForce_p040 = 17;
-            tmp.payloadPedalConfig_.relativeForce_p060 = 33;
-            tmp.payloadPedalConfig_.relativeForce_p080 = 59;
-            tmp.payloadPedalConfig_.relativeForce_p100 = 100;
+            tmp.payloadPedalConfig_.relativeForce00 = 0;
+            tmp.payloadPedalConfig_.relativeForce01 = 6;
+            tmp.payloadPedalConfig_.relativeForce02 = 17;
+            tmp.payloadPedalConfig_.relativeForce03 = 33;
+            tmp.payloadPedalConfig_.relativeForce04 = 59;
+            tmp.payloadPedalConfig_.relativeForce05 = 100;
             dap_config_st = tmp;
             Update_BrakeForceCurve();
             ConfigChangedEvent(dap_config_st);
@@ -309,7 +309,7 @@ namespace User.PluginSdkDemo.UIFunction
                     if (rectangle.Name == "rect0_rudder")
                     {
                         var tmp = dap_config_st;
-                        tmp.payloadPedalConfig_.relativeForce_p000 = Convert.ToByte(y_actual);
+                        tmp.payloadPedalConfig_.relativeForce00 = Convert.ToByte(y_actual);
                         dap_config_st = tmp;
                         ConfigChangedEvent(dap_config_st);
                         text_point_pos_rudder.Text = "Travel:0%";
@@ -319,7 +319,7 @@ namespace User.PluginSdkDemo.UIFunction
                     if (rectangle.Name == "rect1_rudder")
                     {
                         var tmp = dap_config_st;
-                        tmp.payloadPedalConfig_.relativeForce_p020 = Convert.ToByte(y_actual);
+                        tmp.payloadPedalConfig_.relativeForce01 = Convert.ToByte(y_actual);
                         dap_config_st = tmp;
                         ConfigChangedEvent(dap_config_st);
                         text_point_pos_rudder.Text = "Travel:20%";
@@ -328,7 +328,7 @@ namespace User.PluginSdkDemo.UIFunction
                     if (rectangle.Name == "rect2_rudder")
                     {
                         var tmp = dap_config_st;
-                        tmp.payloadPedalConfig_.relativeForce_p040 = Convert.ToByte(y_actual);
+                        tmp.payloadPedalConfig_.relativeForce02 = Convert.ToByte(y_actual);
                         dap_config_st = tmp;
                         ConfigChangedEvent(dap_config_st);
                         text_point_pos_rudder.Text = "Travel:40%";
@@ -337,7 +337,7 @@ namespace User.PluginSdkDemo.UIFunction
                     if (rectangle.Name == "rect3_rudder")
                     {
                         var tmp = dap_config_st;
-                        tmp.payloadPedalConfig_.relativeForce_p060 = Convert.ToByte(y_actual);
+                        tmp.payloadPedalConfig_.relativeForce03 = Convert.ToByte(y_actual);
                         dap_config_st = tmp;
                         ConfigChangedEvent(dap_config_st);
                         text_point_pos_rudder.Text = "Travel:60%";
@@ -346,7 +346,7 @@ namespace User.PluginSdkDemo.UIFunction
                     if (rectangle.Name == "rect4_rudder")
                     {
                         var tmp = dap_config_st;
-                        tmp.payloadPedalConfig_.relativeForce_p080 = Convert.ToByte(y_actual);
+                        tmp.payloadPedalConfig_.relativeForce04 = Convert.ToByte(y_actual);
                         dap_config_st = tmp;
                         ConfigChangedEvent(dap_config_st);
                         text_point_pos_rudder.Text = "Travel:80%";
@@ -355,7 +355,7 @@ namespace User.PluginSdkDemo.UIFunction
                     if (rectangle.Name == "rect5_rudder")
                     {
                         var tmp = dap_config_st;
-                        tmp.payloadPedalConfig_.relativeForce_p100 = Convert.ToByte(y_actual);
+                        tmp.payloadPedalConfig_.relativeForce05 = Convert.ToByte(y_actual);
                         dap_config_st = tmp;
                         ConfigChangedEvent(dap_config_st);
                         text_point_pos_rudder.Text = "Travel:100%";
@@ -478,17 +478,18 @@ namespace User.PluginSdkDemo.UIFunction
                 x[4] = 80;
                 x[5] = 100;
 
-                y[0] = dap_config_st.payloadPedalConfig_.relativeForce_p000;
-                y[1] = dap_config_st.payloadPedalConfig_.relativeForce_p020;
-                y[2] = dap_config_st.payloadPedalConfig_.relativeForce_p040;
-                y[3] = dap_config_st.payloadPedalConfig_.relativeForce_p060;
-                y[4] = dap_config_st.payloadPedalConfig_.relativeForce_p080;
-                y[5] = dap_config_st.payloadPedalConfig_.relativeForce_p100;
+                y[0] = dap_config_st.payloadPedalConfig_.relativeForce00;
+                y[1] = dap_config_st.payloadPedalConfig_.relativeForce01;
+                y[2] = dap_config_st.payloadPedalConfig_.relativeForce02;
+                y[3] = dap_config_st.payloadPedalConfig_.relativeForce03;
+                y[4] = dap_config_st.payloadPedalConfig_.relativeForce04;
+                y[5] = dap_config_st.payloadPedalConfig_.relativeForce05;
 
                 // Use cubic interpolation to smooth the original data
                 (double[] xs2_rudder, double[] ys2_rudder, double[] a_rudder, double[] b_rudder) = Cubic.Interpolate1D(x, y, 100);
-
+                /*
                 var tmp = dap_config_st;
+                
                 tmp.payloadPedalConfig_.cubic_spline_param_a_0 = (float)a_rudder[0];
                 tmp.payloadPedalConfig_.cubic_spline_param_a_1 = (float)a_rudder[1];
                 tmp.payloadPedalConfig_.cubic_spline_param_a_2 = (float)a_rudder[2];
@@ -501,7 +502,7 @@ namespace User.PluginSdkDemo.UIFunction
                 tmp.payloadPedalConfig_.cubic_spline_param_b_3 = (float)b_rudder[3];
                 tmp.payloadPedalConfig_.cubic_spline_param_b_4 = (float)b_rudder[4];
                 dap_config_st = tmp;
-
+                */
 
                 System.Windows.Media.PointCollection myPointCollection3 = new System.Windows.Media.PointCollection();
 

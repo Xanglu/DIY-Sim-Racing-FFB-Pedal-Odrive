@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "CubicInterpolatorFloat.h"
 // define the payload revision
-#define DAP_VERSION_CONFIG 149
+#define DAP_VERSION_CONFIG 150
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -109,6 +109,29 @@ struct payloadPedalConfig {
   uint8_t relativeForce_p080;
   uint8_t relativeForce_p100;
 
+  uint8_t quantityOfControl;
+  uint8_t relativeForce00;
+  uint8_t relativeForce01;
+  uint8_t relativeForce02;
+  uint8_t relativeForce03;
+  uint8_t relativeForce04;
+  uint8_t relativeForce05;
+  uint8_t relativeForce06;
+  uint8_t relativeForce07;
+  uint8_t relativeForce08;
+  uint8_t relativeForce09;
+  uint8_t relativeForce10;
+  uint8_t relativeTravel00;
+  uint8_t relativeTravel01;
+  uint8_t relativeTravel02;
+  uint8_t relativeTravel03;
+  uint8_t relativeTravel04;
+  uint8_t relativeTravel05;
+  uint8_t relativeTravel06;
+  uint8_t relativeTravel07;
+  uint8_t relativeTravel08;
+  uint8_t relativeTravel09;
+  uint8_t relativeTravel10;
   // parameter to configure damping
   uint8_t dampingPress;
   uint8_t dampingPull;
@@ -159,9 +182,10 @@ struct payloadPedalConfig {
   uint8_t CV_amp_2;
   uint8_t CV_freq_2;
   // cubic spline parameters
+  /*
   float cubic_spline_param_a_array[5];
   float cubic_spline_param_b_array[5];
-
+  */
   // PID parameters
   float PID_p_gain;
   float PID_i_gain;
@@ -314,6 +338,8 @@ struct DAP_calculationVariables_st
   float stepperPosRange_default;
   uint32_t stepsPerMotorRevolution;
   uint8_t TrackCondition;
+  float force[11];
+  float travel[11]; 
   float *interpolatorA= nullptr;
   float *interpolatorB = nullptr;
   Cubic _cubic;

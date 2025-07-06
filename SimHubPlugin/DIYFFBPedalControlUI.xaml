@@ -628,7 +628,7 @@
                                                     <Label Content="FORCE-TRAVEL CURVE"  FontFamily="Arial Black" FontSize="10" Height="30" Padding="0,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" Width="270"  />
                                                 </Border>
                                             </TabItem.Header>
-                                            <localFunction:CurveTab_PedalForceTravel x:Name="PedalForceTravel_Tab" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
+                                            <localFunction:CurveTab_PedalForceTravel_Modified x:Name="PedalForceTravel_Tab" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
                                         </TabItem>
                                         <TabItem x:Name="pedalKinematicTab" Width="270" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
                                             <TabItem.Header>
@@ -638,7 +638,6 @@
                                             </TabItem.Header>
                                             <localFunction:KinematicsTab_Pedal x:Name="PedalKinematics_Tab" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
                                         </TabItem>
-
 
                                     </TabControl>
                                     <TabControl Grid.Column="0" HorizontalAlignment="Left" Height="222" Grid.Row="4" VerticalAlignment="Top" Width="540" Padding="0,0,0,0" BorderThickness="0,0,0,0" Background="#00252525" Foreground="Transparent" Margin="0,4,0,0">

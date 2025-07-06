@@ -29,6 +29,29 @@ void DAP_config_st::initialiseDefaults() {
   payLoadPedalConfig_.relativeForce_p060 = 60;
   payLoadPedalConfig_.relativeForce_p080 = 80;
   payLoadPedalConfig_.relativeForce_p100 = 100;
+  payLoadPedalConfig_.quantityOfControl=6;
+  payLoadPedalConfig_.relativeForce00 = 0;
+  payLoadPedalConfig_.relativeForce01 = 20;
+  payLoadPedalConfig_.relativeForce02 = 40;
+  payLoadPedalConfig_.relativeForce03 = 60;
+  payLoadPedalConfig_.relativeForce04 = 80;
+  payLoadPedalConfig_.relativeForce05 = 100;
+  payLoadPedalConfig_.relativeForce06 = 0;
+  payLoadPedalConfig_.relativeForce07 = 0;
+  payLoadPedalConfig_.relativeForce08 = 0;
+  payLoadPedalConfig_.relativeForce09 = 0;
+  payLoadPedalConfig_.relativeForce10 = 0;
+  payLoadPedalConfig_.relativeTravel00 = 0;
+  payLoadPedalConfig_.relativeTravel01 = 20;
+  payLoadPedalConfig_.relativeTravel02 = 40;
+  payLoadPedalConfig_.relativeTravel03 = 60;
+  payLoadPedalConfig_.relativeTravel04 = 80;
+  payLoadPedalConfig_.relativeTravel05 = 100;
+  payLoadPedalConfig_.relativeTravel06 = 0;
+  payLoadPedalConfig_.relativeTravel07 = 0;
+  payLoadPedalConfig_.relativeTravel08 = 0;
+  payLoadPedalConfig_.relativeTravel09 = 0;
+  payLoadPedalConfig_.relativeTravel10 = 0;
 
   payLoadPedalConfig_.dampingPress = 0;
   payLoadPedalConfig_.dampingPull = 0;
@@ -61,6 +84,7 @@ void DAP_config_st::initialiseDefaults() {
   payLoadPedalConfig_.WS_freq=15;
   payLoadPedalConfig_.Road_multi = 50;
   payLoadPedalConfig_.Road_window=60;
+  /*
   payLoadPedalConfig_.cubic_spline_param_a_array[0] = 0;
   payLoadPedalConfig_.cubic_spline_param_a_array[1] = 0;
   payLoadPedalConfig_.cubic_spline_param_a_array[2] = 0;
@@ -72,6 +96,7 @@ void DAP_config_st::initialiseDefaults() {
   payLoadPedalConfig_.cubic_spline_param_b_array[2] = 0;
   payLoadPedalConfig_.cubic_spline_param_b_array[3] = 0;
   payLoadPedalConfig_.cubic_spline_param_b_array[4] = 0;
+  */
 
   payLoadPedalConfig_.PID_p_gain = 0.3f;
   payLoadPedalConfig_.PID_i_gain = 50.0f;
@@ -160,25 +185,49 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st)
 {
   startPosRel = ((float)config_st.payLoadPedalConfig_.pedalStartPosition) / 100.0f;
   endPosRel = ((float)config_st.payLoadPedalConfig_.pedalEndPosition) / 100.0f;
-  //cubic interpolator
-  float travelSegment[6]={0.0f,20.0f,40.0f,60.0f,80.0f,100.0f};
-  float force[6];
-  force[0] = config_st.payLoadPedalConfig_.relativeForce_p000;
-  force[1] = config_st.payLoadPedalConfig_.relativeForce_p020;
-  force[2] = config_st.payLoadPedalConfig_.relativeForce_p040;
-  force[3] = config_st.payLoadPedalConfig_.relativeForce_p060;
-  force[4] = config_st.payLoadPedalConfig_.relativeForce_p080;
-  force[5] = config_st.payLoadPedalConfig_.relativeForce_p100;
-  _cubic.Interpolate1D(travelSegment, force, 6, 6);
+
+  //read force and trave linto calculaiton Variables
+  force[0] = config_st.payLoadPedalConfig_.relativeForce00;
+  force[1] = config_st.payLoadPedalConfig_.relativeForce01;
+  force[2] = config_st.payLoadPedalConfig_.relativeForce02;
+  force[3] = config_st.payLoadPedalConfig_.relativeForce03;
+  force[4] = config_st.payLoadPedalConfig_.relativeForce04;
+  force[5] = config_st.payLoadPedalConfig_.relativeForce05;
+  force[6] = config_st.payLoadPedalConfig_.relativeForce06;
+  force[7] = config_st.payLoadPedalConfig_.relativeForce07;
+  force[8] = config_st.payLoadPedalConfig_.relativeForce08;
+  force[9] = config_st.payLoadPedalConfig_.relativeForce09;
+  force[10] = config_st.payLoadPedalConfig_.relativeForce10;
+
+  travel[0] = config_st.payLoadPedalConfig_.relativeTravel00;
+  travel[1] = config_st.payLoadPedalConfig_.relativeTravel01;
+  travel[2] = config_st.payLoadPedalConfig_.relativeTravel02;
+  travel[3] = config_st.payLoadPedalConfig_.relativeTravel03;
+  travel[4] = config_st.payLoadPedalConfig_.relativeTravel04;
+  travel[5] = config_st.payLoadPedalConfig_.relativeTravel05;
+  travel[6] = config_st.payLoadPedalConfig_.relativeTravel06;
+  travel[7] = config_st.payLoadPedalConfig_.relativeTravel07;
+  travel[8] = config_st.payLoadPedalConfig_.relativeTravel08;
+  travel[9] = config_st.payLoadPedalConfig_.relativeTravel09;
+  travel[10] = config_st.payLoadPedalConfig_.relativeTravel10;
+  // cubic interpolator
+  float travel_x[config_st.payLoadPedalConfig_.quantityOfControl];
+  float force_y[config_st.payLoadPedalConfig_.quantityOfControl];
+  for (int i = 0; i < config_st.payLoadPedalConfig_.quantityOfControl;i++)
+  {
+    travel_x[i]=travel[i];
+    force_y[i]=force[i];
+  }
+  _cubic.Interpolate1D(travel_x, force_y, config_st.payLoadPedalConfig_.quantityOfControl - 1, config_st.payLoadPedalConfig_.quantityOfControl-1);
   interpolatorA = _cubic._result.a;
   interpolatorB = _cubic._result.b;
-  /*
-  for (int i = 0; i < 5; ++i)
+
+  for (int i = 0; i < config_st.payLoadPedalConfig_.quantityOfControl - 1; ++i)
   {
-    Serial.printf("original a=%.3f, b=%.3f\n", config_st.payLoadPedalConfig_.cubic_spline_param_a_array[i], config_st.payLoadPedalConfig_.cubic_spline_param_b_array[i]);
+    //Serial.printf("original a=%.3f, b=%.3f\n", config_st.payLoadPedalConfig_.cubic_spline_param_a_array[i], config_st.payLoadPedalConfig_.cubic_spline_param_b_array[i]);
     Serial.printf("ESP calculated a=%.3f, b=%.3f\n", interpolatorA[i], interpolatorB[i]);
   }
-  */
+  
   
 
 

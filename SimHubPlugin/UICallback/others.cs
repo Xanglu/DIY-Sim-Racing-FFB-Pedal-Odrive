@@ -78,6 +78,29 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce_p060 = 60;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce_p080 = 80;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce_p100 = 100;
+            dap_config_st[pedalIdx].payloadPedalConfig_.quantityOfControl = 6;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce00 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce01 = 20;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce02 = 40;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce03 = 60;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce04 = 80;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce05 = 100;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce06 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce07 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce08 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce09 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce10 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel00 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel01 = 20;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel02 = 40;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel03 = 60;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel04 = 80;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel05 = 100;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel06 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel07 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel08 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel09 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel10 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.dampingPress = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.dampingPull = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.absFrequency = 5;
@@ -114,6 +137,7 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadPedalConfig_.maxGameOutput = 100;
             dap_config_st[pedalIdx].payloadPedalConfig_.kf_modelNoise = 128;
             dap_config_st[pedalIdx].payloadPedalConfig_.kf_modelOrder = 0;
+            /*
             dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_a_0 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_a_1 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_a_2 = 0;
@@ -125,6 +149,7 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_b_2 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_b_3 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_b_4 = 0;
+            */
 
             dap_config_st[pedalIdx].payloadPedalConfig_.PID_p_gain = 0.1f;
             dap_config_st[pedalIdx].payloadPedalConfig_.PID_i_gain = 1.0f;
@@ -166,6 +191,31 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.relativeForce_p060 = 60;
             dap_config_st_rudder.payloadPedalConfig_.relativeForce_p080 = 80;
             dap_config_st_rudder.payloadPedalConfig_.relativeForce_p100 = 100;
+
+            dap_config_st_rudder.payloadPedalConfig_.quantityOfControl = 6;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce00 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce01 = 20;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce02 = 40;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce03 = 60;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce04 = 80;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce05 = 100;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce06 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce07 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce08 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce09 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce10 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel00 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel01 = 20;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel02 = 40;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel03 = 60;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel04 = 80;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel05 = 100;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel06 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel07 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel08 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel09 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel10 = 0;
+
             dap_config_st_rudder.payloadPedalConfig_.dampingPress = 0;
             dap_config_st_rudder.payloadPedalConfig_.dampingPull = 0;
             dap_config_st_rudder.payloadPedalConfig_.absFrequency = 5;
@@ -203,6 +253,7 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.maxGameOutput = 100;
             dap_config_st_rudder.payloadPedalConfig_.kf_modelNoise = 200;
             dap_config_st_rudder.payloadPedalConfig_.kf_modelOrder = 2;
+            /*
             dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_a_0 = 0;
             dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_a_1 = 0;
             dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_a_2 = 0;
@@ -214,6 +265,7 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_b_2 = 0;
             dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_b_3 = 0;
             dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_b_4 = 0;
+            */
 
             dap_config_st_rudder.payloadPedalConfig_.PID_p_gain = 0.01f;
             dap_config_st_rudder.payloadPedalConfig_.PID_i_gain = 1.0f;

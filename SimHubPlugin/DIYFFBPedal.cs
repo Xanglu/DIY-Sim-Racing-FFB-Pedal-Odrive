@@ -1881,7 +1881,7 @@ namespace User.PluginSdkDemo
             dap_config_initial_st.payloadPedalConfig_.kf_modelNoise = 128;
             dap_config_initial_st.payloadPedalConfig_.kf_modelOrder = 0;
             dap_config_initial_st.payloadPedalConfig_.debug_flags_0 = 0;
-
+            /*
             dap_config_initial_st.payloadPedalConfig_.cubic_spline_param_a_0 = 0;
             dap_config_initial_st.payloadPedalConfig_.cubic_spline_param_a_1 = 0;
             dap_config_initial_st.payloadPedalConfig_.cubic_spline_param_a_2 = 0;
@@ -1893,7 +1893,7 @@ namespace User.PluginSdkDemo
             dap_config_initial_st.payloadPedalConfig_.cubic_spline_param_b_2 = 0;
             dap_config_initial_st.payloadPedalConfig_.cubic_spline_param_b_3 = 0;
             dap_config_initial_st.payloadPedalConfig_.cubic_spline_param_b_4 = 0;
-
+            */
             dap_config_initial_st.payloadPedalConfig_.PID_p_gain = 0.3f;
             dap_config_initial_st.payloadPedalConfig_.PID_i_gain = 50.0f;
             dap_config_initial_st.payloadPedalConfig_.PID_d_gain = 0.0f;

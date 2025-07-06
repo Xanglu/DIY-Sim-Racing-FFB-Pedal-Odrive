@@ -608,6 +608,7 @@ namespace User.PluginSdkDemo.UIFunction
             (double[] xs2, double[] ys2, double[] a, double[] b) = Cubic.Interpolate1D(x, y, 100);
 
             var tmp = dap_config_st;
+            /*
             tmp.payloadPedalConfig_.cubic_spline_param_a_0 = (float)a[0];
             tmp.payloadPedalConfig_.cubic_spline_param_a_1 = (float)a[1];
             tmp.payloadPedalConfig_.cubic_spline_param_a_2 = (float)a[2];
@@ -619,6 +620,7 @@ namespace User.PluginSdkDemo.UIFunction
             tmp.payloadPedalConfig_.cubic_spline_param_b_2 = (float)b[2];
             tmp.payloadPedalConfig_.cubic_spline_param_b_3 = (float)b[3];
             tmp.payloadPedalConfig_.cubic_spline_param_b_4 = (float)b[4];
+            */
             dap_config_st = tmp;
             ConfigChangedEvent(dap_config_st);
 
