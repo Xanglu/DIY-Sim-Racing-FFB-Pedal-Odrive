@@ -1,5 +1,5 @@
 # This is the name of the workflow, visible on GitHub UI.
-name: PreRelease_Build_Task
+name: Release_Build_IN_DEV_TASK
 
 # Controls when the action will run. 
 on:
