@@ -15,7 +15,7 @@ float ForceCurve_Interpolated::EvalForceCubicSpline(const DAP_config_st* config_
 {
 
   float fractionalPos_lcl = constrain(fractionalPos, 0, 1);
-  int fractionalPos_float=fractionalPos_lcl*100.0f;
+  float fractionalPos_float=fractionalPos_lcl*100.0f;
   //float splineSegment_fl32 = fractionalPos_lcl * 5.0f;
   float splineSegment_fl32 = 0;
   for(int i=0;i<config_st->payLoadPedalConfig_.quantityOfControl;i++)
