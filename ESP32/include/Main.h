@@ -1,6 +1,5 @@
 #pragma once
-//#include <ADS1256.h>
-
+#include <stdint.h>
 
 //#define PRINT_TASK_FREE_STACKSIZE_IN_WORDS
 
@@ -463,11 +462,12 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 // 2. USB CDC On Boot Enabled
 #if PCB_VERSION == 13
   // ADC defines
-  #define ADS1220_SCLK   6
-  #define ADS1220_DIN    7     // MOSI
-  #define ADS1220_DOUT   15    // MISO
-  #define ADS1220_DRDY   16
-  #define ADS1220_CS     17
+  #define USES_ADS1220
+  #define FFB_ADS1220_SCLK    6
+  #define FFB_ADS1220_DIN     7     // MOSI
+  #define FFB_ADS1220_DOUT    15    // MISO
+  #define FFB_ADS1220_DRDY    16
+  #define FFB_ADS1220_CS      17
 
   // stepper pins
   #define dirPinStepper    36
@@ -479,7 +479,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ISV57_RXPIN 2
 
   #define BRAKE_RESISTOR_PIN 35
-  #define USES_ADS1220
+  
 
   //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK

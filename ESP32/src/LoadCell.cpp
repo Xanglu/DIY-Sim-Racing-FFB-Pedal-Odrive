@@ -1,8 +1,11 @@
 #include "LoadCell.h"
+#include "Main.h"
+
+#ifndef USES_ADS1220
 
 #include <SPI.h>
 #include <ADS1256.h>
-#include "Main.h"
+
 
 static const float ADC_CLOCK_MHZ = 7.68f;  // crystal frequency used on ADS1256
 static const float ADC_VREF = 2.5f;        // voltage reference
@@ -152,3 +155,4 @@ void LoadCell_ADS1256::estimateBiasAndVariance() {
 
 
 
+#endif

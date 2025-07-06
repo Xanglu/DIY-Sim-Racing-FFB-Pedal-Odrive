@@ -39,6 +39,13 @@ const char *DAP_FIRMWARE_VERSION = "0.90.08";
 		#define CONTROL_BOARD "V5_ESP32S3_Without_Wireless"
 	#endif
 #endif
+#if PCB_VERSION==13
+	#ifdef ENABLE_ESP_NOW
+		#define CONTROL_BOARD "V6_ESP32S3"
+	#else
+		#define CONTROL_BOARD "V6_ESP32S3_Without_Wireless"
+	#endif
+#endif
 
 void parse_version(const char *version, uint8_t *major, uint8_t *minor, uint8_t *patch) 
 {

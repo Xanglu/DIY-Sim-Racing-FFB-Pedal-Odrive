@@ -4,6 +4,8 @@
 #include "Main.h"
 
 
+#ifdef USES_ADS1220
+
 /*  Uses ADS1256 */
 class LoadCell_ADS1220 {
 private:
@@ -12,6 +14,7 @@ private:
   float _standardDeviationEstimate = 0.0;
 
 public:
+  LoadCell_ADS1220();
   float getReadingKg() const;
   void setLoadcellRating(uint8_t loadcellRating_u8) const;
   void estimateBiasAndVariance();
@@ -19,3 +22,5 @@ public:
   float getShiftingEstimate() const { return _zeroPoint; }
   float getSTDEstimate() const { return _standardDeviationEstimate; }
 };
+
+#endif

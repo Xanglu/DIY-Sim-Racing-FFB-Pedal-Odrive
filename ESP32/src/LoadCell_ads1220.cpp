@@ -1,8 +1,11 @@
 #include "LoadCell_ads1220.h"
+#include "Main.h"
+
+#ifdef USES_ADS1220
 
 #include <SPI.h>
 #include <ADS1220_WE.h>
-#include "Main.h"
+
 
 static const int NUMBER_OF_SAMPLES_FOR_LOADCELL_OFFFSET_ESTIMATION = 1000;
 static const float DEFAULT_VARIANCE_ESTIMATE = 0.2f * 0.2f;
@@ -15,19 +18,19 @@ float updatedConversionFactor_f64 = 1.0f;
 float refVoltageInMV_fl32 = 5000.0f;
 
 
-LoadCell_ADS1220& ADC() {
+ADS1220_WE& ADC() {
 
-  static ADS1220_WE adc(ADS1220_CS, ADS1220_DRDY);
+  static ADS1220_WE adc(FFB_ADS1220_CS, FFB_ADS1220_DRDY);
 
   static bool firstTime = true;
   if (firstTime) {
     Serial.println("Starting ADC");  
 
     // Use custom SPI pins on ESP32-S3
-    SPI.begin(ADS1220_SCLK, ADS1220_DOUT, ADS1220_DIN, ADS1220_CS);
+    SPI.begin(FFB_ADS1220_SCLK, FFB_ADS1220_DOUT, FFB_ADS1220_DIN, FFB_ADS1220_CS);
 
     // Initialize ADS1220
-    if (!ads.init()) {
+    if (!adc.init()) {
       Serial.println("ADS1220 not found!");
       while (1);
     }
@@ -43,7 +46,7 @@ LoadCell_ADS1220& ADC() {
     //ads.setVRefValue_V(4.7f);    // set reference voltage in volts
     adc.setAvddAvssAsVrefAndCalibrate();
 
-    refVolt_fl32 = adc.getVRef_V();
+    float refVolt_fl32 = adc.getVRef_V();
     refVoltageInMV_fl32 = refVolt_fl32 * 1000.0f; // convert to mV
     Serial.print("Reference voltage: ");
     Serial.println(refVolt_fl32);
@@ -77,11 +80,11 @@ LoadCell_ADS1220& ADC() {
 
 
 
-LoadCell_ADS1220::LoadCell_ADS1220(uint8_t channel0, uint8_t channel1)
+LoadCell_ADS1220::LoadCell_ADS1220()
   : _zeroPoint(0.0f), _varianceEstimate(DEFAULT_VARIANCE_ESTIMATE)
 {
   // differential channels
-  adc.setCompareChannels(ADS1220_MUX_0_1);              // Differential AIN0 - AIN1
+  ADC().setCompareChannels(ADS1220_MUX_0_1);              // Differential AIN0 - AIN1
 }
 
 
@@ -115,7 +118,7 @@ float LoadCell_ADS1220::getReadingKg() const {
   }
 
   // Read the voltage from the ADS1220
-  voltage_mV = adc.getVoltage_mV();
+  float voltage_mV = adc.getVoltage_mV();
   float weight_grams = voltage_mV * updatedConversionFactor_f64;
 
   float weight_kg = weight_grams / 1000.0f; // convert grams to kg
@@ -168,7 +171,7 @@ void LoadCell_ADS1220::estimateBiasAndVariance() {
   Serial.println("kg");
 }
 
-
+#endif
 
 
 
