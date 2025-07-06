@@ -28,7 +28,7 @@ jobs:
         run: echo ${{ env.MY_DATE }}
       - name: output_version_date
         id: output_version_date
-        run: echo "Version_date=Develop_Package_v${{ env.MY_DATE }}" >> "$GITHUB_OUTPUT"
+        run: echo "Version_date=Release_Package_v${{ env.MY_DATE }}" >> "$GITHUB_OUTPUT"
 
 
 
@@ -54,8 +54,8 @@ jobs:
           
       # create a Prerelease
       # see https://www.youtube.com/watch?v=_ueJ3LrRqPU
-      - name: Create PreRelease
-        id: create-new-PreRelease
+      - name: Create Release
+        id: create-new-Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,7 +63,7 @@ jobs:
         with:
           tag_name: ${{ steps.output_version_date.outputs.Version_date }}
           release_name: ${{ steps.output_version_date.outputs.Version_date }}
-          prerelease: true
+          prerelease: false
           
   
   BuildFirmware:

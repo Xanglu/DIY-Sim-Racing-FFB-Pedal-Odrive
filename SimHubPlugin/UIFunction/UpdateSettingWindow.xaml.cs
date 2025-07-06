@@ -31,7 +31,7 @@ namespace User.PluginSdkDemo.UIFunction
             InitializeComponent();
             _settings = settings;
             _calculations = calculations;
-            if (_calculations != null && OTAChannel_Sel_1 != null && OTAChannel_Sel_2 != null && OTAChannel_Sel_3 != null)
+            if (_calculations != null && OTAChannel_Sel_1 != null && OTAChannel_Sel_2 != null )
             {
                 if (Label_update_channel_notice != null) Label_update_channel_notice.Content = "";
                 switch (_calculations.UpdateChannel)
@@ -41,10 +41,7 @@ namespace User.PluginSdkDemo.UIFunction
                         break;
                     case 1:
                         OTAChannel_Sel_2.IsChecked = true;
-                        break;
-                    case 2:
-                        OTAChannel_Sel_3.IsChecked = true;
-                        Label_update_channel_notice.Content = "Warning: This is a daily build intended for development and testing purposes only. \nIt may be unstable and is not recommended for production use.";
+                        Label_update_channel_notice.Content = "Warning: This is a daily build intended for development and testing purposes only.\nIt may be unstable and is not recommended for production use.";
                         break;
                     default:
                         OTAChannel_Sel_1.IsChecked=true;
@@ -92,16 +89,15 @@ namespace User.PluginSdkDemo.UIFunction
 
         private void OTAChannel_Sel_Checked(object sender, RoutedEventArgs e)
         {
-            if (OTAChannel_Sel_1 != null && OTAChannel_Sel_2 != null && OTAChannel_Sel_3 != null)
+            if (OTAChannel_Sel_1 != null && OTAChannel_Sel_2 != null)
             {
                 Label_update_channel_notice.Content = "";
                 if ((bool)OTAChannel_Sel_1.IsChecked) _calculations.UpdateChannel = 0;
-                if ((bool)OTAChannel_Sel_2.IsChecked) _calculations.UpdateChannel = 1;
-                if ((bool)OTAChannel_Sel_3.IsChecked)
+                if ((bool)OTAChannel_Sel_2.IsChecked)
                 {
-                    _calculations.UpdateChannel = 2;
+                    _calculations.UpdateChannel = 1;
                     Label_update_channel_notice.Content = "Warning: This is a daily build intended for development and testing purposes only.\nIt may be unstable and is not recommended for production use.";
-                }
+                } 
                 textBox_changelog.Text = "Version:" + versions[_calculations.UpdateChannel] + "\n" + changelogs[_calculations.UpdateChannel];
 
             }

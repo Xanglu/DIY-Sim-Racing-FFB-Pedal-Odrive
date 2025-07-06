@@ -88,10 +88,6 @@ namespace User.PluginSdkDemo
                 {
                     tmp_2.mode_select = 2;
                 }
-                if (Plugin._calculations.UpdateChannel == 2)
-                {
-                    tmp_2.mode_select = 3;
-                }
                 if (SSID.Length > 30 || PASS.Length > 30)
                 {
                     SSID_PASS_check = false;
@@ -704,11 +700,13 @@ namespace User.PluginSdkDemo
                             Plugin.ESPsync_serialPort.Open();
                             System.Threading.Thread.Sleep(200);
                             // ESP32 S3
+                            /*
                             if (Plugin.Settings.Using_CDC_bridge)
                             {
                                 Plugin.ESPsync_serialPort.RtsEnable = false;
                                 Plugin.ESPsync_serialPort.DtrEnable = true;
                             }
+                            */
                             Plugin.ESPsync_serialPort.RtsEnable = false;
                             Plugin.ESPsync_serialPort.DtrEnable = false;
 
@@ -788,10 +786,6 @@ namespace User.PluginSdkDemo
                 if (Plugin._calculations.UpdateChannel == 1)
                 {
                     tmp_2.mode_select = 2;
-                }
-                if (Plugin._calculations.UpdateChannel == 2)
-                {
-                    tmp_2.mode_select = 3;
                 }
                 if (SSID.Length > 30 || PASS.Length > 30)
                 {
@@ -1342,16 +1336,12 @@ namespace User.PluginSdkDemo
                 switch (Plugin._calculations.UpdateChannel)
                 {
                     case 0:
-                        downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/main/OTA/Plugin/DiyActivePedal.dll";
+                        downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/Plugin/DiyActivePedal.dll";
                         MSG_tmp += "Mainline release channel. ";
                         break;
                     case 1:
-                        downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/Plugin/DiyActivePedal.dll";
-                        MSG_tmp += "Dev-build channel. ";
-                        break;
-                    case 2:
                         downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/DailyBuild/plugin/DiyActivePedal.dll";
-                        MSG_tmp += "Daily-build channel. ";
+                        MSG_tmp += "Nightly-Build channel. ";
                         break;
                     default:
                         downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/main/OTA/Plugin/DiyActivePedal.dll";

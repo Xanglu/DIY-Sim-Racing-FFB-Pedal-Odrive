@@ -78,11 +78,13 @@ namespace User.PluginSdkDemo
                                     Plugin.ESPsync_serialPort.Open();
                                     System.Threading.Thread.Sleep(200);
                                     // ESP32 S3
+                                    /*
                                     if (Plugin.Settings.Using_CDC_bridge)
                                     {
                                         Plugin.ESPsync_serialPort.RtsEnable = false;
                                         Plugin.ESPsync_serialPort.DtrEnable = true;
                                     }
+                                    */
                                     //SystemSounds.Beep.Play();
                                     Plugin.Sync_esp_connection_flag = true;
                                     btn_connect_espnow_port.Content = "Disconnect";

@@ -196,6 +196,7 @@ namespace User.PluginSdkDemo
 
                                 //Pedal version and Plugin DAP version check
                                 Pedal_version[pedalSelected] = pedalState_read_st.payloadHeader_.version;
+                                /*
                                 if (Pedal_version[pedalSelected] != Constants.pedalConfigPayload_version && pedalState_read_st.payloadHeader_.payloadType == Constants.pedalStateBasicPayload_type)
                                 {
                                     if (!Version_warning_first_show_b[pedalSelected])
@@ -215,6 +216,7 @@ namespace User.PluginSdkDemo
                                         }
                                     }
                                 }
+                                */
 
 
                                 // CRC check
