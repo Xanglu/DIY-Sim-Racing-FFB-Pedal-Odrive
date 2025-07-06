@@ -75,19 +75,6 @@ ADS1220_WE& ADC() {
     adc.setDrdyMode(ADS1220_DRDY);
 
     Serial.println("ADC Started");
-
-    // Wait for DRDY to signal data ready
-    /*while (digitalRead(ADS1220_DRDY) == HIGH) {
-      delayMicroseconds(10);  // short wait to reduce CPU spin
-    }*/
-
-    //Serial.println("DRDY LOW");
-
-    // Read the voltage from the ADS1220
-    float voltage_mV = adc.getVoltage_mV();
-
-    Serial.println("Measured voltage: ");
-    Serial.println(voltage_mV);
     
     firstTime = false;
   }
@@ -119,8 +106,8 @@ void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
   updatedConversionFactor_f64 = 1.0f;
   if (LOADCELL_WEIGHT_RATING_KG>0)
   {
-      float excitationVoltage = refVoltageInMV_fl32;
-      float fullScale_mV = 2.0 * excitationVoltage; // 2 mV/V * Vexc
+      float excitationVoltage = refVoltageInMV_fl32 / 1000.0f;
+      float fullScale_mV = LOADCELL_SENSITIVITY_MV_V * excitationVoltage; // 2 mV/V * Vexc
       float loadcellRatingInGram_fl32 = (((float)loadcellRating_u8) * 1000.0f); // convert kg to gram
       float gramsPerMillivolt =  loadcellRatingInGram_fl32  / fullScale_mV;  // g per mV
       updatedConversionFactor_f64 = gramsPerMillivolt;
@@ -132,21 +119,10 @@ void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
 float LoadCell_ADS1220::getReadingKg() const {
   ADS1220_WE& adc = ADC();
 
-
-  // Serial.println("Wait for DRDY");
-
-  // float refVolt_fl32 = adc.getVRef_V();
-  //   refVoltageInMV_fl32 = refVolt_fl32 * 1000.0f; // convert to mV
-  //   Serial.print("Reference voltage: ");
-  //   Serial.println(refVolt_fl32);
-
-
   // Wait for DRDY to signal data ready
   /*while (digitalRead(ADS1220_DRDY) == HIGH) {
     delayMicroseconds(10);  // short wait to reduce CPU spin
   }*/
-
-  //Serial.println("DRDY LOW");
 
   // Read the voltage from the ADS1220
   float voltage_mV = adc.getVoltage_mV();
