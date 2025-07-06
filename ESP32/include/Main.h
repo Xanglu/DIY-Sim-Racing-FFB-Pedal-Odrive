@@ -456,6 +456,45 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 #endif
 
 
+
+// V6 version of dev PCB for ESP32 S3
+// flash instructions, see https://hutscape.com/tutorials/hello-arduino-esp32s3
+// 1. ESP32S3 Dev Module
+// 2. USB CDC On Boot Enabled
+#if PCB_VERSION == 13
+  // ADC defines
+  #define ADS1220_SCLK   6
+  #define ADS1220_DIN    7     // MOSI
+  #define ADS1220_DOUT   15    // MISO
+  #define ADS1220_DRDY   16
+  #define ADS1220_CS     17
+
+  // stepper pins
+  #define dirPinStepper    36
+  #define stepPinStepper   37
+
+  // level shifter is present on this PCB design
+  #define SENSORLESS_HOMING true
+  #define ISV57_TXPIN 1
+  #define ISV57_RXPIN 2
+
+  #define BRAKE_RESISTOR_PIN 35
+  #define USES_ADS1220
+
+  //#define BLUETOOTH_GAMEPAD
+  #define USB_JOYSTICK
+  //#define ESPNOW_Enable
+  //#define ESPNow_S3
+  #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 0
+  //#define ESPNow_Pairing_function
+  #define Pairing_GPIO 0
+  #define OTA_update
+  #define CONTROLLER_SPECIFIC_VIDPID
+
+  // #define ANGLE_SENSOR_GPIO 11 // disabled by default, since to much runtime impact of ADC
+#endif
+
+
 #ifdef ENABLE_ESP_NOW
   #define ESPNOW_Enable
   #define ESPNow_S3

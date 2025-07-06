@@ -234,9 +234,16 @@ KalmanFilter_2nd_order* kalman_2nd_order = NULL;
 /*                                                                                            */
 /**********************************************************************************************/
 
-#include "LoadCell.h"
-LoadCell_ADS1256* loadcell = NULL;
+#ifdef USES_ADS1220
+  /*  Uses ADS1220 */
+  #include "LoadCell_ads1220.h"
+  LoadCell_ADS1220* loadcell = NULL;
 
+#else
+  /*  Uses ADS1256 */
+  #include "LoadCell.h"
+  LoadCell_ADS1256* loadcell = NULL;
+#endif
 
 
 /**********************************************************************************************/
@@ -473,7 +480,16 @@ void setup()
   motorRevolutionsPerSteps_fl32 = 1.0f / ( (float)dap_calculationVariables_st.stepsPerMotorRevolution );
   // Serial.printf("Steps per motor revolution: %d\n", dap_calculationVariables_st.stepsPerMotorRevolution);
 
-  loadcell = new LoadCell_ADS1256();
+  #ifdef USES_ADS1220
+    /*  Uses ADS1220 */
+    loadcell = new LoadCell_ADS1220();
+
+  #else
+    /*  Uses ADS1256 */
+    loadcell = new LoadCell_ADS1256();
+  #endif
+
+  
 
   loadcell->setLoadcellRating(dap_config_st_local.payLoadPedalConfig_.loadcell_rating);
 
