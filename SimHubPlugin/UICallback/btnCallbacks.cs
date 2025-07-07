@@ -1,19 +1,21 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Media;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Serialization.Json;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
-using static User.PluginSdkDemo.DIY_FFB_Pedal;
 using User.PluginSdkDemo.UIFunction;
+using static User.PluginSdkDemo.DIY_FFB_Pedal;
 using MessageBox = System.Windows.MessageBox;
 
 namespace User.PluginSdkDemo
@@ -164,11 +166,42 @@ namespace User.PluginSdkDemo
                 {
                     bool compatibleMode = false;
                     DAP_config_st tmp_config;
+                    int version = 0;
+                    byte[] compatibleForce = new byte[6];
                     tmp_config = await GetProfileDataAsync(jsonUrl);
                     if (tmp_config.payloadHeader_.version < 150)
                     {
                         compatibleMode = true;
                         System.Windows.MessageBox.Show($"This config created in DAP{tmp_config.payloadHeader_.version}, compatible mode is on", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                        try
+                        {
+                            string jsonString;
+                            using (HttpClient client = new HttpClient())
+                            {
+                                jsonString = await client.GetStringAsync(jsonUrl);
+                                //return JsonConvert.DeserializeObject<Profile_Online>(jsonString);
+                            }
+                            dynamic data = JsonConvert.DeserializeObject(jsonString);
+                            version = (int)data["payloadHeader_"]["version"];
+
+                            if (version < 150)
+                            {
+                                //MessageBox.Show($"This config is created in DAP{version}, Compatible Mode on");
+                                compatibleMode = true;
+                                compatibleForce[0] = (byte)data["payloadPedalConfig_"]["relativeForce_p000"];
+                                compatibleForce[1] = (byte)data["payloadPedalConfig_"]["relativeForce_p020"];
+                                compatibleForce[2] = (byte)data["payloadPedalConfig_"]["relativeForce_p040"];
+                                compatibleForce[3] = (byte)data["payloadPedalConfig_"]["relativeForce_p060"];
+                                compatibleForce[4] = (byte)data["payloadPedalConfig_"]["relativeForce_p080"];
+                                compatibleForce[5] = (byte)data["payloadPedalConfig_"]["relativeForce_p100"];
+                            }
+
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
                     } 
                     float travel = (tmp_config.payloadPedalConfig_.pedalEndPosition - tmp_config.payloadPedalConfig_.pedalStartPosition) / 100.0f * (float)tmp_config.payloadPedalConfig_.lengthPedal_travel;
                     byte max_pos = (byte)(dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.pedalStartPosition + (travel / (float)dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.lengthPedal_travel * 100.0f));
@@ -230,12 +263,12 @@ namespace User.PluginSdkDemo
                             //get old verison file, auto convert to new config
                             compatibleMode = false;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.quantityOfControl = 6;
-                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce00 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p000;
-                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce01 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p020;
-                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce02 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p040;
-                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce03 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p060;
-                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce04 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p080;
-                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce05 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p100;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce00 = compatibleForce[0];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce01 = compatibleForce[1];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce02 = compatibleForce[2];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce03 = compatibleForce[3];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce04 = compatibleForce[4];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce05 = compatibleForce[5];
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel00 = 0;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel01 = 20;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel02 = 40;
@@ -462,7 +495,7 @@ namespace User.PluginSdkDemo
                         //JsonNode forecastNode = JsonNode.Parse(jsonString);
                         dynamic data = JsonConvert.DeserializeObject(jsonString);
                         int version = 0;
-
+                        byte[] compatibleForce = new byte[6];
                         try
                         {
                             version = (int)data["payloadHeader_"]["version"];
@@ -471,6 +504,12 @@ namespace User.PluginSdkDemo
                             {
                                 MessageBox.Show($"This config is created in DAP{version}, Compatible Mode on");
                                 compatibleMode = true;
+                                compatibleForce[0]= (byte)data["payloadPedalConfig_"]["relativeForce_p000"];
+                                compatibleForce[1] = (byte)data["payloadPedalConfig_"]["relativeForce_p020"];
+                                compatibleForce[2] = (byte)data["payloadPedalConfig_"]["relativeForce_p040"];
+                                compatibleForce[3] = (byte)data["payloadPedalConfig_"]["relativeForce_p060"];
+                                compatibleForce[4] = (byte)data["payloadPedalConfig_"]["relativeForce_p080"];
+                                compatibleForce[5] = (byte)data["payloadPedalConfig_"]["relativeForce_p100"];
                             }
                         }
                         catch (Exception ex)
@@ -580,12 +619,20 @@ namespace User.PluginSdkDemo
                             //get old verison file, auto convert to new config
                             compatibleMode = false;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.quantityOfControl = 6;
+                            /*
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce00 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p000;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce01 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p020;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce02 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p040;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce03 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p060;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce04 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p080;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce05 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p100;
+                            */
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce00 = compatibleForce[0];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce01 = compatibleForce[1];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce02 = compatibleForce[2];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce03 = compatibleForce[3];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce04 = compatibleForce[4];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce05 = compatibleForce[5];
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel00 = 0;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel01 = 20;
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel02 = 40;
@@ -1092,7 +1139,29 @@ namespace User.PluginSdkDemo
                         // Parse all of the JSON.
                         //JsonNode forecastNode = JsonNode.Parse(jsonString);
                         dynamic data = JsonConvert.DeserializeObject(jsonString);
+                        bool compatibleMode = false;
+                        int version = 0;
+                        byte[] compatibleForce = new byte[6];
+                        try
+                        {
+                            version = (int)data["payloadHeader_"]["version"];
 
+                            if (version < 150)
+                            {
+                                MessageBox.Show($"This config is created in DAP{version}, Compatible Mode on");
+                                compatibleMode = true;
+                                compatibleForce[0] = (byte)data["payloadPedalConfig_"]["relativeForce_p000"];
+                                compatibleForce[1] = (byte)data["payloadPedalConfig_"]["relativeForce_p020"];
+                                compatibleForce[2] = (byte)data["payloadPedalConfig_"]["relativeForce_p040"];
+                                compatibleForce[3] = (byte)data["payloadPedalConfig_"]["relativeForce_p060"];
+                                compatibleForce[4] = (byte)data["payloadPedalConfig_"]["relativeForce_p080"];
+                                compatibleForce[5] = (byte)data["payloadPedalConfig_"]["relativeForce_p100"];
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
 
 
                         payloadPedalConfig payloadPedalConfig_fromJson_st = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_;
@@ -1184,6 +1253,33 @@ namespace User.PluginSdkDemo
                         if (dap_config_st_rudder.payloadPedalConfig_.pedalEndPosition > 95)
                         {
                             dap_config_st_rudder.payloadPedalConfig_.pedalEndPosition = 95;
+                        }
+
+                        if (compatibleMode)
+                        {
+                            //get old verison file, auto convert to new config
+                            compatibleMode = false;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.quantityOfControl = 6;
+                            /*
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce00 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p000;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce01 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p020;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce02 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p040;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce03 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p060;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce04 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p080;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce05 = dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce_p100;
+                            */
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce00 = compatibleForce[0];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce01 = compatibleForce[1];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce02 = compatibleForce[2];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce03 = compatibleForce[3];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce04 = compatibleForce[4];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce05 = compatibleForce[5];
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel00 = 0;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel01 = 20;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel02 = 40;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel03 = 60;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel04 = 80;
+                            dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel05 = 100;
                         }
                     }
 

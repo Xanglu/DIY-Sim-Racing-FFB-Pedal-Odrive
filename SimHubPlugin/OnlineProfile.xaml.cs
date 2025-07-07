@@ -26,6 +26,7 @@ namespace User.PluginSdkDemo
         public string SelectedFileName { get; private set; }
         private DAP_config_st tmp_config;
         private byte[] force;
+        private byte[] compatibleForce;
         private byte[] travel;
         private int maxQuantity = 11;
         private int minQuantity = 6;
@@ -41,6 +42,7 @@ namespace User.PluginSdkDemo
             LoadProfiles();
             force = new byte[maxQuantity];
             travel = new byte[maxQuantity];
+            compatibleForce = new byte[minQuantity];
             for (int i = 0; i < maxQuantity; i++)
             {
                 force[i] = 0;
@@ -92,12 +94,20 @@ namespace User.PluginSdkDemo
                         //compatibleMode = true;
 
                         tmp_config.payloadPedalConfig_.quantityOfControl = 6;
+                        /*
                         tmp_config.payloadPedalConfig_.relativeForce00 = tmp_config.payloadPedalConfig_.relativeForce_p000;
                         tmp_config.payloadPedalConfig_.relativeForce01 = tmp_config.payloadPedalConfig_.relativeForce_p020;
                         tmp_config.payloadPedalConfig_.relativeForce02 = tmp_config.payloadPedalConfig_.relativeForce_p040;
                         tmp_config.payloadPedalConfig_.relativeForce03 = tmp_config.payloadPedalConfig_.relativeForce_p060;
                         tmp_config.payloadPedalConfig_.relativeForce04 = tmp_config.payloadPedalConfig_.relativeForce_p080;
                         tmp_config.payloadPedalConfig_.relativeForce05 = tmp_config.payloadPedalConfig_.relativeForce_p100;
+                        */
+                        tmp_config.payloadPedalConfig_.relativeForce00 = compatibleForce[0];
+                        tmp_config.payloadPedalConfig_.relativeForce01 = compatibleForce[1];
+                        tmp_config.payloadPedalConfig_.relativeForce02 = compatibleForce[2];
+                        tmp_config.payloadPedalConfig_.relativeForce03 = compatibleForce[3];
+                        tmp_config.payloadPedalConfig_.relativeForce04 = compatibleForce[4];
+                        tmp_config.payloadPedalConfig_.relativeForce05 = compatibleForce[5];
                         tmp_config.payloadPedalConfig_.relativeTravel00 = 0;
                         tmp_config.payloadPedalConfig_.relativeTravel01 = 20;
                         tmp_config.payloadPedalConfig_.relativeTravel02 = 40;
@@ -177,6 +187,28 @@ namespace User.PluginSdkDemo
             using (HttpClient client = new HttpClient())
             {
                 string jsonString = await client.GetStringAsync(url);
+                dynamic data = JsonConvert.DeserializeObject(jsonString);
+                int version = 0;
+                try
+                {
+                    version = (int)data["payloadHeader_"]["version"];
+
+                    if (version < 150)
+                    {
+                        //MessageBox.Show($"This config is created in DAP{version}, Compatible Mode on");
+                        compatibleMode = true;
+                        compatibleForce[0] = (byte)data["payloadPedalConfig_"]["relativeForce_p000"];
+                        compatibleForce[1] = (byte)data["payloadPedalConfig_"]["relativeForce_p020"];
+                        compatibleForce[2] = (byte)data["payloadPedalConfig_"]["relativeForce_p040"];
+                        compatibleForce[3] = (byte)data["payloadPedalConfig_"]["relativeForce_p060"];
+                        compatibleForce[4] = (byte)data["payloadPedalConfig_"]["relativeForce_p080"];
+                        compatibleForce[5] = (byte)data["payloadPedalConfig_"]["relativeForce_p100"];
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                }
                 //return JsonConvert.DeserializeObject<Profile_Online>(jsonString);
                 return JsonConvert.DeserializeObject<DAP_config_st>(jsonString);
             }
