@@ -147,6 +147,9 @@ float LoadCell_ADS1220::getReadingKg() const {
 
   // read current voltage
   if (false == timeoutReached_b) {
+    // Reset the flag immediately to be ready for the next conversion
+    newDataReady = false;
+    
     // Read the voltage from the ADS1220
     voltage_mV = adc.getVoltage_mV();
   }
