@@ -13,9 +13,19 @@ static const float LOADCELL_VARIANCE_MIN = 7.0 * 1e-5; // on 8th april 2025, app
 
 float updatedConversionFactor_f64 = 1.0f;
 #define CONVERSION_FACTOR LOADCELL_WEIGHT_RATING_KG / (LOADCELL_EXCITATION_V * (LOADCELL_SENSITIVITY_MV_V/1000.0f))
+#define TIMEOUT_FOR_DRDY_TO_BECOME_LOW (uint32_t)2000
+#define DELAY_IN_US_FOR_DRDY_TO_BECOME_LOW (uint32_t)20
 
 // reference voltage in milli-volts
 float refVoltageInMV_fl32 = 5000.0f;
+
+// This flag will be set to true by the ISR
+volatile bool newDataReady = false;
+
+// This is our Interrupt Service Routine
+void IRAM_ATTR drdyInterrupt() {
+  newDataReady = true;
+}
 
 
 ADS1220_WE& ADC() {
@@ -74,6 +84,10 @@ ADS1220_WE& ADC() {
     //adc.setDrdyMode(ADS1220_DOUT_DRDY);
     adc.setDrdyMode(ADS1220_DRDY);
 
+    // assign interrupt to DRDY falling edge to make waiting more efficient
+    attachInterrupt(digitalPinToInterrupt(FFB_ADS1220_DRDY), drdyInterrupt, FALLING);
+
+
     Serial.println("ADC Started");
     
     firstTime = false;
@@ -118,14 +132,25 @@ void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
 
 float LoadCell_ADS1220::getReadingKg() const {
   ADS1220_WE& adc = ADC();
+  unsigned int timeout_us = 0;//TIMEOUT_FOR_DRDY_TO_BECOME_LOW;
+  bool timeoutReached_b = false;
+  float voltage_mV = 0.0f;
+  
+  while(!newDataReady){
+    if(timeout_us < TIMEOUT_FOR_DRDY_TO_BECOME_LOW){
+      timeout_us += DELAY_IN_US_FOR_DRDY_TO_BECOME_LOW;  
+      delayMicroseconds(DELAY_IN_US_FOR_DRDY_TO_BECOME_LOW);
+    } else {
+      timeoutReached_b = true;
+    }
+  }
 
-  // Wait for DRDY to signal data ready
-  /*while (digitalRead(ADS1220_DRDY) == HIGH) {
-    delayMicroseconds(10);  // short wait to reduce CPU spin
-  }*/
-
-  // Read the voltage from the ADS1220
-  float voltage_mV = adc.getVoltage_mV();
+  // read current voltage
+  if (false == timeoutReached_b) {
+    // Read the voltage from the ADS1220
+    voltage_mV = adc.getVoltage_mV();
+  }
+  
   float weight_grams = voltage_mV * updatedConversionFactor_f64;
 
   float weight_kg = weight_grams / 1000.0f; // convert grams to kg
