@@ -58,7 +58,7 @@ namespace User.PluginSdkDemo
                     }
                     catch (Exception ex)
                     {
-                        TextBox_debugOutput.Text = ex.Message;
+                        //TextBox_debugOutput.Text = ex.Message;
                         //ConnectToPedal.IsChecked = false;
                         return;
                     }
@@ -620,14 +620,14 @@ namespace User.PluginSdkDemo
                                     }
                                     else
                                     {
-                                        TextBox_debugOutput.Text = "Payload config test 1: " + check_payload_config_b;
-                                        TextBox_debugOutput.Text += "Payload config test 2: " + check_crc_config_b;
+                                        TextBox2.Text = "Payload config test 1: " + check_payload_config_b;
+                                        TextBox2.Text += "Payload config test 2: " + check_crc_config_b;
                                     }
                                 }
                             }
                             // If non known array datatype was received, assume a text message was received and print it
                             // only print debug messages when debug mode is active as it degrades performance
-                            if (Plugin.Settings.advanced_b || _serial_monitor_window != null)
+                            if (true)
                             {
                                 byte[] destinationArray_sub = new byte[destBuffLength];
                                 Buffer.BlockCopy(destinationArray, 0, destinationArray_sub, 0, destBuffLength);
@@ -699,10 +699,12 @@ namespace User.PluginSdkDemo
 
 
                             double avgTime = timeCollector[3] / timeCntr[3];
+                            /*
                             if (Plugin.Settings.advanced_b)
                             {
                                 TextBox_debugOutput.Text = "Serial callback time in ms: " + avgTime.ToString();
                             }
+                            */
                             timeCntr[3] = 0;
                             timeCollector[3] = 0;
                         }

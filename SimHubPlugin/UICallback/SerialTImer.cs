@@ -80,7 +80,7 @@ namespace User.PluginSdkDemo
                     }
                     catch (Exception ex)
                     {
-                        TextBox_debugOutput.Text = ex.Message;
+                        TextBox2.Text = ex.Message;
                         //ConnectToPedal.IsChecked = false;
                         return;
                     }
@@ -484,8 +484,8 @@ namespace User.PluginSdkDemo
                                 }
                                 else
                                 {
-                                    TextBox_debugOutput.Text = "Payload config test 1: " + check_payload_config_b;
-                                    TextBox_debugOutput.Text += "Payload config test 2: " + check_crc_config_b;
+                                    TextBox2.Text = "Payload config test 1: " + check_payload_config_b;
+                                    TextBox2.Text += "Payload config test 2: " + check_crc_config_b;
                                 }
 
                             }
@@ -571,6 +571,7 @@ namespace User.PluginSdkDemo
                         stopwatch.Stop();
 
                         // Get the elapsed time
+                        /*
                         TimeSpan elapsedTime = stopwatch.Elapsed;
 
                         timeCollector[pedalSelected] += elapsedTime.TotalMilliseconds;
@@ -587,6 +588,7 @@ namespace User.PluginSdkDemo
                             timeCntr[pedalSelected] = 0;
                             timeCollector[pedalSelected] = 0;
                         }
+                        */
                     }
 
                 }

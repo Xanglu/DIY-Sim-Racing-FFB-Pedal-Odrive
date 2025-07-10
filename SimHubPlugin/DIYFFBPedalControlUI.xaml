@@ -536,7 +536,7 @@
                                         <Border Background="#7F4E4E4E" Height="808" CornerRadius="5,5,5,5" BorderThickness="0,0,0,0" Width="168" HorizontalAlignment="Center" >
                                             <StackPanel HorizontalAlignment="Center" Height="807" VerticalAlignment="Top" Width="160" Margin="0,5,0,0">
                                                 <localFunction:InfoSection_Pedal x:Name="PedalInfo" />
-                                                <TextBox x:Name="TextBox_debugOutput" HorizontalAlignment="Left" Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="160" Height="25" AutomationProperties.Name="TextBox2" BorderBrush="#00CCCCCC" Background="#00252525" FontSize="8" FontFamily="Arial" />
+                                                <TextBox x:Name="textBox_VersionUpdate" HorizontalAlignment="Left" Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="160" Height="25" AutomationProperties.Name="TextBox2" BorderBrush="#00CCCCCC" Background="#00252525" FontSize="8" FontFamily="Arial" />
                                                 <StackPanel Height="30" Width="250" Orientation="Horizontal">
                                                     <ComboBox x:Name="SerialPortSelection" SelectionChanged="SerialPortSelectionChanged" Width="76" ItemsSource="{Binding}" DisplayMemberPath="Display" SelectedValuePath="Value" FontSize="8" Height="20" MinHeight="20"/>
                                                     

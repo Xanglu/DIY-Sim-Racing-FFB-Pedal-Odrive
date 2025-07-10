@@ -50,6 +50,13 @@ namespace User.PluginSdkDemo
         public bool OTASettingUpdate_b;
         public int[] rssi;
         public byte[] ServoStatus;
+        public string[] pluginVersionReading;
+        public string[] updateChannelString = new[] { "main", "dev-build", "daily-build" };
+        public bool versionCheck_b;
+        public bool verisonCreate_b;
+        public Version pluginVersion;
+        public Version updateVerison;
+
         public uint RSSI_Value
         {
             get => _rssi_value;
@@ -132,9 +139,12 @@ namespace User.PluginSdkDemo
             OTASettingUpdate_b = false;
             rssi = new int[3] { 0, 0, 0 };
             ServoStatus = new byte[3] { 0, 0, 0 };
-            
-            
-    }
+            pluginVersionReading = new string[3] { "", "", ""};
+            versionCheck_b = false;
+            verisonCreate_b = false;
+
+
+        }
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {

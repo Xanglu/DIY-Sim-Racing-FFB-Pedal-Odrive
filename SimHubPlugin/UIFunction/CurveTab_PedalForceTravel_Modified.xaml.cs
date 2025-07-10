@@ -674,7 +674,7 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 System.Windows.Point Pointlcl = new System.Windows.Point(xs2[pointIdx], ys2[pointIdx]);
                 myPointCollection2.Add(Pointlcl);
-                calculation.Force_curve_Y[pointIdx] = dy * ys2[pointIdx];
+                calculation.Force_curve_Y[pointIdx] = ys2[pointIdx];
             }
             this.Polyline_BrakeForceCurve.Points = myPointCollection2;
         }
@@ -708,7 +708,7 @@ namespace User.PluginSdkDemo.UIFunction
                 round_x = Math.Max(0, Math.Min(round_x, 99));
                 calculation.current_pedal_travel_state = x_showed;
                 calculation.pedal_state_in_ratio = (byte)calculation.current_pedal_travel_state;
-                Canvas.SetTop(rect_State, mainCanvas.Height - calculation.Force_curve_Y[round_x] - rect_State.Height / 2);
+                Canvas.SetTop(rect_State, calculation.Force_curve_Y[round_x] - rect_State.Height / 2);
                 Canvas.SetLeft(text_state, Canvas.GetLeft(rect_State) /*+ rect_State.Width*/);
                 Canvas.SetTop(text_state, Canvas.GetTop(rect_State) - rect_State.Height);
                 text_state.Text = x_showed + "%";

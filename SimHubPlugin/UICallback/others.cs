@@ -1,19 +1,20 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Windows.UI.Notifications;
-using System.Windows;
-using System.Net.Http;
 
 namespace User.PluginSdkDemo
 {
@@ -477,7 +478,7 @@ namespace User.PluginSdkDemo
 
             //TextBox_debugOutput.Text = "CRC simhub calc: " + this.dap_config_st[indexOfSelectedPedal_u].payloadFooter_.checkSum + "    ";
 
-            TextBox_debugOutput.Text = String.Empty;
+            //TextBox_debugOutput.Text = String.Empty;
             if (Plugin.Settings.Pedal_ESPNow_Sync_flag[pedalIdx])
             {
                 if (Plugin.ESPsync_serialPort.IsOpen)
@@ -497,7 +498,7 @@ namespace User.PluginSdkDemo
                     catch (Exception caughtEx)
                     {
                         string errorMessage = caughtEx.Message;
-                        TextBox_debugOutput.Text = errorMessage;
+                        TextBox2.Text = errorMessage;
                     }
                 }
             }
@@ -520,7 +521,7 @@ namespace User.PluginSdkDemo
                     catch (Exception caughtEx)
                     {
                         string errorMessage = caughtEx.Message;
-                        TextBox_debugOutput.Text = errorMessage;
+                        TextBox2.Text = errorMessage;
                     }
 
                 }
@@ -552,7 +553,7 @@ namespace User.PluginSdkDemo
                 if (Plugin.Settings.file_enable_check[profile_select, pedalIdx] == 1)
                 {
                     Sendconfig(pedalIdx);
-                    TextBox_debugOutput.Text = "config was sent to pedal";
+                    //TextBox_debugOutput.Text = "config was sent to pedal";
                 }
             }
 
@@ -1149,6 +1150,41 @@ namespace User.PluginSdkDemo
                     _serial_monitor_window.TextBox_SerialMonitor.ScrollToEnd();
 
                 }
+            }
+        }
+
+        public async void CheckForUpdateAsync()
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    string json = await client.GetStringAsync(Constants.version_control_url);
+                    JObject obj = JObject.Parse(json);
+                    var results = new List<string>();
+
+                    for (int i = 0; i < Plugin._calculations.updateChannelString.Length; i++)
+                    {
+                        string channel = Plugin._calculations.updateChannelString[i];
+                        if (obj.ContainsKey(channel))
+                        {
+                            Plugin._calculations.pluginVersionReading[i] = (string)obj[channel]["version"];
+                        }
+                        else
+                        {
+                            Plugin._calculations.pluginVersionReading[i] = "N/A";
+                        }
+                    }
+                    Plugin._calculations.versionCheck_b = true;
+                    
+                }
+                //textBox_VersionUpdate.Text = "Stable:"+ Plugin._calculations.pluginVersionReading[0]+" nightly:"+ Plugin._calculations.pluginVersionReading[1]; ;
+
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show($"Error:{ex.Message}");
+                Plugin._calculations.versionCheck_b = false;
             }
         }
     }

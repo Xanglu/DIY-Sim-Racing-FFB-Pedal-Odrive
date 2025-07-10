@@ -56,7 +56,7 @@ namespace User.PluginSdkDemo
                 catch (Exception caughtEx)
                 {
                     string errorMessage = caughtEx.Message;
-                    TextBox_debugOutput.Text = errorMessage;
+                    TextBox2.Text = errorMessage;
                 }
             }
         }
@@ -140,7 +140,7 @@ namespace User.PluginSdkDemo
                         catch (Exception caughtEx)
                         {
                             string errorMessage = caughtEx.Message;
-                            TextBox_debugOutput.Text = errorMessage;
+                            TextBox2.Text = errorMessage;
                         }
                     }
                 }
@@ -336,7 +336,7 @@ namespace User.PluginSdkDemo
                     try
                     {
                         openSerialAndAddReadCallback(indexOfSelectedPedal_u);
-                        TextBox_debugOutput.Text = "Serialport open";
+                        //TextBox_debugOutput.Text = "Serialport open";
                         ConnectToPedal.IsChecked = true;
                         btn_pedal_connect.Content = "Disconnect";
 
@@ -351,7 +351,7 @@ namespace User.PluginSdkDemo
                     }
                     catch (Exception ex)
                     {
-                        TextBox_debugOutput.Text = ex.Message;
+                        TextBox2.Text = ex.Message;
                         ConnectToPedal.IsChecked = false;
                     }
 
@@ -363,7 +363,7 @@ namespace User.PluginSdkDemo
                     //Plugin._serialPort[indexOfSelectedPedal_u].DataReceived -= sp_DataReceived;
 
                     ConnectToPedal.IsChecked = false;
-                    TextBox_debugOutput.Text = "Serialport already open, close it";
+                    TextBox2.Text = "Serialport already open, close it";
                     Plugin.Settings.connect_status[indexOfSelectedPedal_u] = 0;
                     Plugin.Settings.connect_flag[indexOfSelectedPedal_u] = 0;
                     Plugin.connectSerialPort[indexOfSelectedPedal_u] = false;
@@ -374,7 +374,7 @@ namespace User.PluginSdkDemo
             {
                 ConnectToPedal.IsChecked = false;
                 closeSerialAndStopReadCallback(indexOfSelectedPedal_u);
-                TextBox_debugOutput.Text = "Serialport close";
+                TextBox2.Text = "Serialport close";
                 Plugin.connectSerialPort[indexOfSelectedPedal_u] = false;
                 Plugin.Settings.connect_status[indexOfSelectedPedal_u] = 0;
                 Plugin.Settings.connect_flag[indexOfSelectedPedal_u] = 0;
@@ -426,7 +426,7 @@ namespace User.PluginSdkDemo
                     catch (Exception caughtEx)
                     {
                         string errorMessage = caughtEx.Message;
-                        TextBox_debugOutput.Text = errorMessage;
+                        TextBox2.Text = errorMessage;
                     }
                 }
             }
@@ -469,7 +469,7 @@ namespace User.PluginSdkDemo
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string content = (string)openFileDialog.FileName;
-                    TextBox_debugOutput.Text = content;
+                    //TextBox_debugOutput.Text = content;
 
                     string filePath = openFileDialog.FileName;
 
@@ -643,7 +643,7 @@ namespace User.PluginSdkDemo
                     }
 
                     updateTheGuiFromConfig();
-                    TextBox_debugOutput.Text = "Config new imported!";
+                    //TextBox_debugOutput.Text = "Config new imported!";
                     TextBox2.Text = "Open " + openFileDialog.FileName;
                 }
             }
@@ -691,7 +691,7 @@ namespace User.PluginSdkDemo
 
 
                     System.IO.File.WriteAllText(fileName, jsonString);
-                    TextBox_debugOutput.Text = "Config new exported!";
+                    //TextBox_debugOutput.Text = "Config new exported!";
                     TextBox2.Text = "Save " + saveFileDialog.FileName;
                 }
             }
@@ -986,7 +986,7 @@ namespace User.PluginSdkDemo
                 catch (Exception caughtEx)
                 {
                     string errorMessage = caughtEx.Message;
-                    TextBox_debugOutput.Text = errorMessage;
+                    TextBox2.Text = errorMessage;
                 }
             }
         }
@@ -1114,7 +1114,7 @@ namespace User.PluginSdkDemo
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string content = (string)openFileDialog.FileName;
-                    TextBox_debugOutput.Text = content;
+                    //TextBox_debugOutput.Text = content;
 
                     string filePath = openFileDialog.FileName;
 
@@ -1331,7 +1331,7 @@ namespace User.PluginSdkDemo
                 catch (Exception caughtEx)
                 {
                     string errorMessage = caughtEx.Message;
-                    TextBox_debugOutput.Text = errorMessage;
+                    TextBox2.Text = errorMessage;
                 }
             }
         }
@@ -1365,7 +1365,7 @@ namespace User.PluginSdkDemo
                 catch (Exception caughtEx)
                 {
                     string errorMessage = caughtEx.Message;
-                    TextBox_debugOutput.Text = errorMessage;
+                    TextBox2.Text = errorMessage;
                 }
             }
         }
@@ -1400,7 +1400,7 @@ namespace User.PluginSdkDemo
                 catch (Exception caughtEx)
                 {
                     string errorMessage = caughtEx.Message;
-                    TextBox_debugOutput.Text = errorMessage;
+                    TextBox2.Text = errorMessage;
                 }
             }
         }

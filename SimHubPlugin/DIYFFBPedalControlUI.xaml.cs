@@ -177,7 +177,8 @@ namespace User.PluginSdkDemo
             color_RSSI_3 = new SolidColorBrush(Color.FromArgb(210, buttonBackground_.Color.R, buttonBackground_.Color.G, buttonBackground_.Color.B));
             color_RSSI_4 = new SolidColorBrush(Color.FromArgb(255, buttonBackground_.Color.R, buttonBackground_.Color.G, buttonBackground_.Color.B));
             Red_Warning = new SolidColorBrush(Color.FromArgb(255, 244, 67, 67));
-            White_Default = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));           
+            White_Default = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
+            CheckForUpdateAsync();
         }
 
 
@@ -268,13 +269,13 @@ namespace User.PluginSdkDemo
                     Plugin.Settings.selectedComPortNames[indexOfSelectedPedal_u] = tmp;
                     Plugin._serialPort[indexOfSelectedPedal_u].PortName = tmp;
                 }
-                TextBox_debugOutput.Text = "COM port selected: " + Plugin.Settings.selectedComPortNames[indexOfSelectedPedal_u];
+                //TextBox_debugOutput.Text = "COM port selected: " + Plugin.Settings.selectedComPortNames[indexOfSelectedPedal_u];
 
             }
             catch (Exception caughtEx)
             {
                 string errorMessage = caughtEx.Message;
-                TextBox_debugOutput.Text = errorMessage;
+                TextBox2.Text = errorMessage;
             }
         }
 
@@ -302,13 +303,13 @@ namespace User.PluginSdkDemo
                     Plugin.Settings.ESPNow_port = tmp;
                     Plugin.ESPsync_serialPort.PortName = tmp;
                 }
-                TextBox_debugOutput.Text = "COM port selected: " + Plugin.Settings.ESPNow_port;
+                //TextBox_debugOutput.Text = "COM port selected: " + Plugin.Settings.ESPNow_port;
 
             }
             catch (Exception caughtEx)
             {
                 string errorMessage = caughtEx.Message;
-                TextBox_debugOutput.Text = errorMessage;
+                TextBox2.Text = errorMessage;
             }
 
 

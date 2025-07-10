@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 
 namespace User.PluginSdkDemo
 {
@@ -148,7 +150,7 @@ namespace User.PluginSdkDemo
             try
             {
                 SerialPortSelection.SelectedValue = tmp;
-                TextBox_debugOutput.Text = "Serial port selected: " + SerialPortSelection.SelectedValue;
+                //TextBox_debugOutput.Text = "Serial port selected: " + SerialPortSelection.SelectedValue;
 
             }
             catch (Exception caughtEx)
@@ -198,6 +200,33 @@ namespace User.PluginSdkDemo
                     Checkbox_auto_remove_serial_line_bridge.IsChecked = false;
                 }
 
+            }
+
+
+            //verison check
+            if (Plugin._calculations.versionCheck_b)
+            {
+                if (Plugin._calculations.verisonCreate_b == false)
+                {
+                    Plugin._calculations.updateVerison = new Version(Plugin._calculations.pluginVersionReading[0]);
+                    Plugin._calculations.pluginVersion = new Version(Constants.pluginVersion);
+                    Plugin._calculations.verisonCreate_b = true;
+                }
+
+                if (Plugin._calculations.updateVerison > Plugin._calculations.pluginVersion)
+                {
+                    textBox_VersionUpdate.Text = "New Verison:" + Plugin._calculations.pluginVersionReading[0];
+                    textBox_VersionUpdate.Foreground=System.Windows.Media.Brushes.Red;
+                }
+                else
+                {
+                    textBox_VersionUpdate.Text = "";
+                    /*
+                    textBox_VersionUpdate.Text = "No update";
+                    textBox_VersionUpdate.Text += "\nOnline Verison:" + Plugin._calculations.updateVerison.ToString();
+                    textBox_VersionUpdate.Foreground = System.Windows.Media.Brushes.White;
+                    */
+                }
             }
 
         }

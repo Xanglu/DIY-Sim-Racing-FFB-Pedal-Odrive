@@ -3,7 +3,7 @@
 #include "DiyActivePedal_types.h"
 #include "MovingAverageFilter.h"
 #include "SignalFilter.h"
-MovingAverageFilter averagefilter_rudder(100);
+MovingAverageFilter averagefilter_rudder(200);
 MovingAverageFilter averagefilter_rudder_force(50);
 class Rudder{
   public:
@@ -28,7 +28,7 @@ class Rudder{
   //bool IsReady = false;
   Rudder()
   {
-    kalman_rudder=new KalmanFilter(3.0f);
+    kalman_rudder=new KalmanFilter(0.1f);
   }
   void offset_calculate(DAP_calculationVariables_st* calcVars_st)
   {
@@ -54,8 +54,8 @@ class Rudder{
       {
         offset_raw=0;
       }
-      offset_filter=(int32_t)kalman_rudder->filteredValue(offset_raw+Center_offset,0.0f,1);
-      //offset_filter=averagefilter_rudder.process(offset_raw+Center_offset);
+      //offset_filter=(int32_t)kalman_rudder->filteredValue(offset_raw+Center_offset,0.0f,1);
+      offset_filter=averagefilter_rudder.process(offset_raw+Center_offset);
     }
     else
     {
