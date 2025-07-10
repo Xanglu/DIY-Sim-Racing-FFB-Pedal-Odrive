@@ -28,7 +28,7 @@ class Rudder{
   //bool IsReady = false;
   Rudder()
   {
-    kalman_rudder=new KalmanFilter(0.1f);
+    kalman_rudder=new KalmanFilter(3.0f);
   }
   void offset_calculate(DAP_calculationVariables_st* calcVars_st)
   {
@@ -54,8 +54,10 @@ class Rudder{
       {
         offset_raw=0;
       }
-      //offset_filter=(int32_t)kalman_rudder->filteredValue(offset_raw+Center_offset,0.0f,1);
-      offset_filter=averagefilter_rudder.process(offset_raw+Center_offset);
+      offset_filter=(int32_t)kalman_rudder->filteredValue(offset_raw+Center_offset,0.0f,1);
+      //offset_filter=averagefilter_rudder.process(offset_raw+Center_offset);
+      //cap offset filter to prevent over the endstop value
+      offset_filter=constrain(offset_filter,calcVars_st->stepperPosMin_default,calcVars_st->stepperPosMax_default);
     }
     else
     {
