@@ -56,7 +56,9 @@ namespace User.PluginSdkDemo
         public bool verisonCreate_b;
         public Version pluginVersion;
         public Version updateVerison;
-
+        public vJoyInterfaceWrap.vJoy _joystick;
+        public bool IsJoystickInitialized = false;
+        public uint rudderType;
         public uint RSSI_Value
         {
             get => _rssi_value;
@@ -142,7 +144,8 @@ namespace User.PluginSdkDemo
             pluginVersionReading = new string[3] { "", "", ""};
             versionCheck_b = false;
             verisonCreate_b = false;
-
+            _joystick = new vJoyInterfaceWrap.vJoy();
+            rudderType = 0;
 
         }
         public event PropertyChangedEventHandler PropertyChanged;
@@ -150,5 +153,7 @@ namespace User.PluginSdkDemo
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+
     }
 }

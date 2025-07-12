@@ -328,6 +328,8 @@ struct DAP_calculationVariables_st
   float WS_freq;
   bool Rudder_status;
   bool isRudderInitialized=false;
+  bool helicopterRudderStatus;
+  bool isHelicopterRudderInitialized=false;
   uint8_t pedal_type;
   uint32_t sync_pedal_position;
   uint32_t current_pedal_position;
@@ -366,7 +368,15 @@ enum class PedalSystemAction
   ESP_BOOT_INTO_DOWNLOAD_MODE,
   PRINT_PEDAL_INFO
 };
-
+enum class RudderAction
+{
+  NONE,
+  RUDDER_THROTTLE_AND_BRAKE,
+  RUDDER_CLEAR_RUDDER_STATUS,
+  RUDDER_THROTTLE_AND_CLUTCH,
+  HELIRUDDER_THROTTLE_AND_BRAKE,
+  HELIRUDDER_THROTTLE_AND_CLUTCH
+};
 
 class DAP_config_class {
 public:

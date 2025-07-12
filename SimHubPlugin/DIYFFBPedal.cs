@@ -110,7 +110,9 @@ namespace User.PluginSdkDemo
             None,
             EnableRudderTwoPedals,
             ClearRudderStatus,
-            EnableRudderThreePedals
+            EnableRudderThreePedals,
+            EnableHeliRudderTwoPedals,
+            EnableHeliRudderThreePedals
 
         };
 
@@ -994,14 +996,29 @@ namespace User.PluginSdkDemo
                 tmp.payloadPedalAction_.impact_value = 0;
                 tmp.payloadPedalAction_.Trigger_CV_1 = 0;
                 tmp.payloadPedalAction_.Trigger_CV_2 = 0;
-                if (Rudder_Pedal_idx[0] == 0)
+                if (_calculations.rudderType == 0)
                 {
-                    tmp.payloadPedalAction_.Rudder_action = (byte)RudderAction.EnableRudderThreePedals;
+                    if (Rudder_Pedal_idx[0] == 0)
+                    {
+                        tmp.payloadPedalAction_.Rudder_action = (byte)RudderAction.EnableRudderThreePedals;
+                    }
+                    else
+                    {
+                        tmp.payloadPedalAction_.Rudder_action = (byte)RudderAction.EnableRudderTwoPedals;
+                    }
                 }
-                else
+                if (_calculations.rudderType == 1)
                 {
-                    tmp.payloadPedalAction_.Rudder_action = (byte)RudderAction.EnableRudderTwoPedals;
+                    if (Rudder_Pedal_idx[0] == 0)
+                    {
+                        tmp.payloadPedalAction_.Rudder_action = (byte)RudderAction.EnableHeliRudderThreePedals;
+                    }
+                    else
+                    {
+                        tmp.payloadPedalAction_.Rudder_action = (byte)RudderAction.EnableHeliRudderTwoPedals;
+                    }
                 }
+
                 
                 tmp.payloadPedalAction_.Rudder_brake_action = 0;
 

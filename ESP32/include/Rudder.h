@@ -136,7 +136,7 @@ class Rudder_G_Force{
 
   }
 };
-
+MovingAverageFilter averagefilter_helirudder(200);
 class helicoptersRudder{
   public:
   int32_t Center_offset;
@@ -179,12 +179,12 @@ class helicoptersRudder{
     dead_zone=20;
     Center_offset=calcVars_st->stepperPosMin+ calcVars_st->stepperPosRange/2.0f;
     float center_deadzone = 0.51f;
-    if(calcVars_st->Rudder_status)
+    if(calcVars_st->helicopterRudderStatus)
     {
       //no press status
       if(currentForceReading<pedalPreload)
       {
-        if(calcVars_st->isRudderInitialized)
+        if(calcVars_st->isHelicopterRudderInitialized)
         {
           if(abs((1-position_ratio_sync)-position_ratio_last)>deadzoneTolerance)
           {
@@ -220,7 +220,7 @@ class helicoptersRudder{
 
       }
       //offset_filter=(int32_t)kalman_rudder->filteredValue(offset_raw+Center_offset,0.0f,1);
-      offset_filter=averagefilter_rudder.process(offset_raw+Center_offset);
+      offset_filter=averagefilter_helirudder.process(offset_raw+Center_offset);
       //cap offset filter to prevent over the endstop value
       offset_filter=constrain(offset_filter,calcVars_st->stepperPosMin_default,calcVars_st->stepperPosMax_default);
     }

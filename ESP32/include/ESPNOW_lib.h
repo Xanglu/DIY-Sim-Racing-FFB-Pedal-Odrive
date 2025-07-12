@@ -39,8 +39,11 @@ bool OTA_update_action_b=false;
 bool Config_update_b=false;
 bool Rudder_initializing = false;
 bool Rudder_deinitializing = false;
+bool HeliRudder_initializing = false;
+bool HeliRudder_deinitializing = false;
 bool ESPNOW_BootIntoDownloadMode = false;
 bool Get_Rudder_action_b=false;
+bool Get_HeliRudder_action_b=false;
 bool printPedalInfo_b=false;
 unsigned long Rudder_initialized_time=0;
 
@@ -391,10 +394,10 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
                     Serial.print("\r\n");
                     */
                   }
-                  if(dap_actions_st.payloadPedalAction_.Rudder_action==1 || dap_actions_st.payloadPedalAction_.Rudder_action==3)
+                  if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::RUDDER_THROTTLE_AND_BRAKE || dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::RUDDER_THROTTLE_AND_CLUTCH)
                   {
                     Get_Rudder_action_b=true;
-                    if(dap_actions_st.payloadPedalAction_.Rudder_action==3)
+                    if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::RUDDER_THROTTLE_AND_CLUTCH)
                     {
                       if (dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type == 2)
                       {
@@ -421,6 +424,36 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
                       //Serial.println(dap_calculationVariables_st.Rudder_status);
                     }
                   }
+                  if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_BRAKE || dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_CLUTCH)
+                  {
+                    Get_HeliRudder_action_b=true;
+                    if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_CLUTCH)
+                    {
+                      if (dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type == 2)
+                      {
+                        Recv_mac=Clu_mac;
+                        //ESPNow.add_peer(Recv_mac);
+                      }
+                    }
+                    if(dap_calculationVariables_st.helicopterRudderStatus==false)
+                    {
+                      dap_calculationVariables_st.helicopterRudderStatus=true;
+                      HeliRudder_initializing=true;
+                      //Serial.println("Rudder on");
+                      moveSlowlyToPosition_b=true;
+                      //Serial.print("status:");
+                      //Serial.println(dap_calculationVariables_st.Rudder_status);
+                    }
+                    else
+                    {
+                      dap_calculationVariables_st.helicopterRudderStatus=false;
+                      //Serial.println("Rudder off");
+                      HeliRudder_deinitializing=true;
+                      moveSlowlyToPosition_b=true;
+                      //Serial.print("status:");
+                      //Serial.println(dap_calculationVariables_st.Rudder_status);
+                    }
+                  }
                   if(dap_actions_st.payloadPedalAction_.Rudder_brake_action==1)
                   {
                     Get_Rudder_action_b=true;
@@ -440,12 +473,14 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
                     }
                   }
                   //clear rudder status
-                  if(dap_actions_st.payloadPedalAction_.Rudder_action==2)
+                  if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::RUDDER_CLEAR_RUDDER_STATUS)
                   {
                     dap_calculationVariables_st.Rudder_status=false;
+                    dap_calculationVariables_st.helicopterRudderStatus=false;
                     dap_calculationVariables_st.rudder_brake_status=false;
                     //Serial.println("Rudder Status Clear");
                     Rudder_deinitializing=true;
+                    HeliRudder_deinitializing=true;
                     moveSlowlyToPosition_b=true;
                   }
                 }

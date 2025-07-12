@@ -59,6 +59,7 @@ namespace User.PluginSdkDemo.UIFunction
             set
             {
                 SetValue(Settings_Property, value);
+                /*
                 if (Settings.vjoy_output_flag == 1)
                 {
                     Vjoy_out_check.IsChecked = true;
@@ -75,6 +76,7 @@ namespace User.PluginSdkDemo.UIFunction
                 {
                     Vjoy_out_check.IsChecked = false;
                 }
+                */
 
 
                 updateUI();
@@ -160,7 +162,7 @@ namespace User.PluginSdkDemo.UIFunction
                     {
                         checkbox_auto_connect.IsChecked = false;
                     }
-                    Label_vjoy_order.Content = Settings.vjoy_order;
+                    //Label_vjoy_order.Content = Settings.vjoy_order;
                 }
 
             }
@@ -392,6 +394,7 @@ namespace User.PluginSdkDemo.UIFunction
 
         private void btn_plus_Click(object sender, RoutedEventArgs e)
         {
+            /*
             _joystick.RelinquishVJD(Settings.vjoy_order);
 
             Settings.vjoy_order += 1;
@@ -450,10 +453,12 @@ namespace User.PluginSdkDemo.UIFunction
                         return;
                 };
             }
+            */
         }
 
         private void btn_minus_Click(object sender, RoutedEventArgs e)
         {
+            /*
             _joystick.RelinquishVJD(Settings.vjoy_order);
 
             Settings.vjoy_order -= 1;
@@ -511,6 +516,7 @@ namespace User.PluginSdkDemo.UIFunction
                         return;
                 };
             }
+            */
         }
     }
 }

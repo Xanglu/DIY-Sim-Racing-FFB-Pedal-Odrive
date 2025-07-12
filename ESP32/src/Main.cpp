@@ -123,7 +123,7 @@ Road_impact_effect _Road_impact_effect;
 Custom_vibration CV1;
 Custom_vibration CV2;
 Rudder _rudder;
-//helicoptersRudder _rudder;
+helicoptersRudder helicopterRudder_;
 Rudder_G_Force _rudder_g_force;
 MovingAverageFilter averagefilter_joystick(40);
 #define ABS_OSCILLATION
@@ -959,7 +959,9 @@ void pedalUpdateTask( void * pvParameters )
       _rudder_g_force.offset_calculate(&dap_calculationVariables_st);
       dap_calculationVariables_st.update_stepperMaxpos(_rudder_g_force.offset_filter);
       _rudder.offset_calculate(&dap_calculationVariables_st);
-      dap_calculationVariables_st.update_stepperMinpos(_rudder.offset_filter);
+      helicopterRudder_.offset_calculate(&dap_calculationVariables_st);
+      if(dap_calculationVariables_st.Rudder_status) dap_calculationVariables_st.update_stepperMinpos(_rudder.offset_filter);
+      if(dap_calculationVariables_st.helicopterRudderStatus) dap_calculationVariables_st.update_stepperMinpos(helicopterRudder_.offset_filter);
       #ifdef ESPNow_debug_rudder
         if(millis()-debugMessageLast>500)
         {
@@ -992,7 +994,7 @@ void pedalUpdateTask( void * pvParameters )
     // detect loadcell outlier
     float loadcellDifferenceToLastCycle_fl32 = loadcellReading - previousLoadcellReadingInKg_fl32;
     previousLoadcellReadingInKg_fl32 = loadcellReading;
-    if(!dap_calculationVariables_st.Rudder_status)
+    if(!dap_calculationVariables_st.Rudder_status && !dap_calculationVariables_st.helicopterRudderStatus)
     {
       //make the force reading skip only in pedal mode
       if (fabsf(loadcellDifferenceToLastCycle_fl32) > 5.0f)
@@ -1205,53 +1207,93 @@ void pedalUpdateTask( void * pvParameters )
 
     //Rudder initialzing and de initializing
     #ifdef ESPNOW_Enable
-    if(dap_calculationVariables_st.Rudder_status)
-    {
-      if(Rudder_initializing)
+      if(dap_calculationVariables_st.Rudder_status)
+      {
+        if(Rudder_initializing)
+        {
+          moveSlowlyToPosition_b=true;
+          //Serial.println("moving to center");
+        }
+        if(Rudder_initializing && (Rudder_real_poisiton<52 && Rudder_real_poisiton>48))
+        {
+          if(Rudder_initialized_time==0)
+          {
+            Rudder_initialized_time=millis();
+          }
+          else
+          {
+            unsigned long Rudder_initialzing_time_Now = millis();
+            //wait 3s for the initializing
+            //Serial.print("Rudder initializing...");
+            //Serial.println(Rudder_initialzing_time_Now-Rudder_initialized_time);
+            if( (Rudder_initialzing_time_Now-Rudder_initialized_time)> Rudder_timeout )
+            {
+              Rudder_initializing=false;
+              moveSlowlyToPosition_b=false;
+              Serial.println("Rudder initialized");
+              dap_calculationVariables_st.isRudderInitialized=true;
+              Rudder_initialized_time=0;
+              #ifdef USING_BUZZER
+                Buzzer.play_melody_tone(melody_Airship_theme, sizeof(melody_Airship_theme)/sizeof(melody_Airship_theme[0]),melody_Airship_theme_duration);
+              #endif
+            }
+          }
+          
+
+        }
+      }
+      if(Rudder_deinitializing)
       {
         moveSlowlyToPosition_b=true;
-        //Serial.println("moving to center");
+        //Serial.println("moving to min end stop");
       }
-      if(Rudder_initializing && (Rudder_real_poisiton<52 && Rudder_real_poisiton>48))
+
+      //helicopter rudder initialzied
+      if(dap_calculationVariables_st.helicopterRudderStatus)
       {
-        if(Rudder_initialized_time==0)
+        if(HeliRudder_initializing)
         {
-          Rudder_initialized_time=millis();
+          moveSlowlyToPosition_b=true;
+          //Serial.println("moving to center");
         }
-        else
+        if(HeliRudder_initializing && (Rudder_real_poisiton<52 && Rudder_real_poisiton>48))
         {
-          unsigned long Rudder_initialzing_time_Now = millis();
-          //wait 3s for the initializing
-          //Serial.print("Rudder initializing...");
-          //Serial.println(Rudder_initialzing_time_Now-Rudder_initialized_time);
-          if( (Rudder_initialzing_time_Now-Rudder_initialized_time)> Rudder_timeout )
+          if(Rudder_initialized_time==0)
           {
-            Rudder_initializing=false;
-            moveSlowlyToPosition_b=false;
-            Serial.println("Rudder initialized");
-            dap_calculationVariables_st.isRudderInitialized=true;
-            Rudder_initialized_time=0;
-            #ifdef USING_BUZZER
-              Buzzer.play_melody_tone(melody_Airship_theme, sizeof(melody_Airship_theme)/sizeof(melody_Airship_theme[0]),melody_Airship_theme_duration);
-            #endif
+            Rudder_initialized_time=millis();
+          }
+          else
+          {
+            unsigned long Rudder_initialzing_time_Now = millis();
+            //wait 3s for the initializing
+            //Serial.print("Rudder initializing...");
+            //Serial.println(Rudder_initialzing_time_Now-Rudder_initialized_time);
+            if( (Rudder_initialzing_time_Now-Rudder_initialized_time)> Rudder_timeout )
+            {
+              HeliRudder_initializing=false;
+              moveSlowlyToPosition_b=false;
+              Serial.println("HeliRudder initialized");
+              dap_calculationVariables_st.isHelicopterRudderInitialized=true;
+              Rudder_initialized_time=0;
+              #ifdef USING_BUZZER
+                Buzzer.play_melody_tone(melody_Airship_theme, sizeof(melody_Airship_theme)/sizeof(melody_Airship_theme[0]),melody_Airship_theme_duration);
+              #endif
+            }
           }
         }
-        
-
       }
-    }
-    if(Rudder_deinitializing)
-    {
-      moveSlowlyToPosition_b=true;
-        //Serial.println("moving to min end stop");
-    }
-    if(Rudder_deinitializing && (Rudder_real_poisiton< 2 ))
-    {
-      Rudder_deinitializing=false;
-      moveSlowlyToPosition_b=false;
-      Serial.println("Rudder deinitialized");
-      dap_calculationVariables_st.isRudderInitialized=false;
-    }
+      if(HeliRudder_deinitializing)
+      {
+        moveSlowlyToPosition_b=true;
+          //Serial.println("moving to min end stop");
+      }
+      if(HeliRudder_deinitializing && (Rudder_real_poisiton< 2 ))
+      {
+        HeliRudder_deinitializing=false;
+        moveSlowlyToPosition_b=false;
+        Serial.println("HeliRudder deinitialized");
+        dap_calculationVariables_st.isHelicopterRudderInitialized=false;
+      }
     #endif
 
     //Serial.println(Position_check);
@@ -2476,7 +2518,13 @@ void ESPNOW_SyncTask( void * pvParameters )
         Buzzer.single_beep_tone(700,100);
         #endif
       }
-
+      if(Get_HeliRudder_action_b)
+      {
+        Get_HeliRudder_action_b=false;
+        #ifdef USING_BUZZER
+        Buzzer.single_beep_tone(700,100);
+        #endif
+      }
       if(ESPNOW_BootIntoDownloadMode)
       {
         #ifdef ESPNow_S3
@@ -2491,7 +2539,7 @@ void ESPNOW_SyncTask( void * pvParameters )
         ESPNOW_BootIntoDownloadMode = false;
       }
       //rudder sync after rudder done initializing
-      if(dap_calculationVariables_st.Rudder_status && !Rudder_initializing)
+      if((dap_calculationVariables_st.Rudder_status || dap_calculationVariables_st.helicopterRudderStatus) && (!Rudder_initializing && !HeliRudder_initializing))
       {              
         dap_calculationVariables_st.current_pedal_position_ratio=((float)(dap_calculationVariables_st.current_pedal_position-dap_calculationVariables_st.stepperPosMin_default))/((float)dap_calculationVariables_st.stepperPosRange_default);
         dap_rudder_sending.payloadRudderState_.pedal_position_ratio=dap_calculationVariables_st.current_pedal_position_ratio;
@@ -2502,7 +2550,7 @@ void ESPNOW_SyncTask( void * pvParameters )
         uint16_t crc=0;
         crc = checksumCalculator((uint8_t*)(&(dap_rudder_sending.payLoadHeader_)), sizeof(dap_rudder_sending.payLoadHeader_) + sizeof(dap_rudder_sending.payloadRudderState_));
         dap_rudder_sending.payloadFooter_.checkSum=crc;
-        ESPNow.send_message(Recv_mac,(uint8_t *) &dap_rudder_sending,sizeof(dap_rudder_sending));   
+        ESPNow.send_message(broadcast_mac,(uint8_t *) &dap_rudder_sending,sizeof(dap_rudder_sending));   
         //ESPNow_send=dap_calculationVariables_st.current_pedal_position; 
         //esp_err_t result =ESPNow.send_message(Recv_mac,(uint8_t *) &_ESPNow_Send,sizeof(_ESPNow_Send));                
         //if (result == ESP_OK) 
