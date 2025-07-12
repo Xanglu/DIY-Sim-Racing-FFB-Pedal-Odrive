@@ -105,29 +105,7 @@ namespace User.PluginSdkDemo
         DateTime Rudder_Action_currentTime = DateTime.Now;
         DateTime Rudder_Action_lastTime = DateTime.Now;
 
-        public enum RudderAction
-        {
-            None,
-            EnableRudderTwoPedals,
-            ClearRudderStatus,
-            EnableRudderThreePedals,
-            EnableHeliRudderTwoPedals,
-            EnableHeliRudderThreePedals
-
-        };
-
-        public enum TrackConditionEnum
-        {
-            Dry,
-            MostlyDry,
-            VeryLightWet,
-            LightWet,
-            ModeratelyWet,
-            VeryWet,
-            ExtremelyWet,
-            DIRT,
-            ICED
-        };
+        
 
         //https://www.c-sharpcorner.com/uploadfile/eclipsed4utoo/communicating-with-serial-port-in-C-Sharp/
         public SerialPort[] _serialPort = new SerialPort[4] {new SerialPort("COM7", 921600, Parity.None, 8, StopBits.One),

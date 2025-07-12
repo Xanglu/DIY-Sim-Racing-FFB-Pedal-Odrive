@@ -19,7 +19,7 @@ namespace User.PluginSdkDemo
         public const uint pedalStateExtendedPayload_type = 130;
         public const uint bridgeStatePayloadType = 210;
         public const uint Basic_Wifi_info_type = 220;
-        public const string pluginVersion = "0.90.09";
+        public const string pluginVersion = "0.90.10";
         public const string version_control_url = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/version_control.json";
     }
 
@@ -50,5 +50,27 @@ namespace User.PluginSdkDemo
         ESP_BOOT_INTO_DOWNLOAD_MODE,
         PRINT_PEDAL_INFO
     };
-    
+    public enum RudderAction
+    {
+        None,
+        EnableRudderTwoPedals,
+        ClearRudderStatus,
+        EnableRudderThreePedals,
+        EnableHeliRudderTwoPedals,
+        EnableHeliRudderThreePedals
+
+    };
+
+    public enum TrackConditionEnum
+    {
+        Dry,
+        MostlyDry,
+        VeryLightWet,
+        LightWet,
+        ModeratelyWet,
+        VeryWet,
+        ExtremelyWet,
+        DIRT,
+        ICED
+    };
 }

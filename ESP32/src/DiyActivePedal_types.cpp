@@ -213,20 +213,23 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st)
   // cubic interpolator
   float travel_x[config_st.payLoadPedalConfig_.quantityOfControl];
   float force_y[config_st.payLoadPedalConfig_.quantityOfControl];
+  
   for (int i = 0; i < config_st.payLoadPedalConfig_.quantityOfControl;i++)
   {
     travel_x[i]=travel[i];
     force_y[i]=force[i];
   }
+  
   _cubic.Interpolate1D(travel_x, force_y, config_st.payLoadPedalConfig_.quantityOfControl - 1, config_st.payLoadPedalConfig_.quantityOfControl-1);
   interpolatorA = _cubic._result.a;
   interpolatorB = _cubic._result.b;
-
+  /*
   for (int i = 0; i < config_st.payLoadPedalConfig_.quantityOfControl - 1; ++i)
   {
     //Serial.printf("original a=%.3f, b=%.3f\n", config_st.payLoadPedalConfig_.cubic_spline_param_a_array[i], config_st.payLoadPedalConfig_.cubic_spline_param_b_array[i]);
     Serial.printf("ESP calculated a=%.3f, b=%.3f\n", interpolatorA[i], interpolatorB[i]);
   }
+  */
   
   
 

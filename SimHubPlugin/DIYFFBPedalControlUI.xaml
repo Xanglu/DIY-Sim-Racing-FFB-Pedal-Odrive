@@ -874,7 +874,7 @@
                                             <styles:SHButtonPrimary x:Name="btn_rudder_initialize" Click="btn_rudder_initialize_Click" Width="160" Height="25" Content="Rudder" Margin="0,2,0,0" HorizontalAlignment="Center" VerticalContentAlignment="Center" Padding="15,0,15,0" />
                                             <styles:SHButtonPrimary x:Name="btn_Rudder_load_config" Click="btn_Rudder_load_config_Click" Width="160" Content="Load Config from Local" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="15,0,15,0" VerticalContentAlignment="Center" />
                                             <styles:SHButtonPrimary Click="SaveButton_Click" Width="160" Content="Export Config to Local" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                            <localFunction:SettingSection_Rudder x:Name="RudderSettingSection" HorizontalAlignment="Left" />
+                                            <localFunction:SettingSection_Rudder x:Name="RudderSettingSection" HorizontalAlignment="Left"/>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
