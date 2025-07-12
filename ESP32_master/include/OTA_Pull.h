@@ -2,8 +2,8 @@
 #include <ESP32OTAPull.h>
 #include <esp_wifi.h>
 
-#define JSON_URL_dev   "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/DailyBuild/json/Version_Bridge.json"
-#define JSON_URL_main "https://raw.githubusercontent.com/gilphilbert/pedal-flasher/main/json/dev/Version_Bridge.json"
+#define JSON_URL_dev   "https://raw.githubusercontent.com/gilphilbert/pedal-flasher/main/json/dev/Version_Bridge.json"
+#define JSON_URL_main "https://raw.githubusercontent.com/gilphilbert/pedal-flasher/main/json/main/Version_Bridge.json"
 #define JSON_URL_daily "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/DailyBuild/json/Version_Bridge.json"
 
 
