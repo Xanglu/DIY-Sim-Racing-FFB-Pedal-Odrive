@@ -185,7 +185,7 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st)
 {
   startPosRel = ((float)config_st.payLoadPedalConfig_.pedalStartPosition) / 100.0f;
   endPosRel = ((float)config_st.payLoadPedalConfig_.pedalEndPosition) / 100.0f;
-
+  
   //read force and trave linto calculaiton Variables
   force[0] = config_st.payLoadPedalConfig_.relativeForce00;
   force[1] = config_st.payLoadPedalConfig_.relativeForce01;

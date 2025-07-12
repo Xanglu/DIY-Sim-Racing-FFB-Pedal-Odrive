@@ -327,6 +327,7 @@ struct DAP_calculationVariables_st
   float WS_amp;
   float WS_freq;
   bool Rudder_status;
+  bool isRudderInitialized=false;
   uint8_t pedal_type;
   uint32_t sync_pedal_position;
   uint32_t current_pedal_position;
@@ -338,6 +339,7 @@ struct DAP_calculationVariables_st
   float stepperPosRange_default;
   uint32_t stepsPerMotorRevolution;
   uint8_t TrackCondition;
+  float currentForceReading;
   float force[11];
   float travel[11]; 
   float *interpolatorA= nullptr;

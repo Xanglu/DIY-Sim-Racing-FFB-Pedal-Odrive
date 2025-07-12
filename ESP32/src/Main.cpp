@@ -123,6 +123,7 @@ Road_impact_effect _Road_impact_effect;
 Custom_vibration CV1;
 Custom_vibration CV2;
 Rudder _rudder;
+//helicoptersRudder _rudder;
 Rudder_G_Force _rudder_g_force;
 MovingAverageFilter averagefilter_joystick(40);
 #define ABS_OSCILLATION
@@ -1071,7 +1072,8 @@ void pedalUpdateTask( void * pvParameters )
         filteredReading = pedalForce_fl32;
         break;
     }
-
+    //write filter reading into calculation_st
+    dap_calculationVariables_st.currentForceReading=filteredReading;
 
 
 
@@ -1227,6 +1229,7 @@ void pedalUpdateTask( void * pvParameters )
             Rudder_initializing=false;
             moveSlowlyToPosition_b=false;
             Serial.println("Rudder initialized");
+            dap_calculationVariables_st.isRudderInitialized=true;
             Rudder_initialized_time=0;
             #ifdef USING_BUZZER
               Buzzer.play_melody_tone(melody_Airship_theme, sizeof(melody_Airship_theme)/sizeof(melody_Airship_theme[0]),melody_Airship_theme_duration);
@@ -1247,6 +1250,7 @@ void pedalUpdateTask( void * pvParameters )
       Rudder_deinitializing=false;
       moveSlowlyToPosition_b=false;
       Serial.println("Rudder deinitialized");
+      dap_calculationVariables_st.isRudderInitialized=false;
     }
     #endif
 
