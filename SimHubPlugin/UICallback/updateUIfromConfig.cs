@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using User.PluginSdkDemo.UIFunction;
 
 namespace User.PluginSdkDemo
 {
@@ -98,13 +99,17 @@ namespace User.PluginSdkDemo
                 PedalKinematics_Tab.Settings = Plugin.Settings;
                 PedalSettingsSection.Settings = Plugin.Settings;
                 EffectsRPMRudder_Tab.Settings = Plugin.Settings;
+                CurveRudderForce_Tab.Settings = Plugin.Settings;
                 EffectRudderACC_Tab.Settings = Plugin.Settings;
+                RudderSetting_Tab.Settings = Plugin.Settings;
                 SystemProfile_Tab.Settings = Plugin.Settings;
                 //SettingOTA_Tab.Settings = Plugin.Settings;
                 SystemLicense_Tab.Settings = Plugin.Settings;
                 SystemSetting_Section.Settings = Plugin.Settings;
                 SystemInfo.Settings = Plugin.Settings;
                 PedalInfo.Settings = Plugin.Settings;
+                RudderSettingSection.Settings = Plugin.Settings;
+
 
                 EffectsABS_Tab.calculation = Plugin._calculations;
                 EffectsBitePoint_Tab.calculation = Plugin._calculations;

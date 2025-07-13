@@ -974,7 +974,7 @@ namespace User.PluginSdkDemo
                 tmp.payloadPedalAction_.impact_value = 0;
                 tmp.payloadPedalAction_.Trigger_CV_1 = 0;
                 tmp.payloadPedalAction_.Trigger_CV_2 = 0;
-                if (_calculations.rudderType == 0)
+                if (Settings.rudderMode == 0)
                 {
                     if (Rudder_Pedal_idx[0] == 0)
                     {
@@ -985,7 +985,7 @@ namespace User.PluginSdkDemo
                         tmp.payloadPedalAction_.Rudder_action = (byte)RudderAction.EnableRudderTwoPedals;
                     }
                 }
-                if (_calculations.rudderType == 1)
+                if (Settings.rudderMode == 1)
                 {
                     if (Rudder_Pedal_idx[0] == 0)
                     {

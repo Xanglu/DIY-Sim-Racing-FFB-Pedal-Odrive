@@ -388,7 +388,9 @@ namespace User.PluginSdkDemo
         private void SystemLicense_Tab_btn_test_Click_event(object sender, EventArgs e)
         {
             ToastNotification("Debug", "Print All parameter in Serial log");
-            PrintUnknownStructParameters(dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_);
+            //PrintUnknownStructParameters(dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_);
+            readRudderSettingToConfig();
+            PrintUnknownStructParameters(dap_config_st_rudder.payloadPedalConfig_);
         }
 
 

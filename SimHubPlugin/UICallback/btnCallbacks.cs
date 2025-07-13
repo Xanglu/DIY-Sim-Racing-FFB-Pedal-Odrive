@@ -1282,7 +1282,7 @@ namespace User.PluginSdkDemo
                             dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeTravel05 = 100;
                         }
                     }
-
+                    writeRudderConfigToSetting();
                     updateTheGuiFromConfig();
                     /*
                     TextBox_debugOutput.Text = "Config new imported!";
@@ -1510,6 +1510,41 @@ namespace User.PluginSdkDemo
             }
             
             
+        }
+
+        private void btn_rudder_export_config_Click(object sender, RoutedEventArgs e)
+        {
+            using (System.Windows.Forms.SaveFileDialog saveFileDialog = new System.Windows.Forms.SaveFileDialog())
+            {
+                readRudderSettingToConfig();
+                saveFileDialog.Title = "Datei speichern";
+                saveFileDialog.Filter = "Textdateien (*.json)|*.json";
+                string currentDirectory = Directory.GetCurrentDirectory();
+                saveFileDialog.InitialDirectory = currentDirectory + "\\PluginsData\\Common";
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string fileName = saveFileDialog.FileName;
+                    dap_config_st_rudder.payloadHeader_.version = (byte)Constants.pedalConfigPayload_version;
+                    var stream1 = new MemoryStream();
+                    var writer = JsonReaderWriterFactory.CreateJsonWriter(stream1, Encoding.UTF8, true, true, "  ");
+                    var serializer = new DataContractJsonSerializer(typeof(DAP_config_st));
+                    serializer.WriteObject(writer, dap_config_st_rudder);
+                    writer.Flush();
+
+                    stream1.Position = 0;
+                    StreamReader sr = new StreamReader(stream1);
+                    string jsonString = sr.ReadToEnd();
+
+                    // Check if file already exists. If yes, delete it.     
+                    if (File.Exists(fileName))
+                    {
+                        File.Delete(fileName);
+                    }
+                    System.IO.File.WriteAllText(fileName, jsonString);
+                    TextBox2.Text = "Save " + saveFileDialog.FileName;
+                }
+            }
         }
     }
 }

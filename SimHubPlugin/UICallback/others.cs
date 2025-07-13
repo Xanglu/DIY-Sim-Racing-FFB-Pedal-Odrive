@@ -1087,8 +1087,9 @@ namespace User.PluginSdkDemo
             //System.Threading.Thread.Sleep(200);
             DelayCall((int)(900), () =>
             {
+                readRudderSettingToConfig();
                 for (uint idx = 0; idx < 2; idx++)
-                {
+                {   
                     uint i = Plugin.Rudder_Pedal_idx[idx];
                     CurveRudderForce_Tab.text_rudder_log.Visibility = Visibility.Visible;
                     //read pedal kinematic
@@ -1186,6 +1187,82 @@ namespace User.PluginSdkDemo
                 //MessageBox.Show($"Error:{ex.Message}");
                 Plugin._calculations.versionCheck_b = false;
             }
+        }
+
+        public void readRudderSettingToConfig()
+        {
+            dap_config_st_rudder.payloadPedalConfig_.quantityOfControl=Plugin.Settings.rudderControlQuantity;
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce00 = Plugin.Settings.rudderForce[0];
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce01 = Plugin.Settings.rudderForce[1];
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce02 = Plugin.Settings.rudderForce[2];
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce03 = Plugin.Settings.rudderForce[3];
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce04 = Plugin.Settings.rudderForce[4];
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce05 = Plugin.Settings.rudderForce[5];
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce06 = Plugin.Settings.rudderForce[6];
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce07 = Plugin.Settings.rudderForce[7];
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce08 = Plugin.Settings.rudderForce[8];
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce09 = Plugin.Settings.rudderForce[9];
+            dap_config_st_rudder.payloadPedalConfig_.relativeForce10 = Plugin.Settings.rudderForce[10];
+
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel00 = Plugin.Settings.rudderTravel[0];
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel01 = Plugin.Settings.rudderTravel[1];
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel02 = Plugin.Settings.rudderTravel[2];
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel03 = Plugin.Settings.rudderTravel[3];
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel04 = Plugin.Settings.rudderTravel[4];
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel05 = Plugin.Settings.rudderTravel[5];
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel06 = Plugin.Settings.rudderTravel[6];
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel07 = Plugin.Settings.rudderTravel[7];
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel08 = Plugin.Settings.rudderTravel[8];
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel09 = Plugin.Settings.rudderTravel[9];
+            dap_config_st_rudder.payloadPedalConfig_.relativeTravel10 = Plugin.Settings.rudderTravel[10];
+
+            dap_config_st_rudder.payloadPedalConfig_.dampingPress = Plugin.Settings.rudderDamping;
+            dap_config_st_rudder.payloadPedalConfig_.dampingPull = Plugin.Settings.rudderDamping;
+            dap_config_st_rudder.payloadPedalConfig_.maxForce = Plugin.Settings.rudderMaxForce;
+            dap_config_st_rudder.payloadPedalConfig_.preloadForce = Plugin.Settings.rudderMinForce;
+            dap_config_st_rudder.payloadPedalConfig_.pedalStartPosition = Plugin.Settings.rudderMinTravel;
+            dap_config_st_rudder.payloadPedalConfig_.pedalEndPosition = Plugin.Settings.rudderMaxTravel;
+            dap_config_st_rudder.payloadPedalConfig_.MPC_0th_order_gain = Plugin.Settings.rudderMPCGain;
+            dap_config_st_rudder.payloadPedalConfig_.RPM_max_freq= Plugin.Settings.rudderRPMMaxFrequency;
+            dap_config_st_rudder.payloadPedalConfig_.RPM_min_freq = Plugin.Settings.rudderRPMMinFrequency;
+            dap_config_st_rudder.payloadPedalConfig_.RPM_AMP = Plugin.Settings.rudderRPMAmp;
+        }
+        public void writeRudderConfigToSetting()
+        {
+            Plugin.Settings.rudderControlQuantity = dap_config_st_rudder.payloadPedalConfig_.quantityOfControl;
+            Plugin.Settings.rudderForce[0]= dap_config_st_rudder.payloadPedalConfig_.relativeForce00;
+            Plugin.Settings.rudderForce[1]= dap_config_st_rudder.payloadPedalConfig_.relativeForce01;
+            Plugin.Settings.rudderForce[2] = dap_config_st_rudder.payloadPedalConfig_.relativeForce02;
+            Plugin.Settings.rudderForce[3] = dap_config_st_rudder.payloadPedalConfig_.relativeForce03;
+            Plugin.Settings.rudderForce[4] = dap_config_st_rudder.payloadPedalConfig_.relativeForce04;
+            Plugin.Settings.rudderForce[5] = dap_config_st_rudder.payloadPedalConfig_.relativeForce05;
+            Plugin.Settings.rudderForce[6] = dap_config_st_rudder.payloadPedalConfig_.relativeForce06;
+            Plugin.Settings.rudderForce[7] = dap_config_st_rudder.payloadPedalConfig_.relativeForce07;
+            Plugin.Settings.rudderForce[8] = dap_config_st_rudder.payloadPedalConfig_.relativeForce08;
+            Plugin.Settings.rudderForce[9] = dap_config_st_rudder.payloadPedalConfig_.relativeForce09;
+            Plugin.Settings.rudderForce[10] = dap_config_st_rudder.payloadPedalConfig_.relativeForce10;
+
+            Plugin.Settings.rudderTravel[0] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel00;
+            Plugin.Settings.rudderTravel[1] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel01;
+            Plugin.Settings.rudderTravel[2] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel02;
+            Plugin.Settings.rudderTravel[3] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel03;
+            Plugin.Settings.rudderTravel[4] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel04;
+            Plugin.Settings.rudderTravel[5] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel05;
+            Plugin.Settings.rudderTravel[6] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel06;
+            Plugin.Settings.rudderTravel[7] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel07;
+            Plugin.Settings.rudderTravel[8] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel08;
+            Plugin.Settings.rudderTravel[9] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel09;
+            Plugin.Settings.rudderTravel[10] = dap_config_st_rudder.payloadPedalConfig_.relativeTravel10;
+
+            Plugin.Settings.rudderDamping = dap_config_st_rudder.payloadPedalConfig_.dampingPress;
+            Plugin.Settings.rudderMaxForce = dap_config_st_rudder.payloadPedalConfig_.maxForce;
+            Plugin.Settings.rudderMinForce = dap_config_st_rudder.payloadPedalConfig_.preloadForce;
+            Plugin.Settings.rudderMinTravel = dap_config_st_rudder.payloadPedalConfig_.pedalStartPosition;
+            Plugin.Settings.rudderMaxTravel = dap_config_st_rudder.payloadPedalConfig_.pedalEndPosition;
+            Plugin.Settings.rudderMPCGain = dap_config_st_rudder.payloadPedalConfig_.MPC_0th_order_gain;
+            Plugin.Settings.rudderRPMMaxFrequency = dap_config_st_rudder.payloadPedalConfig_.RPM_max_freq;
+            Plugin.Settings.rudderRPMMinFrequency = dap_config_st_rudder.payloadPedalConfig_.RPM_min_freq;
+            Plugin.Settings.rudderRPMAmp = dap_config_st_rudder.payloadPedalConfig_.RPM_AMP;
         }
     }
 }
