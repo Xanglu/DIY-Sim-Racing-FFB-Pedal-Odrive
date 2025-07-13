@@ -956,12 +956,18 @@ void pedalUpdateTask( void * pvParameters )
       _Road_impact_effect.forceOffset(&dap_calculationVariables_st, dap_config_pedalUpdateTask_st.payLoadPedalConfig_.Road_multi);
       CV1.forceOffset(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.CV_freq_1,dap_config_pedalUpdateTask_st.payLoadPedalConfig_.CV_amp_1);
       CV2.forceOffset(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.CV_freq_2,dap_config_pedalUpdateTask_st.payLoadPedalConfig_.CV_amp_2);
-      _rudder_g_force.offset_calculate(&dap_calculationVariables_st);
-      dap_calculationVariables_st.update_stepperMaxpos(_rudder_g_force.offset_filter);
-      _rudder.offset_calculate(&dap_calculationVariables_st);
-      helicopterRudder_.offset_calculate(&dap_calculationVariables_st);
-      if(dap_calculationVariables_st.Rudder_status) dap_calculationVariables_st.update_stepperMinpos(_rudder.offset_filter);
-      if(dap_calculationVariables_st.helicopterRudderStatus) dap_calculationVariables_st.update_stepperMinpos(helicopterRudder_.offset_filter);
+      if(dap_calculationVariables_st.Rudder_status) 
+      {
+        _rudder.offset_calculate(&dap_calculationVariables_st);
+        dap_calculationVariables_st.update_stepperMinpos(_rudder.offset_filter);
+        _rudder_g_force.offset_calculate(&dap_calculationVariables_st);
+        dap_calculationVariables_st.update_stepperMaxpos(_rudder_g_force.offset_filter);
+      }
+      if(dap_calculationVariables_st.helicopterRudderStatus) 
+      {
+        helicopterRudder_.offset_calculate(&dap_calculationVariables_st);
+        dap_calculationVariables_st.update_stepperMinpos(helicopterRudder_.offset_filter);
+      }
       #ifdef ESPNow_debug_rudder
         if(millis()-debugMessageLast>500)
         {
@@ -1282,7 +1288,7 @@ void pedalUpdateTask( void * pvParameters )
               dap_calculationVariables_st.isHelicopterRudderInitialized=true;
               Rudder_initialized_time=0;
               #ifdef USING_BUZZER
-                Buzzer.play_melody_tone(melody_Airship_theme, sizeof(melody_Airship_theme)/sizeof(melody_Airship_theme[0]),melody_Airship_theme_duration);
+                Buzzer.play_melody_tone(melodyAirwolfTheme, sizeof(melodyAirwolfTheme)/sizeof(melodyAirwolfTheme[0]),melodyAirwolfThemeDuration);
               #endif
             }
           }
