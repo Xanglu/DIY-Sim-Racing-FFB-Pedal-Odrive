@@ -1096,7 +1096,7 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 		}
 		else
 		{
-			if(stepper_cl->servoStatus!=SERVO_IDLE_NOT_CONNECTED)
+			if(stepper_cl->servoStatus!=SERVO_IDLE_NOT_CONNECTED && stepper_cl->servoStatus!=SERVO_FORCE_STOP)
 			{
 				stepper_cl->servoStatus=SERVO_NOT_CONNECTED;
 			}

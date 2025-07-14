@@ -675,6 +675,7 @@ namespace User.PluginSdkDemo
                     //target CH343
                     //change baud here
                     Plugin._serialPort[pedalIdx].BaudRate = Constants.BAUD3M;
+                    //MessageBox.Show("CH343 connected");
                 }
                 else
                 {

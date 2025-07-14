@@ -29,7 +29,8 @@ namespace User.PluginSdkDemo
     {
         Off,
         On,
-        Idle
+        Idle,
+        ForceStop
     }
     public enum bridgeAction
     {

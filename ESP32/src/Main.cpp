@@ -339,6 +339,10 @@ void setup()
   digitalWrite(BRAKE_RESISTOR_PIN, LOW);  // Turn the LED on
 #endif
 
+#ifdef EMERGENCY_PIN
+  pinMode(EMERGENCY_PIN,INPUT_PULLUP);
+#endif
+
 #ifdef ANGLE_SENSOR_GPIO
 
   pinMode(ANGLE_SENSOR_GPIO, INPUT);
@@ -1152,7 +1156,27 @@ void pedalUpdateTask( void * pvParameters )
       #endif
       Serial.println("Servo idle timeout reached. To restart pedal, please apply pressure.");
     }
+    //emergency button
 
+    #ifdef EMERGENCY_PIN
+      if ((stepper->servoStatus == SERVO_CONNECTED) && (stepper->servoStatus != SERVO_FORCE_STOP) && (digitalRead(EMERGENCY_PIN) == LOW))
+      {
+        stepper->servoIdleAction();
+        stepper->servoStatus = SERVO_FORCE_STOP;
+        #ifdef USING_BUZZER
+          Buzzer.single_beep_tone(770, 100);
+        #endif
+        delay(300);
+        #ifdef USING_LED
+          pixels.setPixelColor(0, 0xff, 0x00, 0x00); // show red
+          pixels.show();
+        #endif
+        #ifdef USING_BUZZER
+          Buzzer.single_beep_tone(770, 100);
+        #endif
+        Serial.println("Servo force Stoped.");
+      }
+    #endif
     //float FilterReadingJoystick=averagefilter_joystick.process(filteredReading);
 
     float stepperPosFraction = stepper->getCurrentPositionFraction();

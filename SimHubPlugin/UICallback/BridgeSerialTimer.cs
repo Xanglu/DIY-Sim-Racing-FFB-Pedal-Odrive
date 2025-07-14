@@ -210,6 +210,12 @@ namespace User.PluginSdkDemo
                                         string tmp = "Pedal:"+pedalSelected+" Servo idle reach timeout, power cutoff, please restart pedal to wake it up";
                                         ToastNotification("Wireless Connection", tmp);
                                     }
+                                    // Force stop action
+                                    if (Plugin._calculations.ServoStatus[pedalSelected] == (byte)enumServoStatus.On && pedalState_read_st.payloadPedalBasicState_.servoStatus == (byte)enumServoStatus.ForceStop)
+                                    {
+                                        string tmp = "Pedal:" + pedalSelected + " force Stopped";
+                                        ToastNotification("Wireless Connection", tmp);
+                                    }
 
                                     //fill servo status
 
