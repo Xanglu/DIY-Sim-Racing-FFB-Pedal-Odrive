@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -15,6 +16,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Windows.UI.Notifications;
+using static User.PluginSdkDemo.ComPortHelper;
 
 namespace User.PluginSdkDemo
 {
@@ -40,17 +42,30 @@ namespace User.PluginSdkDemo
         {
 
             var SerialPortSelectionArray = new List<SerialPortChoice>();
+            
             string[] comPorts = SerialPort.GetPortNames();
-
+            var SerialPortList = new List<string>();
             comPorts = comPorts.Distinct().ToArray(); // unique
-
+            Plugin.comportList.Clear();
+            SerialPortList.Clear();
+     
             if (comPorts.Length > 0)
             {
 
                 foreach (string portName in comPorts)
                 {
-                    SerialPortSelectionArray.Add(new SerialPortChoice(portName, portName));
+                    
+                    //SerialPortSelectionArray.Add(new SerialPortChoice(portName, portName));
+                    //int index = Plugin.comportList.FindIndex(item => item.ComPortName == portName);
+                    var parseResult= ComPortHelper.GetVidPidFromComPort(portName);
+                    Plugin.comportList.Add(parseResult);
+                    var portDeviceName = portName+" "+parseResult.DeviceName;
+                    //SerialPortList.Add((string)Plugin.comportList[index].DeviceName);
+                    SerialPortSelectionArray.Add(new SerialPortChoice(portDeviceName, portName));
+                    
+
                 }
+                
             }
             else
             {
@@ -58,7 +73,10 @@ namespace User.PluginSdkDemo
             }
 
             SerialPortSelection.DataContext = SerialPortSelectionArray;
+            //SerialPortSelection.DataContext = SerialPortList;
             SerialPortSelection_ESPNow.DataContext = SerialPortSelectionArray;
+            
+
         }
 
 
@@ -636,7 +654,32 @@ namespace User.PluginSdkDemo
         {
             try
             {
+                /*
+                VidPidResult info = ComPortHelper.GetVidPidFromComPort(Plugin._serialPort[pedalIdx].PortName);
+
+                if (info.Found)
+                {
+                    MessageBox.Show(Plugin._serialPort[pedalIdx].PortName+"\nVID: " + info.Vid + "\nPID: " + info.Pid+ "\n Device Name:"+info.DeviceName);
+                }
+                else
+                {
+                    MessageBox.Show("Can't found"+ Plugin._serialPort[pedalIdx].PortName);
+                }
+                */
+
                 // serial port settings
+                //Plugin._serialPort[pedalIdx].BaudRate = 921600;
+                var serialInfo = ComPortHelper.GetVidPidFromComPort(Plugin._serialPort[pedalIdx].PortName);
+                if (serialInfo.Vid == "1A86" && serialInfo.Pid == "55D3")
+                {
+                    //target CH343
+                    //change baud here
+                    Plugin._serialPort[pedalIdx].BaudRate = Constants.BAUD3M;
+                }
+                else
+                {
+                    Plugin._serialPort[pedalIdx].BaudRate = Constants.DEFAULTBAUD;
+                }
                 Plugin._serialPort[pedalIdx].Handshake = Handshake.None;
                 Plugin._serialPort[pedalIdx].Parity = Parity.None;
                 //_serialPort[pedalIdx].StopBits = StopBits.None;

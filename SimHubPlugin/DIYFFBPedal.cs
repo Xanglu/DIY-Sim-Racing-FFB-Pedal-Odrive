@@ -9,6 +9,7 @@ using SimHub.Plugins.DataPlugins.RGBMatrixDriver.Settings;
 using SimHub.Plugins.DataPlugins.ShakeItV3.UI.Effects;
 using SimHub.Plugins.OutputPlugins.Dash.GLCDTemplating;
 using System;
+using System.Collections.Generic;
 using System.IO.Ports;
 using System.Media;
 using System.Runtime;
@@ -84,6 +85,7 @@ namespace User.PluginSdkDemo
         public string Current_Game = "";
         public byte TrackSurfaceCondition = 0;
         public bool[] PedalConfigRead_b = new bool[3] { false, false, false };
+        public List<VidPidResult> comportList = new List<VidPidResult>();
         //public vJoyInterfaceWrap.vJoy joystick;
         //effect trigger timer
         DateTime[] Action_currentTime = new DateTime[3];

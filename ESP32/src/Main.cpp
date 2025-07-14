@@ -19,7 +19,8 @@
 
 //#define PI 3.14159267
 #define DEG_TO_RAD_FL32 0.017453292519943295769236907684886f
-
+#define BAUD3M 3000000
+#define DEFAULTBAUD 921600
 #include "Arduino.h"
 #include "Main.h"
 #include "Version_Board.h"
@@ -33,6 +34,7 @@
   int current_use_mcp_index;
   bool MCP_status =false;
 #endif
+
 
 
 
@@ -363,9 +365,13 @@ void setup()
 
   #if PCB_VERSION == 7
     Serial.setTxTimeoutMs(0);
-    Serial.begin(921600);
+    Serial.begin(DEFAULTBAUD);
   #else
-    Serial.begin(921600, SERIAL_8N1);
+    #ifdef BAUDRATE3M
+      Serial.begin(BAUD3M, SERIAL_8N1);
+    #else
+      Serial.begin(DEFAULTBAUD, SERIAL_8N1);
+    #endif
     Serial.setTimeout(5);
   #endif
   Serial.println(" ");

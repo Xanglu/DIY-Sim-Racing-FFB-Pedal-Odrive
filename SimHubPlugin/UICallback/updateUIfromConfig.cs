@@ -156,6 +156,7 @@ namespace User.PluginSdkDemo
 
             //// Select serial port accordingly
             string tmp = (string)Plugin._serialPort[indexOfSelectedPedal_u].PortName;
+            
             try
             {
                 SerialPortSelection.SelectedValue = tmp;
