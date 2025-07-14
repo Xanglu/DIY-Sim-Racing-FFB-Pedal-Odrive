@@ -1664,7 +1664,7 @@ uint32_t communicationTask_stackSizeIdx_u32 = 0;
 int64_t timeNow_serialCommunicationTask_l = 0;
 int64_t timePrevious_serialCommunicationTask_l = 0;
 #define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK (int64_t)10
-#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST (int64_t)2
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST (int64_t)1
 
 
 void serialCommunicationTask( void * pvParameters )
