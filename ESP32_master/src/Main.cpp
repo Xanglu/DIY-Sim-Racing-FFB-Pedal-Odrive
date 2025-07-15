@@ -1169,12 +1169,22 @@ void Serial_Task( void * pvParameters)
 }
 unsigned long last_serial_joy_out =millis();
 unsigned long now;
+uint16_t  pedalJoystick_last[3]={0,0,0};
+bool pedalJoystickUpdate_b=false;
 void Joystick_Task( void * pvParameters )
 {
   for(;;)
   {
+    for(int i=0;i<3;i++)
+    {
+      if(pedalJoystick_last[i]!=Joystick_value_original[i])
+      {
+        pedalJoystick_last[i]=Joystick_value_original[i];
+        pedalJoystickUpdate_b=true;
+      }
+    }
     #ifdef USB_JOYSTICK
-    if(IsControllerReady())
+    if(IsControllerReady() && pedalJoystickUpdate_b)
     {
       if(pedal_status==0)
       {
@@ -1221,15 +1231,20 @@ void Joystick_Task( void * pvParameters )
         
       }
       
-
-      joystickSendState();
-      //bool joystatus=GetJoystickStatus();
-      if(!GetJoystickStatus())
+      if(pedalJoystickUpdate_b)
       {
-        RestartJoystick();
-        Serial.println("[L]HID Error, Restart Joystick...");
-        //last_serial_joy_out=millis();
+        joystickSendState();
+        pedalJoystickUpdate_b=false;
       }
+      
+      //bool joystatus=GetJoystickStatus();
+
+    }
+    if(!GetJoystickStatus())
+    {
+      RestartJoystick();
+      Serial.println("[L]HID Error, Restart Joystick...");
+      //last_serial_joy_out=millis();
     }
     #endif
     // set analog value
