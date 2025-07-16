@@ -67,7 +67,7 @@ void DAP_config_st::initialiseDefaults() {
   payLoadPedalConfig_.lengthPedal_c_horizontal = 215;
   payLoadPedalConfig_.lengthPedal_c_vertical = 60;
   payLoadPedalConfig_.lengthPedal_travel = 100;
-  
+  payLoadPedalConfig_.spindlePitch_mmPerRev_u8=5;
 
   payLoadPedalConfig_.Simulate_ABS_trigger = 0;// add for abs trigger
   payLoadPedalConfig_.Simulate_ABS_value = 80;// add for abs trigger
