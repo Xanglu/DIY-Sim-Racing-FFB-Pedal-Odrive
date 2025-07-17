@@ -800,3 +800,9 @@ Y:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0713\SimHubPlugin\obj\Debu
 Y:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0713\SimHubPlugin\obj\Debug\DIYFFBPedalUI.csproj.CopyComplete
 Y:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0713\SimHubPlugin\obj\Debug\DiyActivePedal.dll
 Y:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0713\SimHubPlugin\obj\Debug\DiyActivePedal.pdb
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_PedalForceTravel_Modified.g.cs
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SettingSection_Rudder.g.cs
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\UpdateSettingWindow.g.cs
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_PedalForceTravel_Modified.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SettingSection_Rudder.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\UpdateSettingWindow.baml

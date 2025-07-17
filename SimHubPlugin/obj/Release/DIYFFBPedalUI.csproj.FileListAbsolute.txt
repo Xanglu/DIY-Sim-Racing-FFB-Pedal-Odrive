@@ -1145,3 +1145,11 @@ X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0713\SimHubPlugin\obj\Rele
 X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0713\SimHubPlugin\obj\Release\DIYFFBPedalUI.csproj.GenerateResource.cache
 X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0713\SimHubPlugin\obj\Release\DIYFFBPedalUI.csproj.CoreCompileInputs.cache
 X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0713\SimHubPlugin\obj\Release\DIYFFBPe.469A4AA0.Up2Date
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Release\UIElement\RSSIBar.g.cs
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Release\UIFunction\CurveTab_PedalForceTravel_Modified.g.cs
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Release\UIFunction\SettingSection_Rudder.g.cs
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Release\UIFunction\UpdateSettingWindow.g.cs
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Release\UIElement\RSSIBar.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Release\UIFunction\CurveTab_PedalForceTravel_Modified.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Release\UIFunction\SettingSection_Rudder.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Release\UIFunction\UpdateSettingWindow.baml
