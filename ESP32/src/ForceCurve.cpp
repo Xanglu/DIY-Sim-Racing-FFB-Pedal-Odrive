@@ -88,7 +88,7 @@ float ForceCurve_Interpolated::EvalForceGradientCubicSpline(const DAP_config_st*
   uint32_t numberOfPoints_u32 = config_st->payLoadPedalConfig_.quantityOfControl;
   float splineSegment_fl32 = numberOfSplineSegments-1;
 
-  for(int i=0; i < numberOfSplineSegments; i++)
+  for(int i=0; i < numberOfPoints_u32; i++)
   {
     if(fractionalPos_float >= calc_st->travel[i])
     {
