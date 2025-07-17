@@ -111,5 +111,5 @@ int melodyAirwolfTheme[] = {
 };
 
 double melodyAirwolfThemeDuration[] = {
-  2, 8, 8, 8, 2, 8, 8, 8, 2, 8, 8, 8, 2, 4, 8, 2
+  4, 16, 16, 16, 4, 16, 16, 16, 4, 16, 16, 16, 4, 8, 16, 4
 };
