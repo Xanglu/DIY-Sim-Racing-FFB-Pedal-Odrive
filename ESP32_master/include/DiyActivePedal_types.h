@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // define the payload revision
-#define DAP_VERSION_CONFIG 150
+#define DAP_VERSION_CONFIG 151
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -62,7 +62,7 @@ struct payloadPedalState_Basic
 struct payloadPedalState_Extended
 {
 
-  unsigned long timeInMs_u32;
+  unsigned long timeInUs_u32;
   float pedalForce_raw_fl32;
   float pedalForce_filtered_fl32;
   float forceVel_est_fl32;
