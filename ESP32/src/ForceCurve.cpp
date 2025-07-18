@@ -57,7 +57,18 @@ float ForceCurve_Interpolated::EvalForceCubicSpline(const DAP_config_st* config_
 
   //double dx = 1.0f;
   float t = (splineSegment_fl32 - (float)splineSegment_u8);// / dx;
-  float y = (1.0f - t) * yOrig[splineSegment_u8] + t * yOrig[splineSegment_u8 + 1] + t * (1.0f - t) * (a * (1.0f - t) + b * t);
+  float y=0.0f;
+
+  if(splineSegment_u8>=numberOfSplineSegments)
+  {
+    y = yOrig[splineSegment_u8];
+    //float y = (1.0f - t) * yOrig[splineSegment_u8] + t * yOrig[splineSegment_u8 + 1] + t * (1.0f - t) * (a * (1.0f - t) + b * t);
+  }
+  else
+  {
+    y = (1.0f - t) * yOrig[splineSegment_u8] + t * yOrig[splineSegment_u8 + 1] + t * (1.0f - t) * (a * (1.0f - t) + b * t);
+  }
+  
   
   if (calc_st->Force_Range> 0)
   {
@@ -67,9 +78,27 @@ float ForceCurve_Interpolated::EvalForceCubicSpline(const DAP_config_st* config_
   {
     y = calc_st->Force_Min;
   }
-
-
+  /*
+  if(fractionalPos>0.9)
+  {
+    Serial.print("force y=");
+    Serial.print(y);
+    Serial.print(", splineSegment_fl32=");
+    Serial.print(splineSegment_fl32);
+    Serial.print(", splineSegment_u8=");
+    Serial.println(splineSegment_u8);    
+    Serial.print("numberOfPoints_u32=");
+    Serial.print(numberOfPoints_u32);    
+    Serial.print(", fractionalPos_float=");
+    Serial.print(fractionalPos_float);    
+    Serial.print(", interpolar a=");
+    Serial.print(a); 
+    Serial.print(", interpolar b=");
+    Serial.println(b);     
+  }
+  */
   return y;
+  
 }
 
 
@@ -128,8 +157,17 @@ float ForceCurve_Interpolated::EvalForceGradientCubicSpline(const DAP_config_st*
   float Delta_x_orig = 100.0f; // total horizontal range [0,100]
   float dx = Delta_x_orig / numberOfSplineSegments; // spline segment horizontal range
   float t = (splineSegment_fl32 - (float)splineSegment_u8); // relative position in spline segment [0, 1]
+  float dy =0.0f;
+  if(splineSegment_u8>=numberOfSplineSegments)
+  {
+    //dy = yOrig[splineSegment_u8] - yOrig[splineSegment_u8-1]; // spline segment vertical range
+    dy=0;
+  }
+  else
+  {
+    dy = yOrig[splineSegment_u8 + 1] - yOrig[splineSegment_u8]; // spline segment vertical range
+  }
   
-  float dy = yOrig[splineSegment_u8 + 1] - yOrig[splineSegment_u8]; // spline segment vertical range
   float y_prime = 0.0f;
   if (fabsf(dx) > 0)
   {
@@ -148,7 +186,46 @@ float ForceCurve_Interpolated::EvalForceGradientCubicSpline(const DAP_config_st*
     
     y_prime *= d_x_scale * d_y_scale;
   }
+  /*
+  if(fractionalPos>0.9)
+  {
+    Serial.print("forcegradient y_prime=");
+    Serial.print(y_prime);
+    Serial.print(", splineSegment_fl32=");
+    Serial.print(splineSegment_fl32);
+    Serial.print(", splineSegment_u8=");
+    Serial.println(splineSegment_u8);    
+    Serial.print("numberOfPoints_u32=");
+    Serial.print(numberOfPoints_u32);    
+    Serial.print(", fractionalPos_float=");
+    Serial.print(fractionalPos_float);    
+    Serial.print(", interpolar a=");
+    Serial.print(a); 
+    Serial.print(", interpolar b=");
+    Serial.println(b);
+    Serial.print("dx=");
+    Serial.print(dx);     
+    Serial.print(", t=");
+    Serial.print(t);
+    Serial.print(", dy=");
+    Serial.print(dy);
+    if(splineSegment_u8==numberOfSplineSegments)
+    {
+      Serial.print(", yOrig[splineSegment_u8]=");
+      Serial.print(yOrig[splineSegment_u8 ]);
+      Serial.print(", yOrig[splineSegment_u8-1]=");
+      Serial.println(yOrig[splineSegment_u8-1]);
+    }
+    else
+    {
+      Serial.print(", yOrig[splineSegment_u8 + 1]=");
+      Serial.print(yOrig[splineSegment_u8 + 1]);
+      Serial.print(", yOrig[splineSegment_u8]=");
+      Serial.println(yOrig[splineSegment_u8]);
+    }
 
+  }
+  */
   return y_prime;
 }
 
