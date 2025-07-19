@@ -18,11 +18,11 @@ float ForceCurve_Interpolated::EvalForceCubicSpline(const DAP_config_st* config_
   //float splineSegment_fl32 = fractionalPos_lcl * 5.0f;
   uint32_t numberOfPoints_u32 = config_st->payLoadPedalConfig_.quantityOfControl;
   float numberOfSplineSegments = (config_st->payLoadPedalConfig_.quantityOfControl-1); // quantityOfControl is number of points
+  float splineSegment_fl32 = 0; // initialize to 0, because (fractionalPos_float > calc_st->travel[i]) wont fin it otherwise
 
-  float splineSegment_fl32 = numberOfSplineSegments-1;
   for(int i=0; i < numberOfPoints_u32; i++)
   {
-    if(fractionalPos_float >= calc_st->travel[i])
+    if(fractionalPos_float > calc_st->travel[i])
     {
       if(i== (numberOfSplineSegments) )
       {
@@ -49,8 +49,9 @@ float ForceCurve_Interpolated::EvalForceCubicSpline(const DAP_config_st* config_
   float a = calc_st->interpolatorA[splineSegment_u8];
   float b = calc_st->interpolatorB[splineSegment_u8];
 
-  float yOrig[config_st->payLoadPedalConfig_.quantityOfControl];
-  for(int i=0;i<config_st->payLoadPedalConfig_.quantityOfControl;i++)
+  float yOrig[numberOfPoints_u32];
+
+  for(int i=0; i<numberOfPoints_u32; i++)
   {
     yOrig[i]=calc_st->force[i];
   }
@@ -59,10 +60,9 @@ float ForceCurve_Interpolated::EvalForceCubicSpline(const DAP_config_st* config_
   float t = (splineSegment_fl32 - (float)splineSegment_u8);// / dx;
   float y=0.0f;
 
-  if(splineSegment_u8>=numberOfSplineSegments)
+  if(splineSegment_u8 >= numberOfSplineSegments)
   {
     y = yOrig[splineSegment_u8];
-    //float y = (1.0f - t) * yOrig[splineSegment_u8] + t * yOrig[splineSegment_u8 + 1] + t * (1.0f - t) * (a * (1.0f - t) + b * t);
   }
   else
   {
@@ -115,11 +115,11 @@ float ForceCurve_Interpolated::EvalForceGradientCubicSpline(const DAP_config_st*
   
   float numberOfSplineSegments = (config_st->payLoadPedalConfig_.quantityOfControl-1); // quantityOfControl is number of points
   uint32_t numberOfPoints_u32 = config_st->payLoadPedalConfig_.quantityOfControl;
-  float splineSegment_fl32 = numberOfSplineSegments-1;
+  float splineSegment_fl32 = 0; // initialize to 0, because (fractionalPos_float > calc_st->travel[i]) wont fin it otherwise
 
   for(int i=0; i < numberOfPoints_u32; i++)
   {
-    if(fractionalPos_float >= calc_st->travel[i])
+    if(fractionalPos_float > calc_st->travel[i])
     {
       if(i== numberOfSplineSegments )
       {
@@ -146,8 +146,8 @@ float ForceCurve_Interpolated::EvalForceGradientCubicSpline(const DAP_config_st*
   float a = calc_st->interpolatorA[splineSegment_u8];
   float b = calc_st->interpolatorB[splineSegment_u8];
 
-  float yOrig[config_st->payLoadPedalConfig_.quantityOfControl];
-  for(int i=0;i<config_st->payLoadPedalConfig_.quantityOfControl;i++)
+  float yOrig[numberOfPoints_u32];
+  for(int i=0; i<numberOfPoints_u32; i++)
   {
     yOrig[i]=calc_st->force[i];
   }
@@ -158,9 +158,8 @@ float ForceCurve_Interpolated::EvalForceGradientCubicSpline(const DAP_config_st*
   float dx = Delta_x_orig / numberOfSplineSegments; // spline segment horizontal range
   float t = (splineSegment_fl32 - (float)splineSegment_u8); // relative position in spline segment [0, 1]
   float dy =0.0f;
-  if(splineSegment_u8>=numberOfSplineSegments)
+  if(splineSegment_u8 >= numberOfSplineSegments)
   {
-    //dy = yOrig[splineSegment_u8] - yOrig[splineSegment_u8-1]; // spline segment vertical range
     dy=0;
   }
   else

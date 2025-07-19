@@ -25,23 +25,6 @@ private:
 
 	isv57communication isv57;
 	
-
-	/*public: void StartTask(void)
-	{      
-		//Start Task with input parameter set to "this" class
-		xTaskCreatePinnedToCore(
-		this->servoCommunicationTask,        //Function to implement the task 
-		"servoCommunicationTask",            //Name of the task
-		5000,                   //Stack size in words 
-		this,                   //Task input parameter 
-		1,           //Priority of the task 
-		&task_iSV_Communication,                 //Task handle.
-		0);              //Core where the task should run 
-	}*/
-
-
-
-
 	
 	bool isv57LifeSignal_b = false;
 	bool invertMotorDir_global_b = false;

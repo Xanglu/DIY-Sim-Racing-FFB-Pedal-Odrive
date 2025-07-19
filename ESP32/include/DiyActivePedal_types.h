@@ -61,7 +61,7 @@ struct payloadPedalState_Basic {
 
 struct payloadPedalState_Extended {
 
-  unsigned long timeInUs_u32; // 0.1ms unit
+  unsigned long timeInUs_u32;
   float pedalForce_raw_fl32;
   float pedalForce_filtered_fl32;
   float forceVel_est_fl32;
