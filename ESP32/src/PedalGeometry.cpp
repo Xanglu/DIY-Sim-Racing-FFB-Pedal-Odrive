@@ -1,7 +1,7 @@
 #include "PedalGeometry.h"
 
 #include "StepperWithLimits.h"
-//#include "FastTrig.h"
+#include "FastTrig.h"
 
 KALMAN<3,1> K_pedal_geometry;
 unsigned long _timeLastObservation;
@@ -35,6 +35,7 @@ float pedalInclineAngleDeg(float sledPositionMM, DAP_config_st * config_st) {
   float c_ver = config_st->payLoadPedalConfig_.lengthPedal_c_vertical;
   float c_hor = config_st->payLoadPedalConfig_.lengthPedal_c_horizontal + sledPositionMM;
   float c = sqrtf(c_ver * c_ver + c_hor * c_hor);
+  
 
 //#define DEBUG_PEDAL_INCLINE
 #ifdef DEBUG_PEDAL_INCLINE
@@ -50,7 +51,9 @@ float pedalInclineAngleDeg(float sledPositionMM, DAP_config_st * config_st) {
   
   float alpha = 0.0f;
   if (abs(den) > 0.01f) {
-    alpha = acos( nom / den );
+    // alpha = acos( nom / den );
+    // alpha = fastAcos( nom / den );
+    alpha = iacos( nom / den ) * DEG_TO_RAD;
   }
 
 #ifdef DEBUG_PEDAL_INCLINE
@@ -59,8 +62,8 @@ float pedalInclineAngleDeg(float sledPositionMM, DAP_config_st * config_st) {
 
   // add incline due to AB incline --> result is incline realtive to horizontal 
   if (abs(c_hor)>0.01f) {
-    alpha += atan2f(c_ver, c_hor); // y, x
-    //alpha += atan2Fast(c_ver, c_hor); // y, x
+    // alpha += atan2f(c_ver, c_hor); // y, x
+    alpha += atan2Fast(c_ver, c_hor); // y, x
   }
 
 
@@ -97,6 +100,7 @@ float convertToPedalForce(float F_l, float sledPositionMM, DAP_config_st * confi
   float c_ver = (float)config_st->payLoadPedalConfig_.lengthPedal_c_vertical;
   float c_hor = (float)config_st->payLoadPedalConfig_.lengthPedal_c_horizontal + sledPositionMM;
   float c = sqrtf(c_ver * c_ver + c_hor * c_hor);
+  
 
 
   //Serial.print("a: ");    Serial.print(a);
@@ -126,7 +130,7 @@ float convertToPedalForce(float F_l, float sledPositionMM, DAP_config_st * confi
   float F_b  = F_l;
   if ( (b_plus_d > 0.0f) && (one_minus_arg > 0.0f) )
   {
-     F_b *= b / (b_plus_d) * sqrt( one_minus_arg );
+     F_b *= b / (b_plus_d) * sqrtf( one_minus_arg );
   }
   
   
@@ -158,16 +162,29 @@ float convertToPedalForceGain(float sledPositionMM, DAP_config_st * config_st) {
   float c_ver = config_st->payLoadPedalConfig_.lengthPedal_c_vertical;
   float c_hor = config_st->payLoadPedalConfig_.lengthPedal_c_horizontal + sledPositionMM;
   float c = sqrtf(c_ver * c_ver + c_hor * c_hor);
+  
+
+  // float alpha = acos( (b*b + c*c - a*a) / (2.0f*b*c) );
+  // float alpha = fastAcos( (b*b + c*c - a*a) / (2.0f*b*c) );
+  float alpha = iacos( (b*b + c*c - a*a) / (2.0f*b*c) ) * DEG_TO_RAD;
 
 
-  float alpha = acos( (b*b + c*c - a*a) / (2.0f*b*c) );
-  float alphaPlus = atan2f(c_ver, c_hor); // y, x
-  //float alphaPlus = atan2Fast(c_ver, c_hor); // y, x
+  // float alphaPlus = atan2f(c_ver, c_hor); // y, x
+  float alphaPlus = atan2Fast(c_ver, c_hor); // y, x
 
-  float sinAlpha = sin(alpha);
-  float cosAlpha = cos(alpha);
-  float sinAlphaPlus = sin(alphaPlus);
-  float cosAlphaPlus = cos(alphaPlus);
+  
+
+  // float sinAlpha = sin(alpha);
+  // float cosAlpha = cos(alpha);
+  // float sinAlphaPlus = sin(alphaPlus);
+  // float cosAlphaPlus = cos(alphaPlus);
+
+  float alphaInDeg = alpha * RAD_TO_DEG;
+  float alphaPlusInDeg = alphaPlus * RAD_TO_DEG;
+  float sinAlpha = isin(alphaInDeg);
+  float cosAlpha = icos(alphaInDeg);
+  float sinAlphaPlus = isin(alphaPlusInDeg);
+  float cosAlphaPlus = icos(alphaPlusInDeg);
 
   // d_alpha_d_x
   float d_alpha_d_x = - 1.0f / fabs( sinAlpha ) * ( 1.0f / b - cosAlpha / c) * cosAlphaPlus;
