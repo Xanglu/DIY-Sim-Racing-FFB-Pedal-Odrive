@@ -321,6 +321,15 @@ char* APhost;
 #include <cstring>
 
 
+/**********************************************************************************************/
+/*                                                                                            */
+/*                         profiler setup                                                     */
+/*                                                                                            */
+/**********************************************************************************************/
+#include "FunctionProfiler.h"
+FunctionProfiler profiler_pedalUpdateTask;
+
+
 
 /**********************************************************************************************/
 /*                                                                                            */
@@ -896,9 +905,26 @@ void pedalUpdateTask( void * pvParameters )
     uint32_t targetWaitTime_u32 = constrain(timeDiff_pedalUpdateTask_inUs_l, 0, PUT_TARGET_CYCLE_TIME_IN_US);
     delayMicroseconds(targetWaitTime_u32);
     timePrevious_pedalUpdateTask_inUs_l = micros();
-    
+
+
     // copy global struct to local for faster and safe executiion
     DAP_config_st dap_config_pedalUpdateTask_st = global_dap_config_class.getConfig();
+
+    // activate profiler depending on pedal config
+    if (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+    {
+      profiler_pedalUpdateTask.activate( true );
+    }
+    else
+    {
+      profiler_pedalUpdateTask.activate( false );
+    }
+
+
+    // start profiler 0, overall function
+    profiler_pedalUpdateTask.start(0);
+    
+    
 
     // system identification mode
     #ifdef ALLOW_SYSTEM_IDENTIFICATION
@@ -934,8 +960,6 @@ void pedalUpdateTask( void * pvParameters )
         
         updatePedalCalcParameters(); // update the calc parameters
         moveSlowlyToPosition_b = true;
-
-       
     }
     
 
@@ -950,6 +974,10 @@ void pedalUpdateTask( void * pvParameters )
     #ifdef RECALIBRATE_POSITION
       stepper->checkLimitsAndResetIfNecessary();
     #endif
+
+
+    // start profiler 1, effects
+    profiler_pedalUpdateTask.start(1);
 
 
     // compute pedal oscillation, when ABS is active
@@ -994,18 +1022,25 @@ void pedalUpdateTask( void * pvParameters )
     #endif
 
     //update max force with G force effect
-      movingAverageFilter.dataPointsCount = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.G_window;
-      movingAverageFilter_roadimpact.dataPointsCount = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.Road_window;
-      dap_calculationVariables_st.reset_maxforce();
-      dap_calculationVariables_st.Force_Max += _G_force_effect.G_force;
-      dap_calculationVariables_st.Force_Max += _Road_impact_effect.Road_Impact_force;
-      dap_calculationVariables_st.dynamic_update();
-      dap_calculationVariables_st.updateStiffness();
-    
+    movingAverageFilter.dataPointsCount = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.G_window;
+    movingAverageFilter_roadimpact.dataPointsCount = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.Road_window;
+    dap_calculationVariables_st.reset_maxforce();
+    dap_calculationVariables_st.Force_Max += _G_force_effect.G_force;
+    dap_calculationVariables_st.Force_Max += _Road_impact_effect.Road_Impact_force;
+    dap_calculationVariables_st.dynamic_update();
+    dap_calculationVariables_st.updateStiffness();
+  
+    // end profiler 1, effects
+    profiler_pedalUpdateTask.end(1);
 
+    // start profiler 2, loadcell reading
+    profiler_pedalUpdateTask.start(2);
 
     // Get the loadcell reading
     float loadcellReading = loadcell->getReadingKg();
+
+    // end profiler 2, loadcell reading
+    profiler_pedalUpdateTask.end(2);
 
     // detect loadcell outlier
     float loadcellDifferenceToLastCycle_fl32 = loadcellReading - previousLoadcellReadingInKg_fl32;
@@ -1023,6 +1058,8 @@ void pedalUpdateTask( void * pvParameters )
         continue;
       }
     }
+
+    
 
 
 
@@ -1049,12 +1086,14 @@ void pedalUpdateTask( void * pvParameters )
     // pos_printCount++;
   
 
+    // start profiler 3, loadcell reading conversion
+    profiler_pedalUpdateTask.start(3);
+
     // Invert the loadcell reading digitally if desired
     if (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.invertLoadcellReading_u8 == 1)
     {
       loadcellReading *= -1.0f;
     }
-
 
     // Convert loadcell reading to pedal force
     float sledPosition = sledPositionInMM(stepper, &dap_config_pedalUpdateTask_st, motorRevolutionsPerSteps_fl32);
@@ -1067,6 +1106,12 @@ void pedalUpdateTask( void * pvParameters )
     float d = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.lengthPedal_d;
     float d_x_hor_d_phi = -(b+d) * sinf(pedalInclineAngleInDeg_fl32 * DEG_TO_RAD_FL32);
     d_x_hor_d_phi *= DEG_TO_RAD_FL32; // inner derivative
+
+    // start profiler 3, loadcell reading conversion
+    profiler_pedalUpdateTask.end(3);
+
+    // start profiler 4, loadcell reading filtering
+    profiler_pedalUpdateTask.start(4);
     
     // Do the loadcell signal filtering
     float filteredReading = 0.0f;
@@ -1093,6 +1138,9 @@ void pedalUpdateTask( void * pvParameters )
     //write filter reading into calculation_st
     dap_calculationVariables_st.currentForceReading=filteredReading;
 
+
+    // end profiler 4, loadcell reading filtering
+    profiler_pedalUpdateTask.end(4);
 
 
 
@@ -1179,6 +1227,11 @@ void pedalUpdateTask( void * pvParameters )
     #endif
     //float FilterReadingJoystick=averagefilter_joystick.process(filteredReading);
 
+
+    // start profiler 4, movement strategy
+    profiler_pedalUpdateTask.start(5);
+
+
     float stepperPosFraction = stepper->getCurrentPositionFraction();
     int32_t Position_Next = 0;
     
@@ -1199,6 +1252,11 @@ void pedalUpdateTask( void * pvParameters )
         break;
     }
 
+    // end profiler 4, movement strategy
+    profiler_pedalUpdateTask.end(5);
+
+    // start profiler 6, ...
+    profiler_pedalUpdateTask.start(6);
 
     // float alphaPidOut = 0.9;
     // Position_Next = Position_Next*alphaPidOut + Position_Next_Prev * (1.0f - alphaPidOut);
@@ -1505,10 +1563,15 @@ void pedalUpdateTask( void * pvParameters )
       }
     }
 
-    
+    // end profiler 6, ...
+    profiler_pedalUpdateTask.end(6);
+
+
+    // start profiler 6, struct exchange
+    profiler_pedalUpdateTask.start(7);
 
     // update extended pedal structures
-    DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
+    static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
 
     // update extended struct 
     //dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.timeInMs_u32 = millis();
@@ -1518,26 +1581,26 @@ void pedalUpdateTask( void * pvParameters )
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.forceVel_est_fl32 =  changeVelocity;
 
     //dap_state_extended_st.payloadPedalState_Extended_.servoPosition_i16 = stepper->getServosInternalPosition();
-    dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPosition_i16 = stepper->getServosInternalPositionCorrected() - stepper->getMinPosition();
+    int32_t minPos = stepper->getMinPosition();
+    dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPosition_i16 = stepper->getServosInternalPositionCorrected() - minPos;
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_voltage_0p1V =  stepper->getServosVoltage();
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_current_percent_i16 = stepper->getServosCurrent();
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_position_error_i16 = stepper->getServosPosError();
     
     //dap_state_extended_st.payloadPedalState_Extended_.servoPositionTarget_i16 = stepper->getCurrentPositionFromMin();
-    dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionTarget_i16 = stepper->getCurrentPosition() - stepper->getMinPosition();
+    dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionTarget_i16 = stepper->getCurrentPosition() - minPos;
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.angleSensorOutput_ui16 = angleReading_ui16;
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.brakeResistorState_b = stepper->getBrakeResistorState();
-    dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.PedalTag=dap_config_pedalUpdateTask_st.payLoadPedalConfig_.pedal_type;
+    dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.PedalTag = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.pedal_type;
     dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.payloadType = DAP_PAYLOAD_TYPE_STATE_EXTENDED;
     dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.version = DAP_VERSION_CONFIG;
     dap_state_extended_st_lcl_pedalUpdateTask.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_)), sizeof(dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_) + sizeof(dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_));
 
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionEstimated_i16 = stepper->getEstimatedPosError();
-    //dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionEstimated_stepperPos_i16 = stepper->getEstimatedPosError_getCurrentStepperPos() - stepper->getMinPosition();
 
     
     // update basic pedal state struct
-    DAP_state_basic_st dap_state_basic_st_lcl_pedalUpdateTask;
+    static DRAM_ATTR DAP_state_basic_st dap_state_basic_st_lcl_pedalUpdateTask;
 
     dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalForce_u16 =  normalizedPedalReading_fl32 * 65535.0f;
     dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalPosition_u16 = constrain(stepperPosFraction, 0.0f, 1.0f) * 65535.0f;
@@ -1570,7 +1633,6 @@ void pedalUpdateTask( void * pvParameters )
     dap_state_basic_st_lcl_pedalUpdateTask.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_)), sizeof(dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_) + sizeof(dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_));
     dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.PedalTag = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.pedal_type;        
     
-
     // update pedal states
     if(semaphore_updatePedalStates!=NULL)
     {
@@ -1590,6 +1652,11 @@ void pedalUpdateTask( void * pvParameters )
       semaphore_updatePedalStates = xSemaphoreCreateMutex();
     }
 
+    // start profiler 6, struct exchange
+    profiler_pedalUpdateTask.end(7);
+
+    
+
     #ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
       if( controlTask_stackSizeIdx_u32 == 1000)
       {
@@ -1600,6 +1667,14 @@ void pedalUpdateTask( void * pvParameters )
       }
       controlTask_stackSizeIdx_u32++;
     #endif
+
+
+
+    profiler_pedalUpdateTask.end(0);
+
+    // print profiler results
+    profiler_pedalUpdateTask.report();
+    
 
   }
 }
