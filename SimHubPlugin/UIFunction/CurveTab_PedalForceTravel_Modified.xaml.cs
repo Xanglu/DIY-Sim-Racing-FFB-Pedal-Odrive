@@ -496,6 +496,7 @@ namespace User.PluginSdkDemo.UIFunction
                 double dx = mainCanvas.Height / y_max;
                 double y_actual = (mainCanvas.Height - y - rectangle.Height / 2) / dx;
                 var tmp = dap_config_st;
+                /*
                 if (rectangle.Name == "rect0")
                 {
                     tmp.payloadPedalConfig_.relativeForce_p000 = Convert.ToByte(y_actual);
@@ -534,7 +535,7 @@ namespace User.PluginSdkDemo.UIFunction
                     text_point_pos.Text = "Travel:100%";
                     text_point_pos.Text += "\nForce: " + (int)y_actual + "%";
                 }
-
+                */
                 text_point_pos.Visibility = Visibility.Visible; ;
 
                 dap_config_st = tmp;

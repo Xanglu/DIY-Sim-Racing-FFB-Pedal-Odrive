@@ -1840,12 +1840,14 @@ namespace User.PluginSdkDemo
             dap_config_initial_st.payloadPedalConfig_.pedalStartPosition = 35;
             dap_config_initial_st.payloadPedalConfig_.pedalEndPosition = 80;
             dap_config_initial_st.payloadPedalConfig_.maxForce = 50;
+            /*
             dap_config_initial_st.payloadPedalConfig_.relativeForce_p000 = 0;
             dap_config_initial_st.payloadPedalConfig_.relativeForce_p020 = 20;
             dap_config_initial_st.payloadPedalConfig_.relativeForce_p040 = 40;
             dap_config_initial_st.payloadPedalConfig_.relativeForce_p060 = 60;
             dap_config_initial_st.payloadPedalConfig_.relativeForce_p080 = 80;
             dap_config_initial_st.payloadPedalConfig_.relativeForce_p100 = 100;
+            */
             dap_config_initial_st.payloadPedalConfig_.dampingPress = 0;
             dap_config_initial_st.payloadPedalConfig_.dampingPull = 0;
             dap_config_initial_st.payloadPedalConfig_.absFrequency = 5;

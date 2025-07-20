@@ -91,12 +91,14 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadPedalConfig_.pedalEndPosition = 80;
             dap_config_st[pedalIdx].payloadPedalConfig_.maxForce = 50;
             dap_config_st[pedalIdx].payloadPedalConfig_.preloadForce = 0;
+            /*
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce_p000 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce_p020 = 20;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce_p040 = 40;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce_p060 = 60;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce_p080 = 80;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce_p100 = 100;
+            */
             dap_config_st[pedalIdx].payloadPedalConfig_.quantityOfControl = 6;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce00 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeForce01 = 20;
@@ -120,6 +122,29 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel08 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel09 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.relativeTravel10 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.numOfJoystickMapControl = 6;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped00 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped01 = 20;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped02 = 40;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped03 = 60;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped04 = 80;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped05 = 100;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped06 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped07 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped08 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped09 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapMapped10 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig00 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig01 = 20;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig02 = 40;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig03 = 60;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig04 = 80;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig05 = 100;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig06 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig07 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig08 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig09 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.joystickMapOrig10 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.dampingPress = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.dampingPull = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.absFrequency = 5;
@@ -204,12 +229,14 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.pedalEndPosition = 95;
             dap_config_st_rudder.payloadPedalConfig_.maxForce = 10;
             dap_config_st_rudder.payloadPedalConfig_.preloadForce = 1.0f;
+            /*
             dap_config_st_rudder.payloadPedalConfig_.relativeForce_p000 = 0;
             dap_config_st_rudder.payloadPedalConfig_.relativeForce_p020 = 20;
             dap_config_st_rudder.payloadPedalConfig_.relativeForce_p040 = 40;
             dap_config_st_rudder.payloadPedalConfig_.relativeForce_p060 = 60;
             dap_config_st_rudder.payloadPedalConfig_.relativeForce_p080 = 80;
             dap_config_st_rudder.payloadPedalConfig_.relativeForce_p100 = 100;
+            */
 
             dap_config_st_rudder.payloadPedalConfig_.quantityOfControl = 6;
             dap_config_st_rudder.payloadPedalConfig_.relativeForce00 = 0;
@@ -234,6 +261,31 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.relativeTravel08 = 0;
             dap_config_st_rudder.payloadPedalConfig_.relativeTravel09 = 0;
             dap_config_st_rudder.payloadPedalConfig_.relativeTravel10 = 0;
+
+
+            dap_config_st_rudder.payloadPedalConfig_.numOfJoystickMapControl = 6;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped00 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped01 = 20;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped02 = 40;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped03 = 60;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped04 = 80;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped05 = 100;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped06 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped07 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped08 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped09 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapMapped10 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig00 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig01 = 20;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig02 = 40;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig03 = 60;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig04 = 80;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig05 = 100;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig06 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig07 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig08 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig09 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.joystickMapOrig10 = 0;
 
             dap_config_st_rudder.payloadPedalConfig_.dampingPress = 0;
             dap_config_st_rudder.payloadPedalConfig_.dampingPull = 0;

@@ -189,6 +189,9 @@
     <Compile Include="UIElement\SliderWithLabel.xaml.cs">
       <DependentUpon>SliderWithLabel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UIFunction\CurveTab_JoystickMapping.xaml.cs">
+      <DependentUpon>CurveTab_JoystickMapping.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UIFunction\CurveTab_PedalForceTravel_Modified.xaml.cs">
       <DependentUpon>CurveTab_PedalForceTravel_Modified.xaml</DependentUpon>
     </Compile>
@@ -324,6 +327,10 @@
     <Page Include="UIElement\SliderWithLabel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UIFunction\CurveTab_JoystickMapping.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="UIFunction\CurveTab_PedalForceTravel_Modified.xaml">
       <Generator>MSBuild:Compile</Generator>

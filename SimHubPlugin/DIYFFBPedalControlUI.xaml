@@ -622,21 +622,29 @@
                                                 </Setter>
                                             </Style>
                                         </TabControl.Resources>
-                                        <TabItem Width="270" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
+                                        <TabItem Width="180" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
                                             <TabItem.Header>
-                                                <Border  Width="270" Height="30" Margin="0,0,0,0" >
-                                                    <Label Content="FORCE-TRAVEL CURVE"  FontFamily="Arial Black" FontSize="10" Height="30" Padding="0,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" Width="270"  />
+                                                <Border  Width="180" Height="30" Margin="0,0,0,0" >
+                                                    <Label Content="FORCE-TRAVEL CURVE"  FontFamily="Arial Black" FontSize="10" Height="30" Padding="0,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" Width="180"  />
                                                 </Border>
                                             </TabItem.Header>
                                             <localFunction:CurveTab_PedalForceTravel_Modified x:Name="PedalForceTravel_Tab" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
                                         </TabItem>
-                                        <TabItem x:Name="pedalKinematicTab" Width="270" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
+                                        <TabItem x:Name="pedalKinematicTab" Width="180" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
                                             <TabItem.Header>
-                                                <Border  Width="270" Height="30" Margin="0,0,0,0" >
+                                                <Border  Width="180" Height="30" Margin="0,0,0,0" >
                                                     <Label Content="PEDAL KINEMATIC"  FontFamily="Arial Black" FontSize="10" Height="30" Width="270" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True"  />
                                                 </Border>
                                             </TabItem.Header>
                                             <localFunction:KinematicsTab_Pedal x:Name="PedalKinematics_Tab" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
+                                        </TabItem>
+                                        <TabItem x:Name="pedalJoystickTab" Width="180" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
+                                            <TabItem.Header>
+                                                <Border  Width="180" Height="30" Margin="0,0,0,0" >
+                                                    <Label Content="JOYSTICK MAPPING"  FontFamily="Arial Black" FontSize="10" Height="30" Width="180" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True"  />
+                                                </Border>
+                                            </TabItem.Header>
+                                            <localFunction:CurveTab_JoystickMapping x:Name="PedalJoystick_Tab" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
                                         </TabItem>
 
                                     </TabControl>

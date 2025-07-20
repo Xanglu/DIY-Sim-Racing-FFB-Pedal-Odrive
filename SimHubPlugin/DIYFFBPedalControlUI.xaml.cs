@@ -377,9 +377,10 @@ namespace User.PluginSdkDemo
         private void SystemLicense_Tab_btn_test_Click_event(object sender, EventArgs e)
         {
             ToastNotification("Debug", "Print All parameter in Serial log");
-            //PrintUnknownStructParameters(dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_);
+            PrintUnknownStructParameters(dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_);
             //readRudderSettingToConfig();
-            PrintUnknownStructParameters(dap_config_st_rudder.payloadPedalConfig_);
+            //PrintUnknownStructParameters(dap_config_st_rudder.payloadPedalConfig_);
+            /*
             if (_serial_monitor_window != null)
             {
                 _serial_monitor_window.TextBox_SerialMonitor.Text += "\nCom port count: " + Plugin.comportList.Count;
@@ -388,6 +389,7 @@ namespace User.PluginSdkDemo
                     _serial_monitor_window.TextBox_SerialMonitor.Text += "\ndevice name:" + items.DeviceName + "\nVID:" + items.Vid + " PID:" + items.Pid;
                 }
             }
+            */
 
         }
 

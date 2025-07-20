@@ -76,7 +76,7 @@ namespace User.PluginSdkDemo
                 EffectsCustom1_tab.dap_config_st = tmp_struct;
                 EffectsCustom2_Tab.dap_config_st = tmp_struct;
                 PedalForceTravel_Tab.dap_config_st = tmp_struct;
-
+                PedalJoystick_Tab.dap_config_st= tmp_struct;
 
                 PedalKinematics_Tab.dap_config_st = tmp_struct;
                 PedalSettingsSection.dap_config_st = tmp_struct;
