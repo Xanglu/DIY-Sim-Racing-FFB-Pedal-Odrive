@@ -1,4 +1,5 @@
 ﻿using FMOD;
+using SimHub.Plugins.OutputPlugins.GraphicalDash.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -35,7 +36,8 @@ namespace User.PluginSdkDemo.UIFunction
         private Point dragOffset;
         private int minControlQuantity = 6;
         private int maxControlQuantity = 11;
-
+        private double[] update_y = new double[1001] ;
+        private int numOfMaxPointinLine = 1001;
         private byte[] joystickValueOrig;
         private byte[] joystickValueMapping;
         private double minpos = 0;
@@ -52,6 +54,7 @@ namespace User.PluginSdkDemo.UIFunction
             joystickValueMapping = new byte[maxControlQuantity];
             Update_BrakeForceCurve();
             maxpos = mainCanvas.Width;
+            //update_y = new double[numOfMaxPointinLine];
             
         }
         public static readonly DependencyProperty DAP_Config_Property = DependencyProperty.Register(
@@ -188,7 +191,11 @@ namespace User.PluginSdkDemo.UIFunction
             double dyy = mainCanvas.Height / control_rect_value_max;
             //Canvas.SetTop(rect0, mainCanvas.Height - dyy * dap_config_st.payloadPedalConfig_.relativeForce_p000 - rect0.Height / 2);
             //Canvas.SetLeft(rect0, 0 * mainCanvas.Width / 5 - rect0.Width / 2);
-
+            Canvas.SetTop(rectState, mainCanvas.Height - rectState.Height / 2);
+            Canvas.SetLeft(rectState, -rectState.Width / 2);
+            Canvas.SetLeft(textState, Canvas.GetLeft(rectState) );
+            Canvas.SetTop(textState, Canvas.GetTop(rectState) - rectState.Height);
+            textState.Text = "0%";
             Update_BrakeForceCurve();
         }
 
@@ -453,21 +460,7 @@ namespace User.PluginSdkDemo.UIFunction
                 joystickValueMapping[i] = (byte)(((mainCanvas.Height- rectPositionY[i] ) / mainCanvas.Height) * 100);
                 y_update[i]= (double)(joystickValueMapping[i]);
             }
-            /*
-            x[0] = 0;
-            x[1] = 20;
-            x[2] = 40;
-            x[3] = 60;
-            x[4] = 80;
-            x[5] = 100;
-
-            y[0] = dap_config_st.payloadPedalConfig_.relativeForce_p000;
-            y[1] = dap_config_st.payloadPedalConfig_.relativeForce_p020;
-            y[2] = dap_config_st.payloadPedalConfig_.relativeForce_p040;
-            y[3] = dap_config_st.payloadPedalConfig_.relativeForce_p060;
-            y[4] = dap_config_st.payloadPedalConfig_.relativeForce_p080;
-            y[5] = dap_config_st.payloadPedalConfig_.relativeForce_p100;
-            */
+           
 
             // Use cubic interpolation to smooth the original data
             (double[] xs2, double[] ys2, double[] a, double[] b) = Cubic.Interpolate1D(x, y, (int)x_quantity);
@@ -475,35 +468,43 @@ namespace User.PluginSdkDemo.UIFunction
 
 
             System.Windows.Media.PointCollection myPointCollection2 = new System.Windows.Media.PointCollection();
-
+            System.Windows.Media.PointCollection myPointCollection3 = new System.Windows.Media.PointCollection();
             System.Windows.Point PointStart= new System.Windows.Point(0, mainCanvas.Height);
             myPointCollection2.Add(PointStart);
+            myPointCollection3.Add(PointStart);
             for (int pointIdx = 0; pointIdx < (x_quantity); pointIdx++)
             {
                 System.Windows.Point Pointlcl = new System.Windows.Point(xs2[pointIdx] + rectPositionX[0], ys2[pointIdx]);
                 myPointCollection2.Add(Pointlcl);
+                myPointCollection3.Add(Pointlcl);
                 //calculation.Force_curve_Y[pointIdx] = ys2[pointIdx];
             }
             System.Windows.Point PointEnd = new System.Windows.Point(mainCanvas.Width, 0);
             myPointCollection2.Add(PointEnd);
+            myPointCollection3.Add(PointEnd);
             this.Polyline_BrakeForceCurve.Points = myPointCollection2;
+            System.Windows.Point Pointend1 = new System.Windows.Point(mainCanvas.Width, mainCanvas.Height);
+            myPointCollection3.Add(Pointend1);
+            myPointCollection3.Add(PointStart);
+            polygonCurveBackground.Points = myPointCollection3;
             //calculate actual point
-            (double[] xs3, double[] ys3, double[] a2, double[] b2) = Cubic.Interpolate1D(x_update, y_update, (int)(joystickValueOrig[rectCount - 1] - joystickValueOrig[0]+1));
-            double[] update_y = new double[(int)x_quantity];
+            (double[] xs3, double[] ys3, double[] a2, double[] b2) = Cubic.Interpolate1D(x_update, y_update, (int)(joystickValueOrig[rectCount - 1]*10 - joystickValueOrig[0]*10+1));
 
-            for (int i = 0; i < joystickValueOrig[0]; i++)
+            int initialPos = joystickValueOrig[0] * 10;
+            int endPos = joystickValueOrig[rectCount - 1] * 10;
+
+            for (int i = 0; i < initialPos; i++)
             {
                 update_y[i] = 0;    
             }
-            for (int i = joystickValueOrig[0]; i < joystickValueOrig[rectCount - 1]; i++)
+            for (int i = initialPos; i < endPos; i++)
             {
-                update_y[i] = ys3[i- joystickValueOrig[0]];
+                update_y[i] = ys3[i- initialPos];
             }
-            for (int i = joystickValueOrig[rectCount - 1]; i < x_quantity; i++)
+            for (int i = endPos; i < numOfMaxPointinLine; i++)
             {
                 update_y[i] = 100;
             }
-            double update_x = 0;
 
         }
 
@@ -603,11 +604,13 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 Width = RectSize,
                 Height = RectSize,
-                StrokeThickness = 0,
-                Opacity = 0.8
+                StrokeThickness = 2,
+                Fill = System.Windows.Media.Brushes.Transparent,
+                Opacity = 1.0
             };
             rect.Tag = (int)-1;
-            rect.SetResourceReference(Shape.FillProperty, "AccentColorBrush");
+            //rect.SetResourceReference(Shape.FillProperty, "AccentColorBrush");
+            rect.SetResourceReference(Rectangle.StrokeProperty, "AccentColorBrush");
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
 
@@ -956,6 +959,24 @@ namespace User.PluginSdkDemo.UIFunction
             GetMaxMinpos();
             UpdateRectState();
             Update_BrakeForceCurve();
+        }
+        public void JoystickStateUpdate(ushort pedalJoystickPosition_u16)
+        {
+            
+            double control_rect_value_max = 65535;
+            double round_x = (1000 * (double)pedalJoystickPosition_u16 / control_rect_value_max);
+            double xPosition=Clamp(round_x, 0, 1000);
+            double controlRectValueMaxNormalized = 1000;
+            double controlRectValueYMaxNormalized = 100;
+            double dyy = mainCanvas.Height / controlRectValueYMaxNormalized;
+            double dxx = mainCanvas.Width / controlRectValueMaxNormalized;
+            Canvas.SetTop(rectState, mainCanvas.Height - update_y[(int)xPosition]*dyy - rectState.Height / 2);
+            Canvas.SetLeft(rectState, xPosition*dxx-rectState.Width / 2);
+            Canvas.SetLeft(textState, Canvas.GetLeft(rectState));
+            Canvas.SetTop(textState, Canvas.GetTop(rectState) - rectState.Height);
+            
+            textState.Text = Math.Round(update_y[(int)xPosition])+"%";
+            textDebug.Text = "input:" + pedalJoystickPosition_u16 + " xPosition:"+xPosition;
         }
     }
 }

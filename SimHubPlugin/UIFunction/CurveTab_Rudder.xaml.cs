@@ -538,16 +538,22 @@ namespace User.PluginSdkDemo.UIFunction
                 (double[] xs2_rudder, double[] ys2_rudder, double[] a_rudder, double[] b_rudder) = Cubic.Interpolate1D(x, y, (int)x_quantity);
 
                 System.Windows.Media.PointCollection myPointCollection3 = new System.Windows.Media.PointCollection();
-
+                System.Windows.Media.PointCollection myPointCollection4 = new System.Windows.Media.PointCollection();
 
                 for (int pointIdx = 0; pointIdx < x_quantity; pointIdx++)
                 {
                     System.Windows.Point Pointlcl = new System.Windows.Point(xs2_rudder[pointIdx], ys2_rudder[pointIdx]);
                     myPointCollection3.Add(Pointlcl);
+                    myPointCollection4.Add(Pointlcl);
                     //Force_curve_Y[pointIdx] = dy * ys2_rudder[pointIdx];
                 }
 
                 this.Polyline_RudderForceCurve.Points = myPointCollection3;
+                System.Windows.Point Pointend1 = new System.Windows.Point(canvas_rudder_curve.Width, canvas_rudder_curve.Height);
+                System.Windows.Point Pointend2 = new System.Windows.Point(0, canvas_rudder_curve.Height);
+                myPointCollection4.Add(Pointend1);
+                myPointCollection4.Add(Pointend2);
+                polygonCurveBackground.Points = myPointCollection4;
             }
             catch { }
             
@@ -619,11 +625,13 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 Width = RectSize,
                 Height = RectSize,
-                StrokeThickness = 0,
-                Opacity = 0.8
+                StrokeThickness = 2,
+                Fill = System.Windows.Media.Brushes.Transparent,
+                Opacity = 1.0
             };
             rect.Tag = (int)-1;
-            rect.SetResourceReference(Shape.FillProperty, "AccentColorBrush");
+            //rect.SetResourceReference(Shape.FillProperty, "AccentColorBrush");
+            rect.SetResourceReference(Rectangle.StrokeProperty, "AccentColorBrush");
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
 

@@ -307,6 +307,14 @@ namespace User.PluginSdkDemo
                                             current_pedal_travel_state = x_showed;
                                             Plugin.pedal_state_in_ratio = (byte)current_pedal_travel_state;
                                         }
+                                        if (dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.travelAsJoystickOutput_u8 == 1)
+                                        {
+                                            PedalJoystick_Tab.JoystickStateUpdate(pedalState_read_st.payloadPedalBasicState_.pedalPosition_u16);
+                                        }
+                                        else
+                                        {
+                                            PedalJoystick_Tab.JoystickStateUpdate(pedalState_read_st.payloadPedalBasicState_.pedalForce_u16);
+                                        }
                                         for (int i = 0; i < 3; i++)
                                         {
                                             //PedalFirmwareVersion[pedalSelected, i] = pedalState_read_st.payloadPedalBasicState_.pedalFirmwareVersion_u8[i];

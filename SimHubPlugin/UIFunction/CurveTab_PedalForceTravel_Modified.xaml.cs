@@ -669,15 +669,25 @@ namespace User.PluginSdkDemo.UIFunction
 
 
             System.Windows.Media.PointCollection myPointCollection2 = new System.Windows.Media.PointCollection();
-
+            System.Windows.Media.PointCollection myPointCollection3 = new System.Windows.Media.PointCollection();
 
             for (int pointIdx = 0; pointIdx < (int)x_quantity; pointIdx++)
             {
                 System.Windows.Point Pointlcl = new System.Windows.Point(xs2[pointIdx], ys2[pointIdx]);
                 myPointCollection2.Add(Pointlcl);
+                myPointCollection3.Add(Pointlcl);
                 calculation.Force_curve_Y[pointIdx] = ys2[pointIdx];
             }
             this.Polyline_BrakeForceCurve.Points = myPointCollection2;
+            
+            System.Windows.Point Pointend1 = new System.Windows.Point(mainCanvas.Width, mainCanvas.Height);
+            System.Windows.Point Pointend2 = new System.Windows.Point(0, mainCanvas.Height);
+            myPointCollection3.Add(Pointend1);
+            myPointCollection3.Add(Pointend2);
+            polygonCurveBackground.Points= myPointCollection3;
+
+
+
         }
 
         public void updatePedalState(ushort pedalPosition_u16, ushort pedalForce_u16)
@@ -859,11 +869,13 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 Width = RectSize,
                 Height = RectSize,
-                StrokeThickness = 0,
-                Opacity = 0.8
+                StrokeThickness = 2,
+                Fill= System.Windows.Media.Brushes.Transparent,
+                Opacity = 1.0
             };
             rect.Tag = (int)-1;
-            rect.SetResourceReference(Shape.FillProperty, "AccentColorBrush");
+            //rect.SetResourceReference(Shape.FillProperty, "AccentColorBrush");
+            rect.SetResourceReference(Rectangle.StrokeProperty, "AccentColorBrush");
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
 

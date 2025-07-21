@@ -262,6 +262,8 @@ namespace User.PluginSdkDemo
                                     {
                                         pedalStateHasAlreadyBeenUpdated_b = true;
                                         PedalForceTravel_Tab.updatePedalState(pedalState_read_st.payloadPedalBasicState_.pedalPosition_u16, pedalState_read_st.payloadPedalBasicState_.pedalForce_u16);
+
+                                        
                                         double control_rect_value_max = 65535;
 
                                         if (Plugin.Settings.advanced_b)
@@ -279,6 +281,14 @@ namespace User.PluginSdkDemo
                                             round_x = Math.Max(0, Math.Min(round_x, 99));
                                             current_pedal_travel_state = x_showed;
                                             Plugin.pedal_state_in_ratio = (byte)current_pedal_travel_state;
+                                        }
+                                        if (dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.travelAsJoystickOutput_u8 == 1)
+                                        {
+                                            PedalJoystick_Tab.JoystickStateUpdate(pedalState_read_st.payloadPedalBasicState_.pedalPosition_u16);
+                                        }
+                                        else
+                                        {
+                                            PedalJoystick_Tab.JoystickStateUpdate(pedalState_read_st.payloadPedalBasicState_.pedalForce_u16);
                                         }
 
                                     }
