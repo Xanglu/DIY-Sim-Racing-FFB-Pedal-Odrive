@@ -36,6 +36,8 @@
 #endif
 
 
+#include "FastTrig.h"
+
 
 
 //#define ALLOW_SYSTEM_IDENTIFICATION
@@ -897,6 +899,9 @@ float previousLoadcellReadingInKg_fl32 = 0.0f;
 void pedalUpdateTask( void * pvParameters )
 {
 
+  static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
+
+
   for(;;){
 
     // measure callback time and continue, when desired period is reached
@@ -1102,9 +1107,9 @@ void pedalUpdateTask( void * pvParameters )
     float d_phi_d_x = convertToPedalForceGain(sledPosition, &dap_config_pedalUpdateTask_st);
 
     // compute gain for horizontal foot model
-    float b = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.lengthPedal_b;
-    float d = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.lengthPedal_d;
-    float d_x_hor_d_phi = -(b+d) * sinf(pedalInclineAngleInDeg_fl32 * DEG_TO_RAD_FL32);
+    float b = (float)dap_config_pedalUpdateTask_st.payLoadPedalConfig_.lengthPedal_b;
+    float d = (float)dap_config_pedalUpdateTask_st.payLoadPedalConfig_.lengthPedal_d;
+    float d_x_hor_d_phi = -(float)(b+d) * isin(pedalInclineAngleInDeg_fl32);
     d_x_hor_d_phi *= DEG_TO_RAD_FL32; // inner derivative
 
     // start profiler 3, loadcell reading conversion
@@ -1581,7 +1586,7 @@ void pedalUpdateTask( void * pvParameters )
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.forceVel_est_fl32 =  changeVelocity;
 
     //dap_state_extended_st.payloadPedalState_Extended_.servoPosition_i16 = stepper->getServosInternalPosition();
-    int32_t minPos = stepper->getMinPosition();
+    int32_t minPos = 0; //stepper->getMinPosition();
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPosition_i16 = stepper->getServosInternalPositionCorrected() - minPos;
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_voltage_0p1V =  stepper->getServosVoltage();
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_current_percent_i16 = stepper->getServosCurrent();
@@ -1598,6 +1603,11 @@ void pedalUpdateTask( void * pvParameters )
 
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionEstimated_i16 = stepper->getEstimatedPosError();
 
+    // end profiler 7, struct exchange
+    profiler_pedalUpdateTask.end(7);
+
+    // start profiler 8, struct exchange
+    profiler_pedalUpdateTask.start(8);
     
     // update basic pedal state struct
     static DRAM_ATTR DAP_state_basic_st dap_state_basic_st_lcl_pedalUpdateTask;
@@ -1605,11 +1615,14 @@ void pedalUpdateTask( void * pvParameters )
     dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalForce_u16 =  normalizedPedalReading_fl32 * 65535.0f;
     dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalPosition_u16 = constrain(stepperPosFraction, 0.0f, 1.0f) * 65535.0f;
     dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.joystickOutput_u16 = (float)joystickNormalizedToInt32 / 10000.0f * 32767.0f;//65535;
-    parse_version(DAP_FIRMWARE_VERSION, &dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[0], &dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[1], &dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[2]);
+    parse_version_fast(DAP_FIRMWARE_VERSION, &dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[0], &dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[1], &dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[2]);
+    
     //error code
     dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8=0;
+    
     //servo status update
     dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.servoStatus=stepper->servoStatus;
+    
     #ifdef ESPNOW_Enable
       if(ESPNow_error_code!=0)
       {
@@ -1617,22 +1630,21 @@ void pedalUpdateTask( void * pvParameters )
         ESPNow_error_code=0;
       }
     #endif
-    //dap_state_basic_st.payloadPedalState_Basic_.erroe_code_u8=200;
-    /*if(isv57.isv57_update_parameter_b)
-    {
-      dap_state_basic_st.payloadPedalState_Basic_.erroe_code_u8=11;
-      isv57.isv57_update_parameter_b=false;
-    }*/
-    if( stepper->getLifelineSignal()==false && stepper->servoStatus!=SERVO_IDLE_NOT_CONNECTED)
+
+    if( (stepper->getLifelineSignal()==false) && (stepper->servoStatus!=SERVO_IDLE_NOT_CONNECTED) )
     {
       dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8=12;
     }
+
     //fill the header
     dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.payloadType = DAP_PAYLOAD_TYPE_STATE_BASIC;
     dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.version = DAP_VERSION_CONFIG;
     dap_state_basic_st_lcl_pedalUpdateTask.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_)), sizeof(dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_) + sizeof(dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_));
     dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.PedalTag = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.pedal_type;        
     
+    
+
+
     // update pedal states
     if(semaphore_updatePedalStates!=NULL)
     {
@@ -1652,8 +1664,10 @@ void pedalUpdateTask( void * pvParameters )
       semaphore_updatePedalStates = xSemaphoreCreateMutex();
     }
 
-    // start profiler 6, struct exchange
-    profiler_pedalUpdateTask.end(7);
+    // start profiler 8, struct exchange
+    profiler_pedalUpdateTask.end(8);
+
+    
 
     
 

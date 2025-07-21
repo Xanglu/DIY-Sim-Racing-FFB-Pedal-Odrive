@@ -138,7 +138,7 @@ void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
 float LoadCell_ADS1220::getReadingKg() const {
   ADS1220_WE& adc = ADC();
   unsigned int timeout_us = 0;//TIMEOUT_FOR_DRDY_TO_BECOME_LOW;
-  bool timeoutReached_b = false;
+  boolean timeoutReached_b = false;
   float voltage_mV = 0.0f;
   
   // wait 500us since last update to reduce CPU load
@@ -146,7 +146,10 @@ float LoadCell_ADS1220::getReadingKg() const {
   {
     unsigned long timeInUsSince_ul = micros();
     uint32_t waitTimeInUs_i32 = ( timeInUsSince_ul - (timeInUsSinceLastUpdat_ul + LOADCELL_RADING_INTERVALL_IN_US), 0, LOADCELL_RADING_INTERVALL_IN_US);
-    delayMicroseconds(waitTimeInUs_i32);
+    if (waitTimeInUs_i32 > 0)
+    {
+      delayMicroseconds(waitTimeInUs_i32);
+    }
   }
 
   // wait longer, if still not available

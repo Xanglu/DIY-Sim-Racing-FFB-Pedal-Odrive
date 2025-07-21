@@ -51,11 +51,44 @@ const char *DAP_FIRMWARE_VERSION = "0.90.13";
 	#endif
 #endif
 
-void parse_version(const char *version, uint8_t *major, uint8_t *minor, uint8_t *patch) 
-{
-    int imajor, iminor, ipatch;
-    sscanf(version, "%d.%d.%d", &imajor, &iminor, &ipatch);
-    *major = (uint8_t)imajor;
-    *minor = (uint8_t)iminor;
-    *patch = (uint8_t)ipatch;
+// void parse_version(const char *version, uint8_t *major, uint8_t *minor, uint8_t *patch) 
+// {
+//     int imajor, iminor, ipatch;
+//     sscanf(version, "%d.%d.%d", &imajor, &iminor, &ipatch);
+//     *major = (uint8_t)imajor;
+//     *minor = (uint8_t)iminor;
+//     *patch = (uint8_t)ipatch;
+// }
+
+
+void parse_version_fast(const char *version, uint8_t *major, uint8_t *minor, uint8_t *patch) {
+    uint16_t val = 0;
+    *major = *minor = *patch = 0;
+
+    // Parse major
+    while (*version >= '0' && *version <= '9') {
+        val = val * 10 + (*version - '0');
+        version++;
+    }
+    *major = (uint8_t)val;
+
+    if (*version == '.') version++;
+    val = 0;
+
+    // Parse minor
+    while (*version >= '0' && *version <= '9') {
+        val = val * 10 + (*version - '0');
+        version++;
+    }
+    *minor = (uint8_t)val;
+
+    if (*version == '.') version++;
+    val = 0;
+
+    // Parse patch
+    while (*version >= '0' && *version <= '9') {
+        val = val * 10 + (*version - '0');
+        version++;
+    }
+    *patch = (uint8_t)val;
 }

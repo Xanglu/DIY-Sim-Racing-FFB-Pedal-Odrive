@@ -14,15 +14,13 @@ static const float KF_MODEL_NOISE_FORCE_ACCELERATION = ( 10000000000. );
            0.0, 1.0, 0.0,
            0.0, 0.0, 1.0};*/
         
-
-
 float sledPositionInMM(StepperWithLimits* stepper, DAP_config_st * config_st, float motorRevolutionsPerStep_fl32) {
   float currentPos = stepper->getCurrentPositionFromMin();
-  return currentPos * motorRevolutionsPerStep_fl32 * config_st->payLoadPedalConfig_.spindlePitch_mmPerRev_u8;
+  return currentPos * motorRevolutionsPerStep_fl32 * (float)config_st->payLoadPedalConfig_.spindlePitch_mmPerRev_u8;
 }
 
 float sledPositionInMM_withPositionAsArgument(float currentPos_fl32, DAP_config_st * config_st, float motorRevolutionsPerStep_fl32) {
-  return currentPos_fl32 * motorRevolutionsPerStep_fl32 * config_st->payLoadPedalConfig_.spindlePitch_mmPerRev_u8;
+  return currentPos_fl32 * motorRevolutionsPerStep_fl32 * (float)config_st->payLoadPedalConfig_.spindlePitch_mmPerRev_u8;
 }
 
 float pedalInclineAngleDeg(float sledPositionMM, DAP_config_st * config_st) {
@@ -30,10 +28,10 @@ float pedalInclineAngleDeg(float sledPositionMM, DAP_config_st * config_st) {
   // A: is lower pedal pivot
   // C: is upper pedal pivot
   // B: is rear pedal pivot
-  float a = config_st->payLoadPedalConfig_.lengthPedal_a;
-  float b = config_st->payLoadPedalConfig_.lengthPedal_b;
-  float c_ver = config_st->payLoadPedalConfig_.lengthPedal_c_vertical;
-  float c_hor = config_st->payLoadPedalConfig_.lengthPedal_c_horizontal + sledPositionMM;
+  float a = (float)config_st->payLoadPedalConfig_.lengthPedal_a;
+  float b = (float)config_st->payLoadPedalConfig_.lengthPedal_b;
+  float c_ver = (float)config_st->payLoadPedalConfig_.lengthPedal_c_vertical;
+  float c_hor = (float)config_st->payLoadPedalConfig_.lengthPedal_c_horizontal + sledPositionMM;
   float c = sqrtf(c_ver * c_ver + c_hor * c_hor);
   
 
@@ -155,12 +153,12 @@ float convertToPedalForceGain(float sledPositionMM, DAP_config_st * config_st) {
   // c: is sled line (connection AC)
   // d: is upper pedal plate  (connection AC)
 
-  float a = config_st->payLoadPedalConfig_.lengthPedal_a;
-  float b = config_st->payLoadPedalConfig_.lengthPedal_b;
-  float d = config_st->payLoadPedalConfig_.lengthPedal_d;
+  float a = (float)config_st->payLoadPedalConfig_.lengthPedal_a;
+  float b = (float)config_st->payLoadPedalConfig_.lengthPedal_b;
+  float d = (float)config_st->payLoadPedalConfig_.lengthPedal_d;
 
-  float c_ver = config_st->payLoadPedalConfig_.lengthPedal_c_vertical;
-  float c_hor = config_st->payLoadPedalConfig_.lengthPedal_c_horizontal + sledPositionMM;
+  float c_ver = (float)config_st->payLoadPedalConfig_.lengthPedal_c_vertical;
+  float c_hor = (float)config_st->payLoadPedalConfig_.lengthPedal_c_horizontal + sledPositionMM;
   float c = sqrtf(c_ver * c_ver + c_hor * c_hor);
   
 
