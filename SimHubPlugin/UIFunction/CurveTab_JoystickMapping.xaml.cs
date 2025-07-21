@@ -976,7 +976,7 @@ namespace User.PluginSdkDemo.UIFunction
             Canvas.SetTop(textState, Canvas.GetTop(rectState) - rectState.Height);
             
             textState.Text = Math.Round(update_y[(int)xPosition])+"%";
-            textDebug.Text = "input:" + pedalJoystickPosition_u16 + " xPosition:"+xPosition;
+            //textDebug.Text = "input:" + pedalJoystickPosition_u16 + " xPosition:"+xPosition;
         }
     }
 }

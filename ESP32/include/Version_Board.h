@@ -1,4 +1,4 @@
-const char *DAP_FIRMWARE_VERSION = "0.90.13";
+const char *DAP_FIRMWARE_VERSION = "0.90.14";
 
 #if PCB_VERSION==3
 	#define CONTROL_BOARD "V3_ESP32"
@@ -50,15 +50,17 @@ const char *DAP_FIRMWARE_VERSION = "0.90.13";
 		#define CONTROL_BOARD "V6_ESP32S3_Without_Wireless"
 	#endif
 #endif
-
-// void parse_version(const char *version, uint8_t *major, uint8_t *minor, uint8_t *patch) 
-// {
-//     int imajor, iminor, ipatch;
-//     sscanf(version, "%d.%d.%d", &imajor, &iminor, &ipatch);
-//     *major = (uint8_t)imajor;
-//     *minor = (uint8_t)iminor;
-//     *patch = (uint8_t)ipatch;
-// }
+uint8_t versionMajor;
+uint8_t versionMinor;
+uint8_t versionPatch;
+void parse_version(const char *version, uint8_t *major, uint8_t *minor, uint8_t *patch) 
+{
+     int imajor, iminor, ipatch;
+     sscanf(version, "%d.%d.%d", &imajor, &iminor, &ipatch);
+     *major = (uint8_t)imajor;
+     *minor = (uint8_t)iminor;
+     *patch = (uint8_t)ipatch;
+}
 
 
 void parse_version_fast(const char *version, uint8_t *major, uint8_t *minor, uint8_t *patch) {
