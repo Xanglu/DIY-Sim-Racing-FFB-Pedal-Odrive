@@ -18,14 +18,11 @@
                 <Setter Property="IsTabStop" Value="false"/>
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
                 <Setter Property="Width" Value="10" />
-
-
-
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Thumb}">
                             <Grid SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
-                                <Rectangle Fill="{TemplateBinding Background}" Margin="{TemplateBinding BorderThickness}" RadiusX="0" RadiusY="0"/>
+                                <Rectangle RadiusX="2" RadiusY="2" Fill="Transparent" Stroke="{DynamicResource AccentColorBrush}" StrokeThickness="2" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" />
                                 <Rectangle x:Name="DisabledVisualElement" Fill="{DynamicResource DisabledWhiteBrush}" IsHitTestVisible="false" Opacity="0"/>
 
                             </Grid>
@@ -72,7 +69,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type RepeatButton}">
                             <Grid x:Name="Root" Margin="0 -1 0 0">
-                                <Rectangle Height="4" Margin="0 1 0 0" RadiusX="1" RadiusY="1">
+                                <Rectangle Height="2" Margin="0 1 0 0" RadiusX="1" RadiusY="1">
                                     <Rectangle.Fill>
                                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0" Opacity="0.9">
                                             <GradientStop Color="{TemplateBinding Background}" Offset="0.0"/>
@@ -123,6 +120,9 @@
                     </Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate>
+            <Style x:Key="SliderStyle_single_H" TargetType="Slider">
+                <Setter Property="Template" Value="{StaticResource HorizontalSliderTemplate}"/>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
