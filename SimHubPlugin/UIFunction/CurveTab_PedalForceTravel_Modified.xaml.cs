@@ -1001,7 +1001,7 @@ namespace User.PluginSdkDemo.UIFunction
                 text_point_pos.Text = "#"+draggingRect.Tag.ToString();
                 text_point_pos.Text += "\nTravel:" + travel[(int)draggingRect.Tag ] + "%";
                 text_point_pos.Text += "\nForce: " + force[(int)draggingRect.Tag ] + "%";
-                writeForceAndTravelToConfig();
+                //writeForceAndTravelToConfig();
             }
         }
 

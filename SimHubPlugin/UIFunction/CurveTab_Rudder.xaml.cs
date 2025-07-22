@@ -757,7 +757,7 @@ namespace User.PluginSdkDemo.UIFunction
                 text_point_pos_rudder.Text = "#" + draggingRect.Tag.ToString();
                 text_point_pos_rudder.Text += "\nTravel:" + travel[(int)draggingRect.Tag] + "%";
                 text_point_pos_rudder.Text += "\nForce: " + force[(int)draggingRect.Tag] + "%";
-                writeForceAndTravelToConfig();
+                //writeForceAndTravelToConfig();
             }
         }
 

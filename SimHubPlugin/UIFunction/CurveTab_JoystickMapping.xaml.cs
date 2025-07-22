@@ -643,11 +643,17 @@ namespace User.PluginSdkDemo.UIFunction
         {
             if (rectCount < (maxControlQuantity ))
             {
+
                 Point pos = e.GetPosition(mainCanvas);
-                AddRectAt(pos.X, pos.Y);
-                UpdateRectState();
-                GetMaxMinpos();
-                Update_BrakeForceCurve();
+                if (pos.X<maxpos && pos.X>minpos)
+                {
+                    AddRectAt(pos.X, pos.Y);
+                    UpdateRectState();
+                    GetMaxMinpos();
+                    UpdateRectState();
+                    Update_BrakeForceCurve();
+                }
+
                 //writeForceAndTravelToConfig();
             }
 
@@ -681,6 +687,7 @@ namespace User.PluginSdkDemo.UIFunction
 
         private void Rect_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            UpdateRectState ();
             System.Windows.Shapes.Rectangle rect = sender as Rectangle;
 
             if (rect != null && rect.Tag != null)
@@ -722,7 +729,7 @@ namespace User.PluginSdkDemo.UIFunction
 
                 int myTag = (int)draggingRect.Tag;
                 // move freely
-                if (myTag != 0 && myTag != rectCount - 1)
+                if (myTag > 0 && myTag <rectCount - 1)
                 {
                     Point pos = e.GetPosition(mainCanvas);
                     double newLeft = pos.X - dragOffset.X;
@@ -758,9 +765,9 @@ namespace User.PluginSdkDemo.UIFunction
                     double rightBound = Canvas.GetLeft(taggedRects[myTag + 1]) - RectSize;
 
                     newLeft = Math.Max(leftBound, Math.Min(newLeft, rightBound));
-                    //newTop = Math.Max(0, Math.Min(newTop, mainCanvas.Height));
+                    newTop = mainCanvas.Height - 0.5*RectSize;
                     Canvas.SetLeft(draggingRect, newLeft);
-                    //Canvas.SetTop(draggingRect, newTop);
+                    Canvas.SetTop(draggingRect, newTop);
                 }
                 //last one
                 if (myTag == rectCount - 1)
@@ -778,9 +785,9 @@ namespace User.PluginSdkDemo.UIFunction
                     double rightBound = mainCanvas.Width - 0.5*RectSize;
 
                     newLeft = Math.Max(leftBound, Math.Min(newLeft, rightBound));
-                    //newTop = Math.Max(0, Math.Min(newTop, mainCanvas.Height));
+                    newTop = 0 - 0.5 * RectSize; ;
                     Canvas.SetLeft(draggingRect, newLeft);
-                    //Canvas.SetTop(draggingRect, newTop);
+                    Canvas.SetTop(draggingRect, newTop);
                 }
             
 
@@ -791,7 +798,7 @@ namespace User.PluginSdkDemo.UIFunction
                 text_point_pos.Text = "#"+draggingRect.Tag.ToString();
                 text_point_pos.Text += "\nOrig:" + joystickValueOrig[myTag] + "%";
                 text_point_pos.Text += "\nMapping: " + joystickValueMapping[myTag] + "%";
-                writeForceAndTravelToConfig();
+                //writeForceAndTravelToConfig();
             }
         }
 
@@ -956,8 +963,9 @@ namespace User.PluginSdkDemo.UIFunction
                 Canvas.SetTop(toDraw[i], mainCanvas.Height - (double)joystickValueMapping[i] * dy - 0.5 * RectSize);
 
             }
-            GetMaxMinpos();
+            
             UpdateRectState();
+            GetMaxMinpos();
             Update_BrakeForceCurve();
         }
         public void JoystickStateUpdate(ushort pedalJoystickPosition_u16)
