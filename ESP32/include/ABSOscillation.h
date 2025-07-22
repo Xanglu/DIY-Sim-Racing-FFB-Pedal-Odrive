@@ -68,7 +68,7 @@ public:
           absAmp_fl32 = calcVars_st->absAmplitude; 
           break;
         case 1:
-          absAmp_fl32 = calcVars_st->stepperPosRange * calcVars_st->absAmplitude * 0.001f;
+          absAmp_fl32 = calcVars_st->stepperPosRange * calcVars_st->absAmplitude * 0.01f;
           break;
         default:
           break;
