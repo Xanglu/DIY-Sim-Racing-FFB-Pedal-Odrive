@@ -896,7 +896,7 @@ float Position_Next_Prev = 0.0f;
 
 float previousLoadcellReadingInKg_fl32 = 0.0f;
 
-void pedalUpdateTask( void * pvParameters )
+void IRAM_ATTR pedalUpdateTask( void * pvParameters )
 {
 
   static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
