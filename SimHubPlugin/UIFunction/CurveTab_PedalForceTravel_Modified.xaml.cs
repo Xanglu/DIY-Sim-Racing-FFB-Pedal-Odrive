@@ -863,14 +863,33 @@ namespace User.PluginSdkDemo.UIFunction
             UpdateRectState();
         }
 
+        
         private void AddRectAt(double x, double y)
         {
+            /*
+            Border border = new Border
+            {
+                Width = RectSize,
+                Height = RectSize,
+                BorderThickness = new Thickness(2),
+                Background = System.Windows.Media.Brushes.Transparent,
+                CornerRadius = new CornerRadius(2),
+                Opacity = 1.0
+            };
+            border.SetResourceReference(Border.BorderBrushProperty, "AccentColorBrush");
+            border.Tag = -1;
+            Canvas.SetLeft(border, x);
+            Canvas.SetTop(border, y);
+            mainCanvas.Children.Add(border);
+            */
             Rectangle rect = new Rectangle
             {
                 Width = RectSize,
                 Height = RectSize,
                 StrokeThickness = 2,
-                Fill= System.Windows.Media.Brushes.Transparent,
+                RadiusX = 1,
+                RadiusY = 1,
+                Fill = System.Windows.Media.Brushes.Transparent,
                 Opacity = 1.0
             };
             rect.Tag = (int)-1;
@@ -885,8 +904,9 @@ namespace User.PluginSdkDemo.UIFunction
             rect.MouseMove += Rect_MouseMove;
 
             mainCanvas.Children.Add(rect);
-            
         }
+        
+      
 
         private void Rect_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {

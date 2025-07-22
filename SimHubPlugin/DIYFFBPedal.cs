@@ -720,46 +720,64 @@ namespace User.PluginSdkDemo
                             }
                         }
                      //custom effcts
-                     if (Settings.CV1_enable_flag[pedalIdx] == true)
-                     {
-                        //CV1_value = Convert.ToByte(pluginManager.GetPropertyValue(Settings.CV1_bindings[pedalIdx]));
-                        string temp_string = Ncalc_reading(Settings.CV1_bindings[pedalIdx]);
-                        if (temp_string != "Error")
+                    if (Settings.CV1_enable_flag[pedalIdx] == true)
+                    {
+                        try
                         {
-                            CV1_value = Convert.ToByte(temp_string);
+                            //CV1_value = Convert.ToByte(pluginManager.GetPropertyValue(Settings.CV1_bindings[pedalIdx]));
+                            string temp_string = Ncalc_reading(Settings.CV1_bindings[pedalIdx]);
+                            if (temp_string != "Error")
+                            {
+                                CV1_value = Convert.ToByte(temp_string);
+                            }
+                            else
+                            {
+                                CV1_value = 0;
+                                SimHub.Logging.Current.Error("CV1 Reading error");
+                            }
+
+
+                            if (CV1_value > (Settings.CV1_trigger[pedalIdx]))
+                            {
+                                tmp.payloadPedalAction_.Trigger_CV_1 = 1;
+                                update_flag = true;
+                            }
                         }
-                        else
+                        catch (Exception caughtEx)
                         {
                             CV1_value = 0;
-                            SimHub.Logging.Current.Error("CV1 Reading error");
+                            SimHub.Logging.Current.Error("CV1 Reading error:" + caughtEx);
                         }
 
-
-                        if (CV1_value > (Settings.CV1_trigger[pedalIdx]))
-                        {
-                            tmp.payloadPedalAction_.Trigger_CV_1 = 1;
-                            update_flag = true;
-                        }
                     }
-                     if (Settings.CV2_enable_flag[pedalIdx] == true)
-                     {
+                    if (Settings.CV2_enable_flag[pedalIdx] == true)
+                    {
 
                         //CV2_value = Convert.ToByte(pluginManager.GetPropertyValue(Settings.CV2_bindings[pedalIdx]));
-                        string temp_string = Ncalc_reading(Settings.CV2_bindings[pedalIdx]);
-                        if (temp_string != "Error")
+                        try
                         {
-                            CV2_value = Convert.ToByte(temp_string);
+                            string temp_string = Ncalc_reading(Settings.CV2_bindings[pedalIdx]);
+                            if (temp_string != "Error")
+                            {
+                                CV2_value = Convert.ToByte(temp_string);
+                            }
+                            else
+                            {
+                                CV2_value = 0;
+                                SimHub.Logging.Current.Error("CV2 Reading error");
+                            }
+                            if (CV2_value > (Settings.CV2_trigger[pedalIdx]))
+                            {
+                                tmp.payloadPedalAction_.Trigger_CV_2 = 1;
+                                update_flag = true;
+                            }
                         }
-                        else
+                        catch (Exception caughtEx)
                         {
                             CV2_value = 0;
-                            SimHub.Logging.Current.Error("CV2 Reading error");
+                            SimHub.Logging.Current.Error("CV2 Reading error:"+ caughtEx);
                         }
-                        if (CV2_value > (Settings.CV2_trigger[pedalIdx]))
-                        {
-                            tmp.payloadPedalAction_.Trigger_CV_2 = 1;
-                            update_flag = true;
-                        }
+
 
                     }
                     //ABS/TC function

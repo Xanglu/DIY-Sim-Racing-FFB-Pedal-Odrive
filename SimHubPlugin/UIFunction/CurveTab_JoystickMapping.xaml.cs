@@ -605,6 +605,8 @@ namespace User.PluginSdkDemo.UIFunction
                 Width = RectSize,
                 Height = RectSize,
                 StrokeThickness = 2,
+                RadiusX = 1,
+                RadiusY = 1,
                 Fill = System.Windows.Media.Brushes.Transparent,
                 Opacity = 1.0
             };

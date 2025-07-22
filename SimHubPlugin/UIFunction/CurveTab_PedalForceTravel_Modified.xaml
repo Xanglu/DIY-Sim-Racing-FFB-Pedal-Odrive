@@ -338,7 +338,14 @@
                         </TextBlock>
                         <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="TRAVEL" Width="60" Foreground="#7F7D7D7D" RenderTransformOrigin="0.5,0.5" Canvas.Left="170" Canvas.Top="186" FontFamily="Arial Black" TextAlignment="Center" Height="14" />
                         <TextBlock x:Name="text_point_pos" HorizontalAlignment="Left" VerticalAlignment="Top" Text="pos" Width="60" Foreground="White" RenderTransformOrigin="0.5,0.5" Canvas.Left="5" Canvas.Top="15" Height="40" FontSize="10" FontFamily="Arial"/>
-                        <Polygon x:Name="polygonCurveBackground" Fill="{DynamicResource AccentColorBrush}" Height="200" Width="400" Opacity="0.1" Points="0,200 80,160 160,120 240,80 320,40 400,0 400,200 0,200" StrokeThickness="4" RenderTransformOrigin="1,0.5"  HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <Polygon x:Name="polygonCurveBackground"  Height="200" Width="400" Opacity="0.15" Points="0,200 80,160 160,120 240,80 320,40 400,0 400,200 0,200" StrokeThickness="4" RenderTransformOrigin="1,0.5"  HorizontalAlignment="Left" VerticalAlignment="Center" >
+                            <Polygon.Fill>
+                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                    <GradientStop Color="{DynamicResource AccentColor}" Offset="0"/>
+                                    <GradientStop Color="Transparent" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Polygon.Fill>
+                        </Polygon>
                         <Polyline x:Name="Polyline_BrakeForceCurve" Stroke="{DynamicResource AccentColorBrush}" Height="200" Width="400" Opacity="0.7" Points="0,200 80,160 160,120 240,80 320,40 400,0" StrokeThickness="1" RenderTransformOrigin="1,0.5"  HorizontalAlignment="Left" VerticalAlignment="Center" />
 
 
