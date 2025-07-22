@@ -18,7 +18,6 @@
 
 
 //#define PI 3.14159267
-#define DEG_TO_RAD_FL32 0.017453292519943295769236907684886f
 #define BAUD3M 3000000
 #define DEFAULTBAUD 921600
 #include "Arduino.h"
@@ -329,7 +328,7 @@ char* APhost;
 /*                                                                                            */
 /**********************************************************************************************/
 #include "FunctionProfiler.h"
-FunctionProfiler profiler_pedalUpdateTask;
+
 
 
 
@@ -903,6 +902,8 @@ void pedalUpdateTask( void * pvParameters )
   static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
 
 
+  FunctionProfiler profiler_pedalUpdateTask;
+
   for(;;){
 
     // measure callback time and continue, when desired period is reached
@@ -1111,7 +1112,7 @@ void pedalUpdateTask( void * pvParameters )
     float b = (float)dap_config_pedalUpdateTask_st.payLoadPedalConfig_.lengthPedal_b;
     float d = (float)dap_config_pedalUpdateTask_st.payLoadPedalConfig_.lengthPedal_d;
     float d_x_hor_d_phi = -(float)(b+d) * isin(pedalInclineAngleInDeg_fl32);
-    d_x_hor_d_phi *= DEG_TO_RAD_FL32; // inner derivative
+    d_x_hor_d_phi *= DEG_TO_RAD; // inner derivative
 
     // start profiler 3, loadcell reading conversion
     profiler_pedalUpdateTask.end(3);
