@@ -57,7 +57,6 @@ namespace User.PluginSdkDemo.UIFunction
                 if (textbox_PASS != null) textbox_PASS.Password = _settings.PASS_string;
             }
             CheckForUpdateAsync();
-            
 
         }
 
@@ -146,7 +145,7 @@ namespace User.PluginSdkDemo.UIFunction
                             changelogs[i] = "Channel not found.";
                         }
                     }
-                    if (textBox_changelog != null) textBox_changelog.Text = "Version:" + versions[_calculations.UpdateChannel] + "\n" + changelogs[_calculations.UpdateChannel];
+                    if (textBox_changelog != null) textBox_changelog.Text = "Version:" + versions[_settings.updateChannel] + "\n" + changelogs[_settings.updateChannel];
 
                 }
                 

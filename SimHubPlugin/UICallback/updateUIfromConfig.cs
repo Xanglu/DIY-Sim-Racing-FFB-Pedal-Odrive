@@ -233,7 +233,9 @@ namespace User.PluginSdkDemo
 
                 if (Plugin._calculations.updateVerison > Plugin._calculations.pluginVersion)
                 {
-                    textBox_VersionUpdate.Text = "New Verison:" + Plugin._calculations.pluginVersionReading[0];
+                    string tmpUpdateChannel = Plugin.Settings.updateChannel == 0 ? "Stable release" : "Nightly build";
+
+                    textBox_VersionUpdate.Text = "New "+tmpUpdateChannel+" available:" + Plugin._calculations.updateVerison;
                     textBox_VersionUpdate.Foreground=System.Windows.Media.Brushes.Red;
                 }
                 else
