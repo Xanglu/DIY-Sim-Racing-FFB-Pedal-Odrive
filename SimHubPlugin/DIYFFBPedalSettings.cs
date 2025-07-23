@@ -73,6 +73,7 @@ namespace User.PluginSdkDemo
         public byte rudderRPMMaxFrequency = 40;
         public byte rudderRPMMinFrequency = 15;
         public uint rudderMode = 0;
+        public int updateChannel = 0;
 
     }
         

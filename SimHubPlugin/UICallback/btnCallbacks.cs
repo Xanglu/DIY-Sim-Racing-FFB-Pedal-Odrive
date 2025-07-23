@@ -82,11 +82,11 @@ namespace User.PluginSdkDemo
                 {
                     tmp_2.wifi_action = 1;
                 }
-                if (Plugin._calculations.UpdateChannel == 0)
+                if (Plugin.Settings.updateChannel == 0)
                 {
                     tmp_2.mode_select = 1;
                 }
-                if (Plugin._calculations.UpdateChannel == 1)
+                if (Plugin.Settings.updateChannel == 1)
                 {
                     tmp_2.mode_select = 2;
                 }
@@ -828,11 +828,11 @@ namespace User.PluginSdkDemo
                 {
                     tmp_2.wifi_action = 1;
                 }
-                if (Plugin._calculations.UpdateChannel == 0)
+                if (Plugin.Settings.updateChannel == 0)
                 {
                     tmp_2.mode_select = 1;
                 }
-                if (Plugin._calculations.UpdateChannel == 1)
+                if (Plugin.Settings.updateChannel == 1)
                 {
                     tmp_2.mode_select = 2;
                 }
@@ -1431,7 +1431,7 @@ namespace User.PluginSdkDemo
             {
                 string downloadUrl;
                 string MSG_tmp = "Plugin will update from ";
-                switch (Plugin._calculations.UpdateChannel)
+                switch (Plugin.Settings.updateChannel)
                 {
                     case 0:
                         downloadUrl = "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/Plugin/DiyActivePedal.dll";

@@ -218,7 +218,15 @@ namespace User.PluginSdkDemo
             {
                 if (Plugin._calculations.verisonCreate_b == false)
                 {
-                    Plugin._calculations.updateVerison = new Version(Plugin._calculations.pluginVersionReading[0]);
+                    if (Plugin.Settings.updateChannel == 0)
+                    {
+                        Plugin._calculations.updateVerison = new Version(Plugin._calculations.pluginVersionReading[0]);
+                    }
+                    else
+                    {
+                        Plugin._calculations.updateVerison = new Version(Plugin._calculations.pluginVersionReading[1]);
+                    }
+
                     Plugin._calculations.pluginVersion = new Version(Constants.pluginVersion);
                     Plugin._calculations.verisonCreate_b = true;
                 }
@@ -231,11 +239,6 @@ namespace User.PluginSdkDemo
                 else
                 {
                     textBox_VersionUpdate.Text = "";
-                    /*
-                    textBox_VersionUpdate.Text = "No update";
-                    textBox_VersionUpdate.Text += "\nOnline Verison:" + Plugin._calculations.updateVerison.ToString();
-                    textBox_VersionUpdate.Foreground = System.Windows.Media.Brushes.White;
-                    */
                 }
             }
 
