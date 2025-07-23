@@ -102,6 +102,8 @@ uint16_t checksumCalculator(uint8_t * data, uint16_t length)
 
 
 
+
+
 bool systemIdentificationMode_b = false;
 
 
@@ -900,9 +902,8 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
 {
 
   static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
-
-
   FunctionProfiler profiler_pedalUpdateTask;
+  profiler_pedalUpdateTask.setName("PedalUpdate");
 
   for(;;){
 
@@ -1442,6 +1443,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
       DAP_config_st tmp = global_dap_config_class.getConfig();
       tmp.payLoadPedalConfig_.debug_flags_0 &= ( ~(uint8_t)DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS); // clear the debug bit
       global_dap_config_class.setConfig(tmp);
+
     }
 
     // print all servo parameters for debug purposes
@@ -1790,10 +1792,13 @@ int64_t timePrevious_serialCommunicationTask_l = 0;
 #define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST (int64_t)1
 
 
-void serialCommunicationTask( void * pvParameters )
+void IRAM_ATTR serialCommunicationTask( void * pvParameters )
 { 
 
   int32_t joystickNormalizedToInt32_local = 0;
+  FunctionProfiler profiler_serialCommunicationTask;
+  profiler_serialCommunicationTask.setName("SerialCommunication");
+  profiler_serialCommunicationTask.setNumberOfCalls(500);
 
   for(;;){
 
@@ -1823,6 +1828,24 @@ void serialCommunicationTask( void * pvParameters )
       static CycleTimer timerSC("SC cycle time");
       timerSC.Bump();
     }
+
+    // activate profiler depending on pedal config
+    if (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+    {
+      profiler_serialCommunicationTask.activate( true );
+    }
+    else
+    {
+      profiler_serialCommunicationTask.activate( false );
+    }
+
+
+    // start profiler 0, overall function
+    profiler_serialCommunicationTask.start(0);
+
+    // start profiler 1, serial read
+    profiler_serialCommunicationTask.start(1);
+
 
     uint16_t crc;
 
@@ -2143,6 +2166,13 @@ void serialCommunicationTask( void * pvParameters )
       }
 
 
+      // start profiler 1, serial read
+      profiler_serialCommunicationTask.end(1);
+
+      // start profiler 2, serial send
+      profiler_serialCommunicationTask.start(2);
+
+
       // send pedal state structs
       // update pedal states
       printCycleCounter++;
@@ -2209,6 +2239,14 @@ void serialCommunicationTask( void * pvParameters )
 			}
 			communicationTask_stackSizeIdx_u32++;
     #endif
+
+    // end profiler 2, serial send
+    profiler_serialCommunicationTask.end(2);
+
+    profiler_serialCommunicationTask.end(0);
+
+    // print profiler results
+    profiler_serialCommunicationTask.report();
 
   }
 }

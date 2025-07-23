@@ -2,7 +2,6 @@
 #include <Arduino.h>
 #include <limits>
 
-#define PRINT_PROFILER_TABLE_EVERY_N_CYCLES 3000
 
 // Example usage
 // 1) create a profiler instance
@@ -23,7 +22,18 @@
 class FunctionProfiler {
 public:
     static const int MAX_TIMERS = 16;
-    
+    string taskName = "default";
+    uint32_t nmbCalls_u32 = 3000;
+
+    void setName(string name)
+    {
+        taskName = name;
+    }
+
+    void setNumberOfCalls(uint32_t nmbCallsArg_u32)
+    {
+        nmbCalls_u32 = constrain( nmbCallsArg_u32, 1, 10000);
+    }
 
     void activate(bool activeFlagArg_b)
     {
@@ -68,9 +78,11 @@ public:
     void report() {
         if (activeFlag_b)
             {
-            if (counts[0] >= PRINT_PROFILER_TABLE_EVERY_N_CYCLES)
+            if (counts[0] >= nmbCalls_u32)
             {
-                Serial.println(F("------ FunctionProfiler Report (by ID) ------"));
+                // Serial.println(F("\n------ FunctionProfiler Report (by ID) for task: %s------"));
+                Serial.printf("\n------ FunctionProfiler Report (by ID) for task: %s ------\n", taskName.c_str());
+                // Serial.printf("%s\n", taskName.c_str());
                 for (int i = 0; i < MAX_TIMERS; ++i) {
                     if (counts[i] > 0) {
                         unsigned long avg = durations[i] / counts[i];
