@@ -145,8 +145,8 @@ namespace User.PluginSdkDemo.UIFunction
 
                     if (control.mainCanvas != null) control.CanvasDraw();
                     if (control.mainCanvas != null) control.updateRectControlFromConfig();
-                    if (control.Label_min_force != null) control.Label_min_force.Content = "Preload:\n" + (float)control.dap_config_st.payloadPedalConfig_.preloadForce + "kg";
-                    if (control.Label_max_force != null) control.Label_max_force.Content = "Max force:\n" + (float)control.dap_config_st.payloadPedalConfig_.maxForce + "kg";
+                    if (control.Label_min_force != null) control.Label_min_force.Content = "Preload:\n" + Math.Round((float)control.dap_config_st.payloadPedalConfig_.preloadForce,1) + "kg";
+                    if (control.Label_max_force != null) control.Label_max_force.Content = "Max force:\n" + Math.Round((float)control.dap_config_st.payloadPedalConfig_.maxForce,1) + "kg";
                     if (control.Label_max_pos != null) control.Label_max_pos.Content = "MAX\n" + control.dap_config_st.payloadPedalConfig_.pedalEndPosition + "%\n" + Math.Round((float)(control.dap_config_st.payloadPedalConfig_.lengthPedal_travel * control.dap_config_st.payloadPedalConfig_.pedalEndPosition) / 100) + "mm";
                     if (control.Label_min_pos != null) control.Label_min_pos.Content = "MIN\n" + control.dap_config_st.payloadPedalConfig_.pedalStartPosition + "%\n" + Math.Round((float)(control.dap_config_st.payloadPedalConfig_.lengthPedal_travel * control.dap_config_st.payloadPedalConfig_.pedalStartPosition) / 100) + "mm";
                     if (control.dap_config_st.payloadPedalConfig_.pedalStartPosition < 5)
@@ -574,7 +574,7 @@ namespace User.PluginSdkDemo.UIFunction
             var tmp = dap_config_st;
             tmp.payloadPedalConfig_.preloadForce = (float)e.NewValue;
             dap_config_st = tmp;
-            if(Label_min_force!=null) Label_min_force.Content = "Preload:\n" + (float)dap_config_st.payloadPedalConfig_.preloadForce + "kg";
+            if(Label_min_force!=null) Label_min_force.Content = "Preload:\n" + Math.Round((float)dap_config_st.payloadPedalConfig_.preloadForce,1) + "kg";
             ConfigChangedEvent(dap_config_st);
             
         }
@@ -584,7 +584,7 @@ namespace User.PluginSdkDemo.UIFunction
             var tmp = dap_config_st;
             tmp.payloadPedalConfig_.maxForce = (float)e.NewValue;
             dap_config_st = tmp;
-            if(Label_max_force!=null) Label_max_force.Content = "Max force:\n" + (float)dap_config_st.payloadPedalConfig_.maxForce + "kg";
+            if(Label_max_force!=null) Label_max_force.Content = "Max force:\n" + Math.Round((float)dap_config_st.payloadPedalConfig_.maxForce, 1) + "kg";
             ConfigChangedEvent(dap_config_st);
             PedalServoForceCheck();
         }

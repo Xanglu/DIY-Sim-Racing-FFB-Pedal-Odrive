@@ -113,8 +113,8 @@ namespace User.PluginSdkDemo.UIFunction
                     if (Rangeslider_rudder_travel_range != null) Rangeslider_rudder_travel_range.UpperValue = Settings.rudderMaxTravel;
                     if (Label_min_pos_rudder != null) Label_min_pos_rudder.Content = "MIN\n" + Settings.rudderMinTravel + "%";
                     if (Label_max_pos_rudder != null) Label_max_pos_rudder.Content = "MAX\n" + Settings.rudderMaxTravel + "%";
-                    if (Label_max_force_rudder != null) Label_max_force_rudder.Content = "Max force:\n" + Settings.rudderMaxForce + "kg";
-                    if (Label_min_force_rudder != null) Label_min_force_rudder.Content = "Preload:\n" + Settings.rudderMinForce + "kg";
+                    if (Label_max_force_rudder != null) Label_max_force_rudder.Content = "Max force:\n" + Math.Round(Settings.rudderMaxForce,1) + "kg";
+                    if (Label_min_force_rudder != null) Label_min_force_rudder.Content = "Preload:\n" + Math.Round(Settings.rudderMinForce, 1) + "kg";
                 }
             }
             catch
@@ -455,7 +455,7 @@ namespace User.PluginSdkDemo.UIFunction
             Settings.rudderMinForce = (float)e.NewValue;
             try
             {
-                if(Label_min_force_rudder!=null) Label_min_force_rudder.Content = "Preload:\n" + Settings.rudderMinForce + "kg";
+                if(Label_min_force_rudder!=null) Label_min_force_rudder.Content = "Preload:\n" + Math.Round(Settings.rudderMinForce, 1) + "kg";
             }
             catch { }
             
@@ -472,7 +472,7 @@ namespace User.PluginSdkDemo.UIFunction
             Settings.rudderMaxForce = (float)e.NewValue;
             try
             {
-                if (Label_max_force_rudder != null) Label_max_force_rudder.Content = "Max force:\n" + Settings.rudderMaxForce + "kg";
+                if (Label_max_force_rudder != null) Label_max_force_rudder.Content = "Max force:\n" + Math.Round(Settings.rudderMaxForce, 1) + "kg";
             }
             catch { }
             
