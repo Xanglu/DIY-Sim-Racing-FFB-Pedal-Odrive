@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       Version_date: ${{ steps.output_version_date.outputs.Version_date }}
-      Upload_URL: ${{ steps.create-new-PreRelease.outputs.upload_url }}
+      Upload_URL: ${{ steps.create-new-Release.outputs.upload_url }}
     steps:
       # get date
       - name: Dynamically set MY_DATE environment variable
