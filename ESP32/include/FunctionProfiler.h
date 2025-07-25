@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include <limits>
-
+#include <string>
 
 // Example usage
 // 1) create a profiler instance

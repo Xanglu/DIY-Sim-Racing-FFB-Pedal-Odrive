@@ -28,7 +28,7 @@ jobs:
         run: echo ${{ env.MY_DATE }}
       - name: output_version_date
         id: output_version_date
-        run: echo "Version_date=Release_Package_${{ env.MY_DATE }}" >> "$GITHUB_OUTPUT"
+        run: echo "Version_date=Stable_Release_Package_${{ env.MY_DATE }}" >> "$GITHUB_OUTPUT"
 
 
 
