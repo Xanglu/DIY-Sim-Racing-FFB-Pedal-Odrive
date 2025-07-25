@@ -391,7 +391,7 @@ jobs:
 #       Build SimHub plugin
 ########################################################################
   buildSimhubPlugin:
-      runs-on: windows-2019
+      runs-on: windows-2022
       needs: [BuildFirmware, Build-date]
       steps:
       - uses: actions/checkout@v2
