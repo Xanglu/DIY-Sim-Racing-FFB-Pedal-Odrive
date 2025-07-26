@@ -130,6 +130,7 @@ void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
       float loadcellRatingInGram_fl32 = (((float)loadcellRating_u8) * 1000.0f); // convert kg to gram
       float gramsPerMillivolt =  loadcellRatingInGram_fl32  / fullScale_mV;  // g per mV
       updatedConversionFactor_f64 = gramsPerMillivolt;
+      updatedConversionFactor_f64 *= 2.0f; // empirically identified
   }
 }
 
