@@ -53,7 +53,6 @@ void updatePedalCalcParameters();
 void pedalUpdateTask( void * pvParameters );
 void serialCommunicationTask( void * pvParameters );
 void joystickOutputTask( void * pvParameters );
-void servoCommunicationTask( void * pvParameters );
 void OTATask( void * pvParameters );
 void ESPNOW_SyncTask( void * pvParameters);
 void miscTask( void * pvParameters);
@@ -862,6 +861,9 @@ void updatePedalCalcParameters()
 /**********************************************************************************************/
 unsigned long joystick_state_last_update=millis();
 void loop() {
+
+  delay(5000);
+  
   taskYIELD();
   /*
   #ifdef OTA_update
@@ -1745,6 +1747,11 @@ void joystickOutputTask( void * pvParameters )
 { 
   int32_t joystickNormalizedToInt32_local = 0;
 
+  FunctionProfiler profiler_joystickOutputTask;
+  profiler_joystickOutputTask.setName("JoystickOutput");
+  profiler_joystickOutputTask.setNumberOfCalls(500);
+
+
   for(;;){
     // measure callback time and continue, when desired period is reached
     timeNow_joystickTask_l = millis();
@@ -1755,8 +1762,22 @@ void joystickOutputTask( void * pvParameters )
     delay(targetWaitTime_u32);
     timePrevious_joystickTask_l = millis();
 
+    
     // copy global struct to local for faster and safe executiion
     DAP_config_st jut_dap_config_st = global_dap_config_class.getConfig();
+
+    // activate profiler depending on pedal config
+    if (jut_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+    {
+      profiler_joystickOutputTask.activate( true );
+    }
+    else
+    {
+      profiler_joystickOutputTask.activate( false );
+    }
+
+    // start profiler 0, overall function
+    profiler_joystickOutputTask.start(0);
 
 
     // obtain joystick output level
@@ -1795,6 +1816,16 @@ void joystickOutputTask( void * pvParameters )
       }
     #endif
 
+
+    
+
+    // start profiler 0, overall function
+    profiler_joystickOutputTask.end(0);
+
+    profiler_joystickOutputTask.end(0);
+
+    // print profiler results
+    profiler_joystickOutputTask.report();
 
     // print the execution time averaged over multiple cycles
     if (jut_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
@@ -1894,7 +1925,7 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
 
           // likely config structure 
           case sizeof(DAP_config_st):
-              
+
             DAP_config_st * dap_config_st_local_ptr;
             dap_config_st_local_ptr = &sct_dap_config_st;
             Serial.readBytes((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
