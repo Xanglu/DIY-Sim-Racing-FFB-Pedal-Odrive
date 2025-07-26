@@ -465,7 +465,19 @@ void DAP_config_class::setConfig(DAP_config_st tmp) {
   // return returnV_b;
 }
 
-
+uint16_t  DAP_config_class::checksumCalculator(uint8_t * data, uint16_t length)
+{
+   uint16_t curr_crc = 0x0000;
+   uint8_t sum1 = (uint8_t) curr_crc;
+   uint8_t sum2 = (uint8_t) (curr_crc >> 8);
+   int index;
+   for(index = 0; index < length; index = index+1)
+   {
+      sum1 = (sum1 + data[index]) % 255;
+      sum2 = (sum2 + sum1) % 255;
+   }
+   return (sum2 << 8) | sum1;
+}
 
 void DAP_config_class::loadConfigFromEprom() {
   if (xSemaphoreTake(mutex, pdMS_TO_TICKS(WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT)) == pdTRUE) {
@@ -476,6 +488,9 @@ void DAP_config_class::loadConfigFromEprom() {
 
 void DAP_config_class::storeConfigToEprom() {
   if (xSemaphoreTake(mutex, pdMS_TO_TICKS(WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT)) == pdTRUE) {
+    _config_st.payLoadHeader_.storeToEeprom = 0;
+    uint16_t crc = checksumCalculator((uint8_t*)(&(_config_st.payLoadHeader_)), sizeof(_config_st.payLoadHeader_) + sizeof(_config_st.payLoadPedalConfig_));
+    _config_st.payloadFooter_.checkSum = crc;
     _config_st.storeConfigToEprom(_config_st);
     xSemaphoreGive(mutex);
   }

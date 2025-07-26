@@ -433,4 +433,5 @@ public:
 private:
   SemaphoreHandle_t mutex;
   DAP_config_st _config_st;
+  uint16_t checksumCalculator(uint8_t * data, uint16_t length);
 };

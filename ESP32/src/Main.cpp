@@ -56,6 +56,7 @@ void joystickOutputTask( void * pvParameters );
 void servoCommunicationTask( void * pvParameters );
 void OTATask( void * pvParameters );
 void ESPNOW_SyncTask( void * pvParameters);
+void miscTask( void * pvParameters);
 #define INCLUDE_vTaskDelete 1
 // https://www.tutorialspoint.com/cyclic-redundancy-check-crc-in-arduino
 uint16_t checksumCalculator(uint8_t * data, uint16_t length)
@@ -179,7 +180,8 @@ ForceCurve_Interpolated forceCurve;
 
 TaskHandle_t Task1;
 TaskHandle_t Task2;
-
+TaskHandle_t Task7;
+TaskHandle_t Task8;
 bool configUpdateAvailable = false;                              // semaphore protected data
 
 
@@ -600,10 +602,19 @@ void setup()
                     //STACK_SIZE_FOR_TASK_2,    
                     NULL,      
                     1,         
-                    &Task2,    
+                    &Task7,    
                     0);     
   delay(200);
-
+  xTaskCreatePinnedToCore(
+                    miscTask,   
+                    "miscTask", 
+                    2000,  
+                    //STACK_SIZE_FOR_TASK_2,    
+                    NULL,      
+                    1,         
+                    &Task8,    
+                    0);     
+  delay(200);
 
 
 
@@ -879,6 +890,7 @@ float filteredReading_exp_filter = 0;
 unsigned long printCycleCounter = 0;
 unsigned long servoActionLast = millis();
 bool servoIdleStatus=false;
+bool firstReadConfig=true;
 uint printCntr = 0;
 unsigned long debugMessageLast=0;
 unsigned long joystickout_debug=0;
@@ -886,6 +898,8 @@ int64_t timeNow_pedalUpdateTask_inUs_l = 0;
 int64_t timePrevious_pedalUpdateTask_inUs_l = 0;
 #define REPETITION_INTERVAL_PEDALUPDATE_TASK (int64_t)0
 
+unsigned long saveToEEPRomDuration=0;
+bool previewConfigGet_b=false;
 
 uint32_t pos_printCount = 0;
 
@@ -956,7 +970,18 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         // update the calc params
         Serial.println("Updating the calc params");
         configWasUpdated_b = false;
-
+        //Serial.print("save to eeprom tag:");
+        //Serial.println(dap_config_pedalUpdateTask_st.payLoadHeader_.storeToEeprom);
+        if(firstReadConfig)
+        {
+          firstReadConfig=false;
+        }
+        else
+        {
+          previewConfigGet_b = true;
+          saveToEEPRomDuration = millis();
+        }
+        
         if (true == dap_config_pedalUpdateTask_st.payLoadHeader_.storeToEeprom)
         {
           dap_config_pedalUpdateTask_st.payLoadHeader_.storeToEeprom = false; // set to false, thus at restart existing EEPROM config isn't restored to EEPROM
@@ -964,6 +989,8 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
           dap_config_pedalUpdateTask_st.payloadFooter_.checkSum = crc;
 
           global_dap_config_class.storeConfigToEprom();
+          previewConfigGet_b = false;
+          saveToEEPRomDuration = 0;
         }
         
         updatePedalCalcParameters(); // update the calc parameters
@@ -2813,4 +2840,36 @@ void ESPNOW_SyncTask( void * pvParameters )
 }
 #endif
 
+#define CONFIG_PREVIEW_DURATION 180000// wait 3 mins then save config into eeprom
+void miscTask( void * pvParameters )
+{
+  // for the task no need complete asap, ex buzzer, led 
+  for(;;)
+  {
+    DAP_config_st misc_dap_config_st = global_dap_config_class.getConfig();
+    if(previewConfigGet_b && ((millis()-saveToEEPRomDuration)>CONFIG_PREVIEW_DURATION))
+    {
+      
+      Serial.println("Auto save config in pedal");
+      /*
+      Serial.print(millis());
+      Serial.print(" Duration:");
+      Serial.print(saveToEEPRomDuration);
+      Serial.print(" flag:");
+      Serial.println(previewConfigGet_b);
+      */
+      //saveToEEPRomDuration=0;
+      global_dap_config_class.storeConfigToEprom();
+      previewConfigGet_b=false;
+      #ifdef USING_BUZZER
+        Buzzer.single_beep_tone(700,50);
+        delay(50);
+        Buzzer.single_beep_tone(700,50);
+      #endif 
+
+
+    }
+    delay(100);
+  }
+}
 
