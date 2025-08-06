@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "CubicInterpolatorFloat.h"
 // define the payload revision
-#define DAP_VERSION_CONFIG 152
+#define DAP_VERSION_CONFIG 153
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -262,6 +262,8 @@ struct payloadPedalConfig {
   uint8_t kf_Joystick_u8;
   uint8_t kf_modelNoise_joystick;
   uint8_t servoIdleTimeout;
+
+  uint8_t positionSmoothingFactor_u8;
   
 
 };

@@ -234,6 +234,7 @@ namespace User.PluginSdkDemo
                         dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.control_strategy_b = tmp_config.payloadPedalConfig_.control_strategy_b;
                         dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.kf_modelNoise = tmp_config.payloadPedalConfig_.kf_modelNoise;
                         dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.kf_modelOrder = tmp_config.payloadPedalConfig_.kf_modelOrder;
+                        dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.positionSmoothingFactor_u8 = tmp_config.payloadPedalConfig_.positionSmoothingFactor_u8;
                         if (tmp_config.payloadPedalConfig_.quantityOfControl < 6) tmp_config.payloadPedalConfig_.quantityOfControl = 6;
                         dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.quantityOfControl = tmp_config.payloadPedalConfig_.quantityOfControl;
                         dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.relativeForce00 = tmp_config.payloadPedalConfig_.relativeForce00;

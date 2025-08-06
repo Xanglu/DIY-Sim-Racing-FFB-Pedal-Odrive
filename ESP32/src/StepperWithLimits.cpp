@@ -44,16 +44,19 @@ bool setServoToSleep_b = false;
 #define BRAKE_RESISTOR_UPPER_TRHESHOLD_VOLTAGE 4.0f
 #define BRAKE_RESISTOR_LOWER_TRHESHOLD_VOLTAGE 1.0f
 
+#define STEPPER_TASK_TIME_IN_MS (uint8_t)4
+#define STEPPER_FORWARD_PLANNING_TIME_IN_MS (uint8_t)4
+
 FastAccelStepperEngine& stepperEngine() {
   static FastAccelStepperEngine myEngine = FastAccelStepperEngine();   // this is a factory and manager for all stepper instances
 
   static bool firstTime = true;
   if (firstTime) {
-     myEngine.init();
+     myEngine.init(CORE_ID_STEPPER_TASK);
      firstTime = false;
   }
   
-  myEngine.task_rate(4);
+  myEngine.task_rate(STEPPER_TASK_TIME_IN_MS);
   return myEngine;
 }
 
@@ -79,7 +82,7 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
     _stepper->setSpeedInTicks( maxSpeedInTicks ); // ticks
     _stepper->setAcceleration(MAXIMUM_STEPPER_ACCELERATION);  // steps/s²
 	_stepper->setLinearAcceleration(0);
-    _stepper->setForwardPlanningTimeInMs(4);
+    _stepper->setForwardPlanningTimeInMs(STEPPER_FORWARD_PLANNING_TIME_IN_MS);
 
 	
 	/************************************************************/
@@ -156,7 +159,7 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 						  this,//NULL,      
 						  1,         
 						  &task_iSV_Communication,    
-						  0);   
+						  CORE_ID_SERVO_COMMUNICATION_TASK);   
 
 
 						  
@@ -681,6 +684,15 @@ void StepperWithLimits::configSteplossRecovAndCrashDetection(uint8_t flags_u8)
 	enableCrashDetection_b = (flags_u8 >> 1) & 1;
 }
 
+void StepperWithLimits::configSetPositionCommandSmoothingFactor(uint8_t posCommandSmoothingFactorArg_u8)
+{
+	if (posCommandSmoothingFactor_u16 != (uint16_t)posCommandSmoothingFactorArg_u8)
+	{
+		posCommandSmoothingFactor_u16 = constrain( (uint16_t)posCommandSmoothingFactorArg_u8, 0, 255);
+		updateServoParams_b = true;
+	}
+}
+
 int64_t timeSinceLastServoPosChange_l = 0;
 int64_t timeDiff = 0;
 int16_t servoPos_last_i16 = 0;
@@ -762,6 +774,14 @@ void StepperWithLimits::servoCommunicationTask(void *pvParameters)
 			stepper_cl->isv57.readAllServoParameters();
 		}
 
+		/************************************************************/
+		/* 					update servo params 					*/
+		/************************************************************/
+		if (true == stepper_cl->updateServoParams_b)
+		{
+			stepper_cl->isv57.setPositionSmoothingFactor(stepper_cl->posCommandSmoothingFactor_u16);
+			stepper_cl->updateServoParams_b = false;
+		}
 
 
 		/************************************************************/

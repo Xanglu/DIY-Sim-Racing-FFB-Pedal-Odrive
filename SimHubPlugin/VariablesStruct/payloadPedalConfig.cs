@@ -188,5 +188,8 @@ namespace User.PluginSdkDemo
         public byte kf_modelNoise_joystick;
         public byte servoIdleTimeout;
 
+
+        public byte positionSmoothingFactor_u8;
+
     }
 }

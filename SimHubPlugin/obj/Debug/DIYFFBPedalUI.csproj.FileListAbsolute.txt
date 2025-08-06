@@ -891,3 +891,6 @@ X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0719\SimHubPlugin\obj\Debu
 X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0719\SimHubPlugin\obj\Debug\DIYFFBPe.469A4AA0.Up2Date
 X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0719\SimHubPlugin\obj\Debug\DiyActivePedal.dll
 X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0719\SimHubPlugin\obj\Debug\DiyActivePedal.pdb
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_JoystickMapping.g.cs
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_JoystickMapping.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIStyles\DefaultStyles.baml

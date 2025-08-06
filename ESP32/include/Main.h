@@ -16,6 +16,17 @@
 #endif
 
 
+/********************************************************************/
+/*                      Task defines                                */
+/********************************************************************/
+#define CORE_ID_PEDAL_UPDATE_TASK (uint8_t)1
+#define CORE_ID_SERIAL_COMMUNICATION_TASK (uint8_t)0
+#define CORE_ID_JOYSTICK_TASK (uint8_t)0
+#define CORE_ID_MISC_TASK (uint8_t)0
+#define CORE_ID_OTA_TASK (uint8_t)0
+#define CORE_ID_SERVO_COMMUNICATION_TASK (uint8_t)0
+#define CORE_ID_ESPNOW_TASK (uint8_t)0
+#define CORE_ID_STEPPER_TASK (uint8_t)1
 
 /********************************************************************/
 /*                      Other defines       */
@@ -492,7 +503,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 0
   //#define ESPNow_Pairing_function
   #define Pairing_GPIO 0
-  #define OTA_update
+  // #define OTA_update
   #define CONTROLLER_SPECIFIC_VIDPID
   #define BAUDRATE3M
   // #define ANGLE_SENSOR_GPIO 11 // disabled by default, since to much runtime impact of ADC

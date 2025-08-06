@@ -73,6 +73,7 @@ class isv57communication {
     bool readCurrentAlarm();
     void resetToFactoryParams();
     bool setServoVoltage(uint16_t voltageInVolt_u16);
+    bool setPositionSmoothingFactor(uint16_t posSmoothingFactor_u16);
 	
 	void clearServoUnitPosition();
     void disableAxis();

@@ -195,6 +195,12 @@ bool isv57communication::setServoVoltage(uint16_t voltageInVolt_u16)
   return modbus.checkAndReplaceParameter(slaveId, pr_7_00+32, voltageInVolt_u16 + 2); // bleeder braking voltage. Voltage when braking is activated
 }
 
+bool isv57communication::setPositionSmoothingFactor(uint16_t posSmoothingFactor_u16)
+{
+  return modbus.checkAndReplaceParameter(slaveId, pr_2_00+22, posSmoothingFactor_u16); // positional command smoothing factor in 0.1ms
+}
+
+
 // send tuned servo parameters
 void isv57communication::sendTunedServoParameters(bool commandRotationDirection, uint32_t stepsPerMotorRev_u32) {
   

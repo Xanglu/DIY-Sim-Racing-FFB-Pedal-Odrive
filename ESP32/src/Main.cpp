@@ -386,6 +386,7 @@ void setup()
   #else
     #ifdef BAUDRATE3M
       Serial.begin(BAUD3M, SERIAL_8N1);
+      Serial.setTxBufferSize(256);
     #else
       Serial.begin(DEFAULTBAUD, SERIAL_8N1);
     #endif
@@ -580,7 +581,7 @@ void setup()
                     NULL,        /* parameter of the task */
                     1,           /* priority of the task */
                     &Task1,      /* Task handle to keep track of created task */
-                    1);          /* pin task to core 1 */
+                    CORE_ID_PEDAL_UPDATE_TASK);          /* pin task to core 1 */
   delay(200);
 
   xTaskCreatePinnedToCore(
@@ -591,7 +592,7 @@ void setup()
                     NULL,      
                     1,         
                     &Task2,    
-                    0);     
+                    CORE_ID_SERIAL_COMMUNICATION_TASK);     
   delay(200);
 
   xTaskCreatePinnedToCore(
@@ -602,7 +603,7 @@ void setup()
                     NULL,      
                     1,         
                     &Task7,    
-                    0);     
+                    CORE_ID_JOYSTICK_TASK);     
   delay(200);
   xTaskCreatePinnedToCore(
                     miscTask,   
@@ -612,7 +613,7 @@ void setup()
                     NULL,      
                     1,         
                     &Task8,    
-                    0);     
+                    CORE_ID_MISC_TASK);     
   delay(200);
 
 
@@ -653,7 +654,7 @@ void setup()
                     NULL,      
                     1,         
                     &Task4,    
-                    0);     
+                    CORE_ID_OTA_TASK);     
     delay(200);
   #endif
 
@@ -779,7 +780,7 @@ void setup()
                         NULL,      
                         1,         
                         &Task6,    
-                        0);     
+                        CORE_ID_ESPNOW_TASK);     
     delay(500);
   }
   else
@@ -1457,10 +1458,10 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
       #else
         stepper->correctPos();
       #endif
-
     }
 
-
+    // set position command smoothing
+    stepper->configSetPositionCommandSmoothingFactor(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.positionSmoothingFactor_u8);
 
     // reset all servo alarms
     if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS) )
@@ -1844,11 +1845,9 @@ void joystickOutputTask( void * pvParameters )
 /*                                                                                            */
 /**********************************************************************************************/
 uint32_t communicationTask_stackSizeIdx_u32 = 0;
-int64_t timeNow_serialCommunicationTask_l = 0;
-int64_t timePrevious_serialCommunicationTask_l = 0;
-#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK (int64_t)10
-#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST (int64_t)1
 
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST_IN_US (int64_t)200
 
 void IRAM_ATTR serialCommunicationTask( void * pvParameters )
 { 
@@ -1858,25 +1857,31 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
   profiler_serialCommunicationTask.setName("SerialCommunication");
   profiler_serialCommunicationTask.setNumberOfCalls(500);
 
+  int64_t timeNow_serialCommunicationTask_inUs_l = 0;
+  int64_t timePrevious_serialCommunicationTask_inUs_l = 0;
+
+
+  unsigned long previousTimeInUsFromExtendedStruct_u32 = 0;
+
   for(;;){
 
     DAP_config_st sct_dap_config_st = global_dap_config_class.getConfig();
                 
     // measure callback time and continue, when desired period is reached
-    timeNow_serialCommunicationTask_l = millis();
 
     // if DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT is set, target faster execution time for more accurate plotting 
-    int64_t targetTaskRepetitionIntervall_i64 = REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK;
+    int64_t targetTaskRepetitionIntervall_i64 = REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US;
     if ( (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT) )
     {
-      targetTaskRepetitionIntervall_i64 = REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST;
+      targetTaskRepetitionIntervall_i64 = REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST_IN_US;
     }
 
     // control execution time
-    int64_t timeDiff_serialCommunicationTask_l = ( timePrevious_serialCommunicationTask_l + targetTaskRepetitionIntervall_i64) - timeNow_serialCommunicationTask_l;
-    uint32_t targetWaitTime_u32 = constrain(timeDiff_serialCommunicationTask_l, 0, targetTaskRepetitionIntervall_i64);
-    delay(targetWaitTime_u32);
-    timePrevious_serialCommunicationTask_l = millis();
+    timeNow_serialCommunicationTask_inUs_l = micros();
+    int64_t timeDiff_serialCommunicationTask_inUs_l = ( timePrevious_serialCommunicationTask_inUs_l + targetTaskRepetitionIntervall_i64) - timeNow_serialCommunicationTask_inUs_l;
+    uint32_t targetWaitTime_u32 = constrain(timeDiff_serialCommunicationTask_inUs_l, 0, targetTaskRepetitionIntervall_i64);
+    delayMicroseconds(targetWaitTime_u32);
+    timePrevious_serialCommunicationTask_inUs_l = micros();
 
 
 
@@ -2280,8 +2285,14 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
 
       if ( (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT) )
       {
-        Serial.write((char*)&dap_state_extended_st_lcl, sizeof(DAP_state_extended_st));
-        Serial.print("\r\n");
+        // only send, when extended struct contains updated values
+        if( dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32 != previousTimeInUsFromExtendedStruct_u32)
+        {
+          previousTimeInUsFromExtendedStruct_u32 = dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32;
+          Serial.write((char*)&dap_state_extended_st_lcl, sizeof(DAP_state_extended_st));
+          Serial.print("\r\n");
+          Serial.flush();
+        }
       }
 
     }
