@@ -2295,7 +2295,13 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
         if (printCycleCounter >= 2)
         {
           printCycleCounter = 0;
+
+		  // update CRC before transmission
+		  dap_state_basic_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl.payLoadHeader_)), sizeof(dap_state_basic_st_lcl.payLoadHeader_) + sizeof(dap_state_basic_st_lcl.payloadPedalState_Extended_));
+			
           Serial.write((char*)&dap_state_basic_st_lcl, sizeof(DAP_state_basic_st));
+		  Serial.flush();
+			
           // Serial.print("\r\n");
         }
       }
@@ -2306,6 +2312,10 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
         if( dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32 != previousTimeInUsFromExtendedStruct_u32)
         {
           previousTimeInUsFromExtendedStruct_u32 = dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32;
+
+		  // update CRC before transmission
+		  dap_state_extended_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_extended_st_lcl.payLoadHeader_)), sizeof(dap_state_extended_st_lcl.payLoadHeader_) + sizeof(dap_state_extended_st_lcl.payloadPedalState_Extended_));
+
           Serial.write((char*)&dap_state_extended_st_lcl, sizeof(DAP_state_extended_st));
           // Serial.print("\r\n");
           Serial.flush();
