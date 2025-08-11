@@ -13,9 +13,15 @@ static const float ABS_SCALING = 50;
 const uint32_t EEPROM_OFFSET = (DAP_VERSION_CONFIG-128) * sizeof(DAP_config_st) % (2048-sizeof(DAP_config_st));
 
 void DAP_config_st::initialiseDefaults() {
+
+  payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
+  payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
   payLoadHeader_.payloadType = DAP_PAYLOAD_TYPE_CONFIG;
   payLoadHeader_.version = DAP_VERSION_CONFIG;
   payLoadHeader_.storeToEeprom = false;
+
+  payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
+  payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
 
   payLoadPedalConfig_.pedalStartPosition = 10;
   payLoadPedalConfig_.pedalEndPosition = 85;

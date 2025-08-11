@@ -17,7 +17,20 @@
 #define DAP_PAYLOAD_TYPE_BRIDGE_STATE 210
 #define DAP_PAYLOAD_TYPE_ESPNOW_LOG 225
 
+
+
+#define SOF_BYTE_0 0xAA
+#define SOF_BYTE_1 0x55
+#define EOF_BYTE_0 0xAA
+#define EOF_BYTE_1 0x56
+
+
+
 struct payloadHeader {
+
+  // start of frame indicator
+  uint8_t startOfFrame0_u8;
+  uint8_t startOfFrame1_u8;
   
   // structure identification via payload
   uint8_t payloadType;
@@ -30,7 +43,6 @@ struct payloadHeader {
 
   //pedal tag
   uint8_t PedalTag;
-
 };
 
 struct payloadPedalAction {
@@ -278,6 +290,10 @@ struct payloadESPNowInfo{
 struct payloadFooter {
   // To check if structure is valid
   uint16_t checkSum;
+
+  // end of frame bytes
+  uint8_t enfOfFrame0_u8;
+  uint8_t enfOfFrame1_u8;
 };
 
 

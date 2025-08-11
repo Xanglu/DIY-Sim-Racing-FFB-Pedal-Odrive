@@ -12,6 +12,10 @@ namespace User.PluginSdkDemo
     //[Serializable]
     public struct payloadHeader
     {
+        // start of frame indicator
+        public byte startOfFrame0_u8;
+        public byte startOfFrame1_u8;
+
         // structure identification via payload
         public byte payloadType;
 

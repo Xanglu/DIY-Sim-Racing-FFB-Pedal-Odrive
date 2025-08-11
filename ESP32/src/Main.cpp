@@ -1612,6 +1612,12 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
     // update extended pedal structures
     static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
 
+    dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0; // 170
+    dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1; // 85
+
+    dap_state_extended_st_lcl_pedalUpdateTask.payloadFooter_.enfOfFrame0_u8 =  EOF_BYTE_0; // 170
+    dap_state_extended_st_lcl_pedalUpdateTask.payloadFooter_.enfOfFrame1_u8 =  EOF_BYTE_1; // 86
+
     // update extended struct 
     //dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.timeInMs_u32 = millis();
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.timeInUs_u32 = micros();
@@ -1626,6 +1632,9 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_current_percent_i16 = stepper->getServosCurrent();
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_position_error_i16 = stepper->getServosPosError();
     
+    dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionEstimated_i16 = stepper->getEstimatedPosError();
+
+    
     //dap_state_extended_st.payloadPedalState_Extended_.servoPositionTarget_i16 = stepper->getCurrentPositionFromMin();
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionTarget_i16 = stepper->getCurrentPosition() - minPos;
     dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.angleSensorOutput_ui16 = angleReading_ui16;
@@ -1635,7 +1644,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
     dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.version = DAP_VERSION_CONFIG;
     dap_state_extended_st_lcl_pedalUpdateTask.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_)), sizeof(dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_) + sizeof(dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_));
 
-    dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionEstimated_i16 = stepper->getEstimatedPosError();
+    
 
     // end profiler 7, struct exchange
     profiler_pedalUpdateTask.end(7);
@@ -1673,13 +1682,17 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
     }
 
     //fill the header
+    dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
+    dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
+    dap_state_basic_st_lcl_pedalUpdateTask.payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
+    dap_state_basic_st_lcl_pedalUpdateTask.payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
+
     dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.payloadType = DAP_PAYLOAD_TYPE_STATE_BASIC;
     dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.version = DAP_VERSION_CONFIG;
     dap_state_basic_st_lcl_pedalUpdateTask.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_)), sizeof(dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_) + sizeof(dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_));
     dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.PedalTag = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.pedal_type;        
     
     
-
 
     // update pedal states
     if(semaphore_updatePedalStates!=NULL)
@@ -2121,10 +2134,14 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
                
                 DAP_config_st * dap_config_st_local_ptr;
                 dap_config_st_local_ptr = &sct_dap_config_st;
+                dap_config_st_local_ptr->payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
+                dap_config_st_local_ptr->payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
+                dap_config_st_local_ptr->payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
+                dap_config_st_local_ptr->payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
                 crc = checksumCalculator((uint8_t*)(&(sct_dap_config_st.payLoadHeader_)), sizeof(sct_dap_config_st.payLoadHeader_) + sizeof(sct_dap_config_st.payLoadPedalConfig_));
                 dap_config_st_local_ptr->payloadFooter_.checkSum = crc;
                 Serial.write((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
-                Serial.print("\r\n");
+                // Serial.print("\r\n");
               }
               #ifdef ESPNOW_Enable
                 if(dap_actions_st.payloadPedalAction_.Rudder_action==1)//Enable Rudder
@@ -2279,7 +2296,7 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
         {
           printCycleCounter = 0;
           Serial.write((char*)&dap_state_basic_st_lcl, sizeof(DAP_state_basic_st));
-          Serial.print("\r\n");
+          // Serial.print("\r\n");
         }
       }
 
@@ -2290,7 +2307,7 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
         {
           previousTimeInUsFromExtendedStruct_u32 = dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32;
           Serial.write((char*)&dap_state_extended_st_lcl, sizeof(DAP_state_extended_st));
-          Serial.print("\r\n");
+          // Serial.print("\r\n");
           Serial.flush();
         }
       }

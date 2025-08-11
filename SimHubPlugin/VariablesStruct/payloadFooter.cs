@@ -13,5 +13,9 @@ namespace User.PluginSdkDemo
     {
         // To check if structure is valid
         public UInt16 checkSum;
+
+        // end of frame bytes
+        public byte enfOfFrame0_u8;
+        public byte enfOfFrame1_u8;
     }
 }
