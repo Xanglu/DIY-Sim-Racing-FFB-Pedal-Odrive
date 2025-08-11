@@ -702,6 +702,9 @@ namespace User.PluginSdkDemo
         public byte[] STARTOFFRAME_BASIC_STRUCT = { 0xAA, 0x55, 120 };
         public byte[] STARTOFFRAME_CONFIG = { 0xAA, 0x55, 100 };
 
+        public byte[] STARTOFFRAMCHAR_SOF_byte0 = { 0xAA};
+        public byte[] STARTOFFRAMCHAR_SOF_byte1 = { 0x55};
+
         //public string[] ENDOFFRAMCHAR = { "\r\n" };
         public bool EndsWithStop(string incomingData)
         {
