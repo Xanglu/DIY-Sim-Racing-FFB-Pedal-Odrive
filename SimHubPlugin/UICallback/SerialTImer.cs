@@ -9,6 +9,71 @@ using System.Threading.Tasks;
 using System.Windows;
 using Newtonsoft.Json.Linq;
 
+
+
+/// <summary>
+/// Finds valid start-of-frame (SOF) and end-of-frame (EOF) pairs for a specific message type.
+/// </summary>
+/// <param name="sofIndices">The list of SOF indices for this message type.</param>
+/// <param name="eofIndices">The list of all found EOF indices.</param>
+/// <param name="expectedLength">The expected size of the struct (e.g., sizeof(DAP_state_basic_st)).</param>
+/// <param name="validPairs">The list where valid (SOF, EOF) index pairs will be added.</param>
+/// <param name="sofReceivedWithoutEof">A flag that is set to true if the last SOF has no matching EOF.</param>
+private void FindValidMessagePairs(
+    List<int> sofIndices,
+    List<int> eofIndices,
+    int expectedLength,
+    List<Tuple<int, int>> validPairs,
+    ref bool sofReceivedWithoutEof)
+{
+    // Iterate through each potential start-of-frame for this message type
+    for (int i = 0; i < sofIndices.Count; i++)
+    {
+        int indSof = sofIndices[i];
+        bool pairFound = false;
+
+        // Try to find a matching end-of-frame
+        foreach (int indEof in eofIndices)
+        {
+            // The data length is the distance between markers, plus EOF bytes
+            int dataLength = indEof - indSof + 2;
+
+            if (dataLength < 0)
+            {
+                // EOF is before SOF, so it can't be a match for this SOF.
+                // Continue to check the next EOF.
+                continue;
+            }
+
+            if (dataLength > expectedLength)
+            {
+                // This EOF is too far away. Since indices are sorted,
+                // no subsequent EOF will match either.
+                pairFound = true; // Prevents flagging 'sofReceivedWithoutEof' incorrectly
+                break;
+            }
+
+            if (dataLength == expectedLength)
+            {
+                // --- SUCCESS: Found a valid pair! ---
+                validPairs.Add(new Tuple<int, int>(indSof, indSof + dataLength));
+                pairFound = true;
+                // A SOF can only have one matching EOF, so we can stop searching.
+                break;
+            }
+        }
+
+        // Check if this was the last SOF index and it had no matching EOF
+        if (!pairFound && i == sofIndices.Count - 1)
+        {
+            sofReceivedWithoutEof = true;
+        }
+    }
+}
+
+
+
+
 namespace User.PluginSdkDemo
 {
     public partial class DIYFFBPedalControlUI : System.Windows.Controls.UserControl
@@ -169,141 +234,32 @@ namespace User.PluginSdkDemo
                         bool sofHasBeenReceivedEofNotYet = false;
 
 
-                        // sreach for basic struct
-                        for (int msgId_sof = 0; msgId_sof < indices_sof_basic_struct.Count; msgId_sof++)
-                        {
-                            int indSof = 0;
-                            int indEof = 0;
+                        // Search for the basic struct
+                        FindValidMessagePairs(
+                            indices_sof_basic_struct,
+                            indices_eof,
+                            sizeof(DAP_state_basic_st),
+                            validPairsBasicStruct,
+                            ref sofHasBeenReceivedEofNotYet);
 
-                            int datalength = 0;
+                        // Search for the extended struct
+                        FindValidMessagePairs(
+                            indices_sof_extended_struct,
+                            indices_eof,
+                            sizeof(DAP_state_extended_st),
+                            validPairsExtendedStruct,
+                            ref sofHasBeenReceivedEofNotYet);
+                        
+                        // Search for the config struct
+                        FindValidMessagePairs(
+                            indices_sof_config,
+                            indices_eof,
+                            sizeof(DAP_config_st),
+                            validPairsConfig,
+                            ref sofHasBeenReceivedEofNotYet);
 
-                            // check if EOF can be found at expected length
-                            indSof = indices_sof_basic_struct.ElementAt(msgId_sof);
 
-                            bool pairFound = false;
-
-                            for (int msgId_eof = 0; msgId_eof < indices_eof.Count; msgId_eof++)
-                            {
-                                // check if EOF can be found at expected length
-                                indEof = indices_eof.ElementAt(msgId_eof);
-
-                                datalength = indEof - indSof + 2; // add 2 bytes for EOF
-
-                                if (datalength < 0)
-                                {
-                                    continue;
-                                }
-
-                                if (datalength > sizeof(DAP_state_basic_st))
-                                {
-                                    pairFound = true;
-                                    break;
-                                }
-
-                                if (datalength == sizeof(DAP_state_basic_st))
-                                {
-                                    // --- SUCCESS: Found a valid pair! ---
-                                    validPairsBasicStruct.Add(new Tuple<int, int>(indSof, indSof + datalength));
-                                    pairFound = true;
-                                }
-                            }
-
-                            if ( (msgId_sof == indices_sof_basic_struct.Count - 1) & (!pairFound) )
-                            {
-                                sofHasBeenReceivedEofNotYet = true;
-                            }
-
-                        }
-
-                        // sreach for extended struct
-                        for (int msgId_sof = 0; msgId_sof < indices_sof_extended_struct.Count; msgId_sof++)
-                        {
-                            int indSof = 0;
-                            int indEof = 0;
-
-                            int datalength = 0;
-
-                            // check if EOF can be found at expected length
-                            indSof = indices_sof_extended_struct.ElementAt(msgId_sof);
-
-                            bool pairFound = false;
-
-                            for (int msgId_eof = 0; msgId_eof < indices_eof.Count; msgId_eof++)
-                            {
-                                // check if EOF can be found at expected length
-                                indEof = indices_eof.ElementAt(msgId_eof);
-
-                                datalength = indEof - indSof + 2; // add 2 bytes for EOF
-
-                                if (datalength < 0)
-                                {
-                                    continue;
-                                }
-
-                                if (datalength > sizeof(DAP_state_extended_st))
-                                {
-                                    pairFound = true;
-                                    break;
-                                }
-
-                                if (datalength == sizeof(DAP_state_extended_st))
-                                {
-                                    // --- SUCCESS: Found a valid pair! ---
-                                    validPairsExtendedStruct.Add(new Tuple<int, int>(indSof, indSof + datalength));
-                                    pairFound = true;
-                                }
-                            }
-
-                            if ((msgId_sof == indices_sof_extended_struct.Count - 1) & (!pairFound))
-                            {
-                                sofHasBeenReceivedEofNotYet = true;
-                            }
-                        }
-
-                        // sreach for config struct
-                        for (int msgId_sof = 0; msgId_sof < indices_sof_config.Count; msgId_sof++)
-                        {
-                            int indSof = 0;
-                            int indEof = 0;
-
-                            int datalength = 0;
-
-                            // check if EOF can be found at expected length
-                            indSof = indices_sof_config.ElementAt(msgId_sof);
-
-                            bool pairFound = false;
-
-                            for (int msgId_eof = 0; msgId_eof < indices_eof.Count; msgId_eof++)
-                            {
-                                // check if EOF can be found at expected length
-                                indEof = indices_eof.ElementAt(msgId_eof);
-
-                                datalength = indEof - indSof + 2; // add 2 bytes for EOF
-
-                                if (datalength < 0)
-                                {
-                                    continue;
-                                }
-
-                                if (datalength > sizeof(DAP_config_st))
-                                {
-                                    pairFound = true;
-                                    break;
-                                }
-
-                                if (datalength == sizeof(DAP_config_st))
-                                {
-                                    // --- SUCCESS: Found a valid pair! ---
-                                    validPairsConfig.Add(new Tuple<int, int>(indSof, indSof + datalength));
-                                    pairFound = true;
-                                }
-                            }
-
-                            if ((msgId_sof == indices_sof_config.Count - 1) & (!pairFound))
-                            {
-                                sofHasBeenReceivedEofNotYet = true;
-                            }
-                        }
+                        
 
 
 
