@@ -255,6 +255,27 @@ namespace User.PluginSdkDemo
                             validPairsConfig,
                             ref sofHasBeenReceivedEofNotYet);
 
+                        // check if at least SOF1 byte was received, but EOF was not for last packet
+                        List<int> indices_sof1 = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAMCHAR_SOF_byte0, currentBufferLength);
+                        if (currentBufferLength - indices_sof1.Last<int>() < 3 )
+                        {
+                            sofHasBeenReceivedEofNotYet = true;
+                        }
+
+                        // Todo: 
+                        // Make "bufferByteAssignedToStruct" to hold states
+                        // 0: not assigned
+                        // 1: basic struct
+                        // 2: extended struct
+                        // 3: config struct
+                        // 4: not assigned struct
+
+                        // CRC check inside of "FindValidMessagePairs(...)"
+                        
+                        // provide "bufferByteAssignedToStruct" to "FindValidMessagePairs(...)" to label the data.
+
+                        
+
 
                         
 
