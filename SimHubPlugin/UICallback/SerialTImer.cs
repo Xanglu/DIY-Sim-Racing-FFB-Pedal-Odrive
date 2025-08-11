@@ -168,14 +168,6 @@ namespace User.PluginSdkDemo
                         byte[] byteToFind = System.Text.Encoding.GetEncoding(28591).GetBytes(STOPCHAR[0].ToCharArray());
                         int stop_char_length = byteToFind.Length;
 
-
-                        //byte[] endOfFrameByteToFind = System.Text.Encoding.GetEncoding(28591).GetBytes(ENDOFFRAMCHAR[0].ToCharArray());
-
-
-                        // calculate current buffer length
-                        int currentBufferLength = appendedBufferOffset[pedalSelected] + receivedLength;
-
-
                         // check if buffer is large enough otherwise discard in buffer and set offset to 0
                         //if ((bufferSize > currentBufferLength) && (appendedBufferOffset[pedalSelected] >= 0))
                         // Copy all bytes
@@ -189,9 +181,14 @@ namespace User.PluginSdkDemo
                         }
 
                         bool inBufferDicarded = false;
+                        int currentBufferLength = 0;
                         if (bufferSize > currentBufferLength) 
                         {
-                            sp.Read(buffer_appended[pedalSelected], appendedBufferOffset[pedalSelected], receivedLength);
+                            receivedLength = sp.Read(buffer_appended[pedalSelected], appendedBufferOffset[pedalSelected], receivedLength);
+
+                            // calculate current buffer length
+                            appendedBufferOffset[pedalSelected] += receivedLength;
+                            currentBufferLength = appendedBufferOffset[pedalSelected];
                         }
                         else
                         {
