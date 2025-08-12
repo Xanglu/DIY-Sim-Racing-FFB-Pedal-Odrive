@@ -11,66 +11,6 @@ using Newtonsoft.Json.Linq;
 
 
 
-/// <summary>
-/// Finds valid start-of-frame (SOF) and end-of-frame (EOF) pairs for a specific message type.
-/// </summary>
-/// <param name="sofIndices">The list of SOF indices for this message type.</param>
-/// <param name="eofIndices">The list of all found EOF indices.</param>
-/// <param name="expectedLength">The expected size of the struct (e.g., sizeof(DAP_state_basic_st)).</param>
-/// <param name="validPairs">The list where valid (SOF, EOF) index pairs will be added.</param>
-/// <param name="sofReceivedWithoutEof">A flag that is set to true if the last SOF has no matching EOF.</param>
-private void FindValidMessagePairs(
-    List<int> sofIndices,
-    List<int> eofIndices,
-    int expectedLength,
-    List<Tuple<int, int>> validPairs,
-    ref bool sofReceivedWithoutEof)
-{
-    // Iterate through each potential start-of-frame for this message type
-    for (int i = 0; i < sofIndices.Count; i++)
-    {
-        int indSof = sofIndices[i];
-        bool pairFound = false;
-
-        // Try to find a matching end-of-frame
-        foreach (int indEof in eofIndices)
-        {
-            // The data length is the distance between markers, plus EOF bytes
-            int dataLength = indEof - indSof + 2;
-
-            if (dataLength < 0)
-            {
-                // EOF is before SOF, so it can't be a match for this SOF.
-                // Continue to check the next EOF.
-                continue;
-            }
-
-            if (dataLength > expectedLength)
-            {
-                // This EOF is too far away. Since indices are sorted,
-                // no subsequent EOF will match either.
-                pairFound = true; // Prevents flagging 'sofReceivedWithoutEof' incorrectly
-                break;
-            }
-
-            if (dataLength == expectedLength)
-            {
-                // --- SUCCESS: Found a valid pair! ---
-                validPairs.Add(new Tuple<int, int>(indSof, indSof + dataLength));
-                pairFound = true;
-                // A SOF can only have one matching EOF, so we can stop searching.
-                break;
-            }
-        }
-
-        // Check if this was the last SOF index and it had no matching EOF
-        if (!pairFound && i == sofIndices.Count - 1)
-        {
-            sofReceivedWithoutEof = true;
-        }
-    }
-}
-
 
 
 
@@ -83,6 +23,70 @@ namespace User.PluginSdkDemo
         static int destBufferSize = 1000;
         byte[][] buffer_appended = { new byte[bufferSize], new byte[bufferSize], new byte[bufferSize], new byte[bufferSize] };
         byte[][] buffer_appended_clone = { new byte[bufferSize], new byte[bufferSize], new byte[bufferSize], new byte[bufferSize] };
+
+
+
+
+        /// <summary>
+        /// Finds valid start-of-frame (SOF) and end-of-frame (EOF) pairs for a specific message type.
+        /// </summary>
+        /// <param name="sofIndices">The list of SOF indices for this message type.</param>
+        /// <param name="eofIndices">The list of all found EOF indices.</param>
+        /// <param name="expectedLength">The expected size of the struct (e.g., sizeof(DAP_state_basic_st)).</param>
+        /// <param name="validPairs">The list where valid (SOF, EOF) index pairs will be added.</param>
+        /// <param name="sofReceivedWithoutEof">A flag that is set to true if the last SOF has no matching EOF.</param>
+        private void FindValidMessagePairs(
+            List<int> sofIndices,
+            List<int> eofIndices,
+            int expectedLength,
+            List<Tuple<int, int>> validPairs,
+            ref bool sofReceivedWithoutEof)
+        {
+            // Iterate through each potential start-of-frame for this message type
+            for (int i = 0; i < sofIndices.Count; i++)
+            {
+                int indSof = sofIndices[i];
+                bool pairFound = false;
+
+                // Try to find a matching end-of-frame
+                foreach (int indEof in eofIndices)
+                {
+                    // The data length is the distance between markers, plus EOF bytes
+                    int dataLength = indEof - indSof + 2;
+
+                    if (dataLength < 0)
+                    {
+                        // EOF is before SOF, so it can't be a match for this SOF.
+                        // Continue to check the next EOF.
+                        continue;
+                    }
+
+                    if (dataLength > expectedLength)
+                    {
+                        // This EOF is too far away. Since indices are sorted,
+                        // no subsequent EOF will match either.
+                        pairFound = true; // Prevents flagging 'sofReceivedWithoutEof' incorrectly
+                        break;
+                    }
+
+                    if (dataLength == expectedLength)
+                    {
+                        // --- SUCCESS: Found a valid pair! ---
+                        validPairs.Add(new Tuple<int, int>(indSof, indSof + dataLength));
+                        pairFound = true;
+                        // A SOF can only have one matching EOF, so we can stop searching.
+                        break;
+                    }
+                }
+
+                // Check if this was the last SOF index and it had no matching EOF
+                if (!pairFound && i == sofIndices.Count - 1)
+                {
+                    sofReceivedWithoutEof = true;
+                }
+            }
+        }
+
         unsafe public void timerCallback_serial(object sender, EventArgs e)
         {
 
@@ -154,7 +158,7 @@ namespace User.PluginSdkDemo
 
 
 
-                    if (receivedLength > 0)
+                    if ((receivedLength > 0) && (receivedLength < bufferSize))
                     {
 
                         //TextBox_serialMonitor.Text += "Received:" + receivedLength + "\n";
@@ -182,13 +186,15 @@ namespace User.PluginSdkDemo
 
                         bool inBufferDicarded = false;
                         int currentBufferLength = 0;
-                        if (bufferSize > currentBufferLength) 
+                        if (bufferSize > currentBufferLength)
                         {
-                            receivedLength = sp.Read(buffer_appended[pedalSelected], appendedBufferOffset[pedalSelected], receivedLength);
+                            sp.Read(buffer_appended[pedalSelected], appendedBufferOffset[pedalSelected], receivedLength);
 
                             // calculate current buffer length
                             appendedBufferOffset[pedalSelected] += receivedLength;
                             currentBufferLength = appendedBufferOffset[pedalSelected];
+
+                            Array.Clear(buffer_appended[pedalSelected], currentBufferLength, bufferSize - currentBufferLength);
                         }
                         else
                         {
@@ -199,7 +205,7 @@ namespace User.PluginSdkDemo
                         }
 
 
-                        if ( !((buffer_appended[pedalSelected][0] == 170) && (buffer_appended[pedalSelected][1] == 85)) )
+                        if (!((buffer_appended[pedalSelected][0] == 170) && (buffer_appended[pedalSelected][1] == 85)))
                         {
                             int tmp = 5;
                         }
@@ -246,7 +252,7 @@ namespace User.PluginSdkDemo
                             sizeof(DAP_state_extended_st),
                             validPairsExtendedStruct,
                             ref sofHasBeenReceivedEofNotYet);
-                        
+
                         // Search for the config struct
                         FindValidMessagePairs(
                             indices_sof_config,
@@ -257,10 +263,27 @@ namespace User.PluginSdkDemo
 
                         // check if at least SOF1 byte was received, but EOF was not for last packet
                         List<int> indices_sof1 = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAMCHAR_SOF_byte0, currentBufferLength);
-                        if (currentBufferLength - indices_sof1.Last<int>() < 3 )
+                        List<int> indices_sof1_and_sof2 = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAMCHAR, currentBufferLength);
+                        // when last element is SOF1
+
+                        try
                         {
-                            sofHasBeenReceivedEofNotYet = true;
+                            if ((currentBufferLength - 1) == indices_sof1.Last<int>())
+                            {
+                                sofHasBeenReceivedEofNotYet = true;
+                            }
+
+                            // when last element is SOF2 and seconmd to last is SOF1
+                            if ((currentBufferLength - 2) == indices_sof1_and_sof2.Last<int>())
+                            {
+                                sofHasBeenReceivedEofNotYet = true;
+                            }
                         }
+                        catch
+                        {
+
+                        }
+
 
                         // Todo: 
                         // Make "bufferByteAssignedToStruct" to hold states
@@ -271,25 +294,28 @@ namespace User.PluginSdkDemo
                         // 4: not assigned struct
 
                         // CRC check inside of "FindValidMessagePairs(...)"
-                        
+
                         // provide "bufferByteAssignedToStruct" to "FindValidMessagePairs(...)" to label the data.
 
-                        
+
+                        // Todo 12.08:
+                        // when sofHasBeenReceivedEofNotYet, only not serial print the last chunk
 
 
-                        
 
 
 
-                        
+
+
+
 
                         // Destination array
                         byte[] destinationArray = new byte[destBufferSize];
                         bool[] bufferByteAssignedToStruct = new bool[bufferSize];
                         int lastTrueElementIndex = 0;
 
-                        
-                        
+
+
                         bool newMethod = true;
 
                         if (newMethod)
@@ -651,8 +677,9 @@ namespace User.PluginSdkDemo
 
                                     // Convert to array
                                     byte[] newArray = filteredList.ToArray();
+                                    int size = newArray.Length;
                                     string resultString = Encoding.GetEncoding(28591).GetString(newArray);
-                                    if (_serial_monitor_window != null)
+                                    if ( (_serial_monitor_window != null) && (size > 0) )
                                     {
                                         _serial_monitor_window.TextBox_SerialMonitor.Text += resultString + "\n";
                                         _serial_monitor_window.TextBox_SerialMonitor.ScrollToEnd();
@@ -1118,7 +1145,7 @@ namespace User.PluginSdkDemo
                         }
 
 
-                        
+
 
 
 
@@ -1147,6 +1174,10 @@ namespace User.PluginSdkDemo
                             timeCollector[pedalSelected] = 0;
                         }
                         */
+                    }
+                    else
+                    {
+                        sp.DiscardInBuffer();
                     }
 
                 }
