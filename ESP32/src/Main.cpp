@@ -2,6 +2,11 @@
 /* Todo*/
 // https://github.com/espressif/arduino-esp32/issues/7779
 
+
+#include "esp_timer.h" // Include the header for the high-resolution timer
+
+
+
 #define ESTIMATE_LOADCELL_VARIANCE
 //#define PRINT_SERVO_STATES
 
@@ -189,6 +194,8 @@ int32_t joystickNormalizedToInt32 = 0;                           // semaphore pr
 
 static SemaphoreHandle_t semaphore_updatePedalStates=NULL;
 
+static SemaphoreHandle_t semaphore_updateLoadcellReading = NULL;
+
 /**********************************************************************************************/
 /*                                                                                            */
 /*                         target-specific  definitions                                       */
@@ -331,6 +338,35 @@ char* APhost;
 /*                                                                                            */
 /**********************************************************************************************/
 #include "FunctionProfiler.h"
+
+
+
+
+
+/**********************************************************************************************/
+/*                                                                                            */
+/*                         loadcell reading                                                   */
+/*                                                                                            */
+/**********************************************************************************************/
+float loadcellReading_global_fl32 = 0.0f;
+void IRAM_ATTR timer_readLoadcell_callback(void* arg) {
+
+  if (loadcell != NULL)
+  {
+    float loadcellReading = loadcell->getReadingKg();
+    if(semaphore_updateLoadcellReading != NULL)
+    {
+      if(xSemaphoreTake(semaphore_updateLoadcellReading, (TickType_t)1)==pdTRUE) {
+        loadcellReading_global_fl32 = loadcellReading;
+        xSemaphoreGive(semaphore_updateLoadcellReading);
+      }
+    }
+    else
+    {
+      semaphore_updateLoadcellReading = xSemaphoreCreateMutex();
+    }
+  }
+}
 
 
 
@@ -558,6 +594,7 @@ void setup()
   // setup multi tasking
   semaphore_updateJoystick = xSemaphoreCreateMutex();
   semaphore_updatePedalStates = xSemaphoreCreateMutex();
+  semaphore_updateLoadcellReading = xSemaphoreCreateMutex();
   delay(10);
 
 
@@ -571,6 +608,25 @@ void setup()
   disableCore0WDT();
 
   Serial.println("Starting other tasks");
+
+
+  // loadcell reading task
+  // 1. Define timer configuration
+  const esp_timer_create_args_t timer_args = {
+      .callback = &timer_readLoadcell_callback, // Function to call
+      .name = "loadcell_reading"    // A name for debugging
+  };
+
+  // 2. Create the timer handle
+  esp_timer_handle_t timer_handle_loadcellReading;
+  esp_timer_create(&timer_args, &timer_handle_loadcellReading);
+
+  // 3. Start the timer to fire periodically
+  // The second argument is the period in microseconds.
+  esp_timer_start_periodic(timer_handle_loadcellReading, 500); 
+
+
+
 
   //create a task that will be executed in the Task2code() function, with priority 1 and executed on core 1
   xTaskCreatePinnedToCore(
@@ -921,6 +977,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
   static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
   FunctionProfiler profiler_pedalUpdateTask;
   profiler_pedalUpdateTask.setName("PedalUpdate");
+  float loadcellReading = 0.0f;
 
   for(;;){
 
@@ -1075,7 +1132,19 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
     profiler_pedalUpdateTask.start(2);
 
     // Get the loadcell reading
-    float loadcellReading = loadcell->getReadingKg();
+    if(semaphore_updateLoadcellReading != NULL)
+    {
+      if(xSemaphoreTake(semaphore_updateLoadcellReading, (TickType_t)1)==pdTRUE) {
+        loadcellReading = loadcellReading_global_fl32;
+        xSemaphoreGive(semaphore_updateLoadcellReading);
+      }
+    }
+    else
+    {
+      semaphore_updateLoadcellReading = xSemaphoreCreateMutex();
+    }
+
+
 
     // end profiler 2, loadcell reading
     profiler_pedalUpdateTask.end(2);

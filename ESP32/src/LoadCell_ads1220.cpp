@@ -89,6 +89,8 @@ ADS1220_WE& ADC() {
     //adc.setDrdyMode(ADS1220_DOUT_DRDY);
     adc.setDrdyMode(ADS1220_DRDY);
 
+    // adc.setNonBlockingMode(true); // switch ton non-blocking mode
+
     // assign interrupt to DRDY falling edge to make waiting more efficient
     attachInterrupt(digitalPinToInterrupt(FFB_ADS1220_DRDY), drdyInterrupt, FALLING);
 
