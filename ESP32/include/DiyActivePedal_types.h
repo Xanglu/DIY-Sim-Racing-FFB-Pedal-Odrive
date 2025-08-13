@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "CubicInterpolatorFloat.h"
 // define the payload revision
-#define DAP_VERSION_CONFIG 153
+#define DAP_VERSION_CONFIG 154
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -74,6 +74,7 @@ struct payloadPedalState_Basic {
 struct payloadPedalState_Extended {
 
   unsigned long timeInUs_u32;
+  //unsigned long timeInUsFromSerialTask_u32;
   float pedalForce_raw_fl32;
   float pedalForce_filtered_fl32;
   float forceVel_est_fl32;

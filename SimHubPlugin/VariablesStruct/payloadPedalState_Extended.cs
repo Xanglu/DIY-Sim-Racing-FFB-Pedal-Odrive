@@ -12,6 +12,7 @@ namespace User.PluginSdkDemo
     {
         //public UInt32 timeInMs_u32;
         public UInt32 timeInUs_u32;
+        //public UInt32 timeInUsFromSerialTask_u32;
         public float pedalForce_raw_fl32;
         public float pedalForce_filtered_fl32;
         public float forceVel_est_fl32;

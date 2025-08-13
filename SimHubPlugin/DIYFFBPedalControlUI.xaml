@@ -570,7 +570,7 @@
                                                     <styles:SHButtonPrimary x:Name="button_pedal_restart" Click="RestartPedal_click" Width="160" Content="Restart Pedal" Height="25" Margin="0,0,0,0" HorizontalAlignment="Center" MinHeight="20" Padding="15,0,15,0" VerticalContentAlignment="Center" />
                                                     <styles:SHButtonPrimary x:Name="btn_OTA_enable" Click="btn_OTA_enable_Click" Width="160" Content="Pedal FW OTA Update" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
                                                     <styles:SHButtonPrimary x:Name="btn_PedalBootMode" Click="btn_PedalBootMode_Click" Width="160" Content="Pedal Download Mode" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                    <styles:SHButtonPrimary x:Name="btn_SerialMonitorWindow" Click="btn_SerialMonitorWindow_Click" Width="160" Content="Pedal Log Monitor" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_SerialMonitorWindow" Click="btn_SerialMonitorWindow_Click" Width="160" Content="Serial Monitor" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
                                                 </StackPanel>
 
                                                 <Border Background="#FF4E4E4E" Height="50" CornerRadius="5,5,5,5" BorderThickness="0,0,0,0" Width="160" HorizontalAlignment="Center" Margin="0,2,0,0" >
