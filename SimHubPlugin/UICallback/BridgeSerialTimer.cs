@@ -79,7 +79,7 @@ namespace User.PluginSdkDemo
                         
 						
 						
-                        timeCntr[pedalSelected] += 1;
+                        timeCntr[3] += 1;
 
 
                         // determine byte sequence which is defined as message end --> crlf
@@ -89,11 +89,11 @@ namespace User.PluginSdkDemo
                         // check if buffer is large enough otherwise discard in buffer and set offset to 0
                         //if ((bufferSize > currentBufferLength) && (appendedBufferOffset[pedalSelected] >= 0))
                         // Copy all bytes
-                        Buffer.BlockCopy(buffer_appended[pedalSelected], 0, buffer_appended_clone[pedalSelected], 0, bufferSize);
+                        Buffer.BlockCopy(buffer_appended[3], 0, buffer_appended_clone[3], 0, bufferSize);
 
-                        int prevOffset = appendedBufferOffset[pedalSelected];
+                        int prevOffset = appendedBufferOffset[3];
 
-                        if (appendedBufferOffset[pedalSelected] > 0)
+                        if (appendedBufferOffset[3] > 0)
                         {
                             int tmp = 5;
                         }
@@ -114,12 +114,12 @@ namespace User.PluginSdkDemo
                         {
                             inBufferDicarded = true;
                             sp.DiscardInBuffer();
-                            appendedBufferOffset[pedalSelected] = 0;
+                            appendedBufferOffset[3] = 0;
                             return;
                         }
 
 
-                        if (!((buffer_appended[pedalSelected][0] == 170) && (buffer_appended[pedalSelected][1] == 85)))
+                        if (!((buffer_appended[3][0] == 170) && (buffer_appended[3][1] == 85)))
                         {
                             int tmp = 5;
                         }
@@ -141,12 +141,14 @@ namespace User.PluginSdkDemo
                         List<int> indices_sof = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAMCHAR, currentBufferLength);
                         List<int> indices_sof_extended_struct = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAME_EXTENDED_STRUCT, currentBufferLength);
                         List<int> indices_sof_basic_struct = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAME_BASIC_STRUCT, currentBufferLength);
+                        List<int> indices_sof_bridge_basic_struct = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAME_BRIDGE_BASIC_STRUCT, currentBufferLength);
                         List<int> indices_sof_config = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAME_CONFIG, currentBufferLength);
                         List<int> indices_eof = FindAllOccurrences(buffer_appended[pedalSelected], ENDOFFRAMCHAR, currentBufferLength);
 
                         var validPairsExtendedStruct = new List<Tuple<int, int>>();
                         var validPairsBasicStruct = new List<Tuple<int, int>>();
                         var validPairsConfig = new List<Tuple<int, int>>();
+                        var validPairsBridgeState = new List<Tuple<int, int>>();
 
                         bool sofHasBeenReceivedEofNotYet = false;
                         byte[] bufferByteAssignedToStruct_class = new byte[bufferSize];
@@ -181,7 +183,15 @@ namespace User.PluginSdkDemo
                             ref sofHasBeenReceivedEofNotYet,
                             bufferByteAssignedToStruct_class,
                             3);
-
+                        // Search for the bridge state struct
+                        FindValidMessagePairs(
+                            indices_sof_bridge_basic_struct,
+                            indices_eof,
+                            sizeof(DAP_bridge_state_st),
+                            validPairsBridgeState,
+                            ref sofHasBeenReceivedEofNotYet,
+                            bufferByteAssignedToStruct_class,
+                            4);
                         // check if at least SOF1 byte was received, but EOF was not for last packet
                         List<int> indices_sof1 = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAMCHAR_SOF_byte0, currentBufferLength);
                         List<int> indices_sof1_and_sof2 = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAMCHAR, currentBufferLength);
@@ -250,7 +260,7 @@ namespace User.PluginSdkDemo
                                 int srcBufferOffset_1 = validPairsExtendedStruct[pairId].Item2;
 
                                 // copy bytes to subarray
-                                Buffer.BlockCopy(buffer_appended[pedalSelected], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_state_extended_st));
+                                Buffer.BlockCopy(buffer_appended[3], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_state_extended_st));
 
                                 int destBuffLength = srcBufferOffset_1 - srcBufferOffset_0;
 
@@ -392,7 +402,7 @@ namespace User.PluginSdkDemo
                                 {
 
                                     // copy bytes to subarray
-                                    Buffer.BlockCopy(buffer_appended[pedalSelected], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_state_basic_st));
+                                    Buffer.BlockCopy(buffer_appended[3], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_state_basic_st));
 
                                     // parse byte array as config struct
                                     DAP_state_basic_st pedalState_read_st = getStateFromBytes(destinationArray);
@@ -433,7 +443,7 @@ namespace User.PluginSdkDemo
                                         //{
                                         if (Plugin.Settings.vjoy_output_flag == 1)
                                         {
-                                            switch (pedalSelected)
+                                            switch (pedalSelectedFromPacket_u16)
                                             {
 
                                                 case 0:
@@ -534,12 +544,12 @@ namespace User.PluginSdkDemo
                                 int srcBufferOffset_1 = validPairsConfig[pairId].Item2;
 
                                 // copy bytes to subarray
-                                Buffer.BlockCopy(buffer_appended[pedalSelected], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_config_st));
+                                Buffer.BlockCopy(buffer_appended[3], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_config_st));
 
                                 int destBuffLength = srcBufferOffset_1 - srcBufferOffset_0;
 
                                 // decode into config struct
-                                if ((waiting_for_pedal_config[pedalSelected]) && (destBuffLength == sizeof(DAP_config_st)))
+                                if ((destBuffLength == sizeof(DAP_config_st)))
                                 {
 
                                     // parse byte array as config struct
@@ -567,15 +577,20 @@ namespace User.PluginSdkDemo
 
                                     if ((check_payload_config_b) && check_crc_config_b)
                                     {
-									
-										UInt16 pedalSelectedFromPacket_u16 = pedalConfig_read_st.payloadHeader_.PedalTag;
+                                        UInt16 pedalSelectedFromPacket_u16 = pedalConfig_read_st.payloadHeader_.PedalTag;
+                                        if (waiting_for_pedal_config[pedalSelected])
+                                        {
+                                            waiting_for_pedal_config[pedalSelectedFromPacket_u16] = false;
+                                            dap_config_st[pedalSelectedFromPacket_u16] = pedalConfig_read_st;
+                                            Plugin.PedalConfigRead_b[pedalSelectedFromPacket_u16] = true;
+                                            updateTheGuiFromConfig();
+                                        }
+
+                                            
                                         bufferByteAssignedToStruct.AsSpan(srcBufferOffset_0, sizeof(DAP_config_st)).Fill(true);
                                         lastTrueElementIndex = Math.Max(lastTrueElementIndex, srcBufferOffset_0 + sizeof(DAP_config_st));
 
-                                        waiting_for_pedal_config[pedalSelectedFromPacket_u16] = false;
-                                        dap_config_st[pedalSelectedFromPacket_u16] = pedalConfig_read_st;
-                                        Plugin.PedalConfigRead_b[pedalSelectedFromPacket_u16] = true;
-                                        updateTheGuiFromConfig();
+
 
                                         continue;
                                     }
@@ -592,6 +607,8 @@ namespace User.PluginSdkDemo
 
                             }
 
+
+                            //bridge states here
 
                             // print all non identified structs to serial monitor
                             // If non known array datatype was received, assume a text message was received and print it

@@ -2887,6 +2887,15 @@ void ESPNOW_SyncTask( void * pvParameters )
       }
       if(ESPNow_config_request)
       {
+        DAP_config_st * dap_config_st_local_ptr;
+        dap_config_st_local_ptr = &espnow_dap_config_st;
+        dap_config_st_local_ptr->payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
+        dap_config_st_local_ptr->payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
+        dap_config_st_local_ptr->payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
+        dap_config_st_local_ptr->payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
+        uint16_t crc=0;
+        crc = checksumCalculator((uint8_t*)(&(espnow_dap_config_st.payLoadHeader_)), sizeof(espnow_dap_config_st.payLoadHeader_) + sizeof(espnow_dap_config_st.payLoadPedalConfig_));
+        dap_config_st_local_ptr->payloadFooter_.checkSum = crc;
         ESPNow.send_message(broadcast_mac,(uint8_t *) & espnow_dap_config_st, sizeof(espnow_dap_config_st));
         ESPNow_config_request=false;
       }
