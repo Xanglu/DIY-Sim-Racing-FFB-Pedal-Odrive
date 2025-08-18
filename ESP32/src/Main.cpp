@@ -56,6 +56,7 @@
 /**********************************************************************************************/
 void updatePedalCalcParameters();
 void pedalUpdateTask( void * pvParameters );
+void loadcellReadingTask( void * pvParameters );
 void serialCommunicationTask( void * pvParameters );
 void joystickOutputTask( void * pvParameters );
 void OTATask( void * pvParameters );
@@ -319,21 +320,26 @@ char* APhost;
 /*                                                                                            */
 /**********************************************************************************************/
 float loadcellReading_global_fl32 = 0.0f;
-void IRAM_ATTR timer_readLoadcell_callback(void* arg) {
+void IRAM_ATTR loadcellReadingTask( void * pvParameters )
+{
+  for(;;){
 
-  if (loadcell != NULL)
-  {
-    float loadcellReading = loadcell->getReadingKg();
-    if(semaphore_updateLoadcellReading != NULL)
+    if (loadcell != NULL)
     {
-      if(xSemaphoreTake(semaphore_updateLoadcellReading, (TickType_t)1)==pdTRUE) {
-        loadcellReading_global_fl32 = loadcellReading;
-        xSemaphoreGive(semaphore_updateLoadcellReading);
+      // no need for delay, since getReadingKg will block until DRDY edge down is detected
+      float loadcellReading = loadcell->getReadingKg();
+      
+      if(semaphore_updateLoadcellReading != NULL)
+      {
+        if(xSemaphoreTake(semaphore_updateLoadcellReading, (TickType_t)1)==pdTRUE) {
+          loadcellReading_global_fl32 = loadcellReading;
+          xSemaphoreGive(semaphore_updateLoadcellReading);
+        }
       }
-    }
-    else
-    {
-      semaphore_updateLoadcellReading = xSemaphoreCreateMutex();
+      else
+      {
+        semaphore_updateLoadcellReading = xSemaphoreCreateMutex();
+      }
     }
   }
 }
@@ -639,6 +645,7 @@ void setup()
   timer_firePedalUpdate = xSemaphoreCreateBinary();
   timer_fireJoystickUpdate = xSemaphoreCreateBinary();
   timer_fireSerialCommunication = xSemaphoreCreateBinary();
+  // timer_fireLoadcellReadingReady = xSemaphoreCreateBinary();
 
   delay(10);
 
@@ -655,20 +662,20 @@ void setup()
   Serial.println("Starting other tasks");
 
 
-  // loadcell reading task
-  // 1. Define timer configuration
-  const esp_timer_create_args_t timer_args = {
-      .callback = &timer_readLoadcell_callback, // Function to call
-      .name = "loadcell_reading"    // A name for debugging
-  };
+  // // loadcell reading task
+  // // 1. Define timer configuration
+  // const esp_timer_create_args_t timer_args = {
+  //     .callback = &timer_readLoadcell_callback, // Function to call
+  //     .name = "loadcell_reading"    // A name for debugging
+  // };
 
-  // 2. Create the timer handle
-  esp_timer_handle_t timer_handle_loadcellReading;
-  esp_timer_create(&timer_args, &timer_handle_loadcellReading);
+  // // 2. Create the timer handle
+  // esp_timer_handle_t timer_handle_loadcellReading;
+  // esp_timer_create(&timer_args, &timer_handle_loadcellReading);
 
-  // 3. Start the timer to fire periodically
-  // The second argument is the period in microseconds.
-  esp_timer_start_periodic(timer_handle_loadcellReading, PUT_TARGET_CYCLE_TIME_IN_US); 
+  // // 3. Start the timer to fire periodically
+  // // The second argument is the period in microseconds.
+  // esp_timer_start_periodic(timer_handle_loadcellReading, PUT_TARGET_CYCLE_TIME_IN_US); 
 
 
 
@@ -685,8 +692,8 @@ void setup()
 
   // 3. Start the timer to fire periodically
   // The second argument is the period in microseconds.
-  // esp_timer_start_periodic(timer_handle_pedalUpdate, 300); 
-  esp_timer_start_periodic(timer_handle_pedalUpdate, PUT_TARGET_CYCLE_TIME_IN_US); 
+  esp_timer_start_periodic(timer_handle_pedalUpdate, 300); 
+  // esp_timer_start_periodic(timer_handle_pedalUpdate, PUT_TARGET_CYCLE_TIME_IN_US); 
 
 
 
@@ -735,9 +742,20 @@ void setup()
                     7000,       /* Stack size of task */
                     //STACK_SIZE_FOR_TASK_1,
                     NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
+                    10,           /* priority of the task */
                     &Task1,      /* Task handle to keep track of created task */
                     CORE_ID_PEDAL_UPDATE_TASK);          /* pin task to core 1 */
+  delay(200);
+
+  xTaskCreatePinnedToCore(
+                    loadcellReadingTask,   /* Task function. */
+                    "loadcellReadingTask",     /* name of task. */
+                    3000,       /* Stack size of task */
+                    //STACK_SIZE_FOR_TASK_1,
+                    NULL,        /* parameter of the task */
+                    9,           /* priority of the task */
+                    &Task1,      /* Task handle to keep track of created task */
+                    CORE_ID_LOADCELLREADING_TASK);          /* pin task to core 1 */
   delay(200);
 
   xTaskCreatePinnedToCore(
@@ -746,7 +764,7 @@ void setup()
                     5000,  
                     //STACK_SIZE_FOR_TASK_2,    
                     NULL,      
-                    1,         
+                    8,         
                     &Task2,    
                     CORE_ID_SERIAL_COMMUNICATION_TASK);     
   delay(200);
@@ -757,7 +775,7 @@ void setup()
                     5000,  
                     //STACK_SIZE_FOR_TASK_2,    
                     NULL,      
-                    1,         
+                    7,         
                     &Task7,    
                     CORE_ID_JOYSTICK_TASK);     
   delay(200);
@@ -1214,10 +1232,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
             xSemaphoreGive(semaphore_updateLoadcellReading);
           }
         }
-        else
-        {
-          semaphore_updateLoadcellReading = xSemaphoreCreateMutex();
-        }
+
 
 
 
@@ -2427,10 +2442,7 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
 
             }
           }
-          else
-          {
-            semaphore_updatePedalStates = xSemaphoreCreateMutex();
-          }
+
           
           // end profiler 2, serial send
           profiler_serialCommunicationTask.end(2);

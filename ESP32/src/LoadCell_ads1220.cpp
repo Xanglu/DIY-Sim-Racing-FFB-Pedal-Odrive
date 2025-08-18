@@ -1,5 +1,6 @@
 #include "LoadCell_ads1220.h"
 #include "Main.h"
+#include "Arduino.h"
 
 #ifdef USES_ADS1220
 
@@ -19,17 +20,21 @@ float updatedConversionFactor_f64 = 1.0f;
 // reference voltage in milli-volts
 float refVoltageInMV_fl32 = 5000.0f;
 
-// This flag will be set to true by the ISR
-volatile bool newDataReady = false;
-
-
-unsigned long timeInUsSinceLastUpdat_ul=0;
-
+static SemaphoreHandle_t timer_fireLoadcellReadingReady_global;
 
 // This is our Interrupt Service Routine
 void IRAM_ATTR drdyInterrupt() {
-  newDataReady = true;
-  timeInUsSinceLastUpdat_ul = micros();
+
+  if(timer_fireLoadcellReadingReady_global != NULL)
+  {
+    // It immediately gives the semaphore to wake up myCore1Task.
+    xSemaphoreGiveFromISR(timer_fireLoadcellReadingReady_global, NULL);
+  }
+  else
+  {
+    timer_fireLoadcellReadingReady_global = xSemaphoreCreateBinary();
+  }
+
 }
 
 
@@ -90,7 +95,7 @@ ADS1220_WE& ADC() {
     adc.setDrdyMode(ADS1220_DRDY);
 
     // adc.setNonBlockingMode(true); // switch ton non-blocking mode
-
+    
     // assign interrupt to DRDY falling edge to make waiting more efficient
     attachInterrupt(digitalPinToInterrupt(FFB_ADS1220_DRDY), drdyInterrupt, FALLING);
 
@@ -113,10 +118,8 @@ LoadCell_ADS1220::LoadCell_ADS1220()
 {
   // differential channels
   ADC().setCompareChannels(ADS1220_MUX_0_1);              // Differential AIN0 - AIN1
+  timer_fireLoadcellReadingReady_global = xSemaphoreCreateBinary();
 }
-
-
-
 
 
 
@@ -137,47 +140,25 @@ void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
 }
 
 
-#define LOADCELL_RADING_INTERVALL_IN_US (uint32_t)500
+// #define LOADCELL_RADING_INTERVALL_IN_US (uint32_t)500
 float LoadCell_ADS1220::getReadingKg() const {
   ADS1220_WE& adc = ADC();
   unsigned int timeout_us = 0; //TIMEOUT_FOR_DRDY_TO_BECOME_LOW;
   boolean timeoutReached_b = false;
   float voltage_mV = 0.0f;
-  
-  // wait 500us since last update to reduce CPU load
-  if(!newDataReady)
+
+  // wait for the timer to fire
+  // This will block until the timer callback gives the semaphore. It won't consume CPU time while waiting.
+  if(timer_fireLoadcellReadingReady_global != NULL)
   {
-    unsigned long timeInUsSince_ul = micros();
-    unsigned long timeInUsTarget_ul = (timeInUsSinceLastUpdat_ul + LOADCELL_RADING_INTERVALL_IN_US);
-
-    if (timeInUsSince_ul < timeInUsTarget_ul)
-    {
-      uint32_t waitTimeInUs_i32 = constrain( timeInUsTarget_ul - timeInUsSince_ul, 0, LOADCELL_RADING_INTERVALL_IN_US);
-      delayMicroseconds(waitTimeInUs_i32);
+    if (xSemaphoreTake(timer_fireLoadcellReadingReady_global, portMAX_DELAY) == pdTRUE) {
+      
+      // Read the voltage from the ADS1220
+      voltage_mV = adc.getVoltage_mV();
     }
   }
 
-  // wait longer, if still not available
-  while(!newDataReady){
-    if(timeout_us < TIMEOUT_FOR_DRDY_TO_BECOME_LOW){
-      timeout_us += DELAY_IN_US_FOR_DRDY_TO_BECOME_LOW;  
-      delayMicroseconds(DELAY_IN_US_FOR_DRDY_TO_BECOME_LOW);
-    } else {
-      timeoutReached_b = true;
-    }
-  }
-
-  // read current voltage
-  if (false == timeoutReached_b) {
-    // Reset the flag immediately to be ready for the next conversion
-    newDataReady = false;
-    
-    // Read the voltage from the ADS1220
-    voltage_mV = adc.getVoltage_mV();
-  }
-  
   float weight_grams = voltage_mV * updatedConversionFactor_f64;
-
   float weight_kg = weight_grams * 0.001f; // convert grams to kg
   
   // correct bias, assume AWGN --> 3 * sigma is 99.9 %
@@ -194,6 +175,7 @@ void LoadCell_ADS1220::estimateBiasAndVariance() {
   float mean = 0.0f;
   float M2 = 0.0f;
   long n = 0;
+  
 
   // capturer N measurements on do regressive mean and variance estimate
   // Use Welford-algorithm

@@ -157,7 +157,7 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 						  2000,  
 						  //STACK_SIZE_FOR_TASK_2,    
 						  this,//NULL,      
-						  1,         
+						  2,         
 						  &task_iSV_Communication,    
 						  CORE_ID_SERVO_COMMUNICATION_TASK);   
 
