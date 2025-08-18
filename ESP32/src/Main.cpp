@@ -363,6 +363,7 @@ void IRAM_ATTR timer_pedalUpdate_callback(void* arg) {
 /*                         joystick update                                                    */
 /*                                                                                            */
 /**********************************************************************************************/
+#define REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US (int64_t)10000
 static SemaphoreHandle_t timer_fireJoystickUpdate; // Semaphore to signal the pedal update task
 void IRAM_ATTR timer_joystickUpdate_callback(void* arg) {
   if(timer_fireJoystickUpdate != NULL)
@@ -394,42 +395,6 @@ esp_timer_handle_t timer_handle_serialCommunication;
 #define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST_IN_US (int64_t)200
 
 void IRAM_ATTR timer_serialCommunication_callback(void* arg) {
-
-  // static bool isFastPeriod;
-  // static bool isFastPeriod_prev;
-
-  // Set serial communication period
-  // if(semaphore_setSerialCommunicationSpeed != NULL)
-  // {
-  //   if(xSemaphoreTake(semaphore_setSerialCommunicationSpeed, (TickType_t)1)==pdTRUE) {
-  //     // isFastPeriod = serialCommunicationTask_is_fast_period;
-  //     // isFastPeriod_prev = serialCommunicationTask_is_fast_period_prev;
-
-  //     if (serialCommunicationTask_is_fast_period_prev != serialCommunicationTask_is_fast_period)
-  //     {
-  //       // Stop the timer before changing its period.
-  //       esp_timer_stop(timer_handle_serialCommunication);
-
-  //       if (serialCommunicationTask_is_fast_period) {
-  //         esp_timer_start_periodic(timer_handle_serialCommunication, REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST_IN_US);
-  //         Serial.println("Setting serial communication task to 200us");
-  //       } else {
-  //         esp_timer_start_periodic(timer_handle_serialCommunication, REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US);
-  //         Serial.println("Setting serial communication task to 10ms");
-  //       }
-  //       serialCommunicationTask_is_fast_period_prev = serialCommunicationTask_is_fast_period;
-  //     }
-
-  //     xSemaphoreGive(semaphore_setSerialCommunicationSpeed);
-  //   }
-  // }
-  // else
-  // {
-  //   semaphore_setSerialCommunicationSpeed = xSemaphoreCreateMutex();
-  // }
-
-
-
   if(timer_fireSerialCommunication != NULL)
   {
     // It immediately gives the semaphore to wake up myCore1Task.
@@ -440,9 +405,6 @@ void IRAM_ATTR timer_serialCommunication_callback(void* arg) {
     timer_fireSerialCommunication = xSemaphoreCreateBinary();
   }
 }
-
-
-
 
 
 
@@ -706,7 +668,7 @@ void setup()
 
   // 3. Start the timer to fire periodically
   // The second argument is the period in microseconds.
-  esp_timer_start_periodic(timer_handle_loadcellReading, 500); 
+  esp_timer_start_periodic(timer_handle_loadcellReading, PUT_TARGET_CYCLE_TIME_IN_US); 
 
 
 
@@ -723,8 +685,8 @@ void setup()
 
   // 3. Start the timer to fire periodically
   // The second argument is the period in microseconds.
+  // esp_timer_start_periodic(timer_handle_pedalUpdate, 300); 
   esp_timer_start_periodic(timer_handle_pedalUpdate, PUT_TARGET_CYCLE_TIME_IN_US); 
-
 
 
 
@@ -741,7 +703,7 @@ void setup()
 
   // 3. Start the timer to fire periodically
   // The second argument is the period in microseconds.
-  esp_timer_start_periodic(timer_handle_joystickUpdate, 10000); 
+  esp_timer_start_periodic(timer_handle_joystickUpdate, REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US); 
 
 
 
@@ -1938,7 +1900,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
 /*                         joystick output task                                               */
 /*                                                                                            */
 /**********************************************************************************************/
-void joystickOutputTask( void * pvParameters )
+void IRAM_ATTR joystickOutputTask( void * pvParameters )
 { 
   int32_t joystickNormalizedToInt32_local = 0;
 
@@ -2469,7 +2431,12 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
           {
             semaphore_updatePedalStates = xSemaphoreCreateMutex();
           }
+          
+          // end profiler 2, serial send
+          profiler_serialCommunicationTask.end(2);
 
+          // end profiler 2, serial send
+          profiler_serialCommunicationTask.start(3);
 
 
           // send the pedal state structs
@@ -2522,8 +2489,8 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
           communicationTask_stackSizeIdx_u32++;
         #endif
 
-        // end profiler 2, serial send
-        profiler_serialCommunicationTask.end(2);
+        // end profiler 3, serial send
+        profiler_serialCommunicationTask.end(3);
 
         profiler_serialCommunicationTask.end(0);
 
