@@ -18,7 +18,7 @@ namespace User.PluginSdkDemo
             //action here 
             Simhub_action_update();
 
-            int pedalSelected = 3; // bridge is buffer 3
+            int bridgeBufferIndex = 3; // bridge is buffer 3
 
 
 
@@ -79,7 +79,7 @@ namespace User.PluginSdkDemo
                         
 						
 						
-                        timeCntr[3] += 1;
+                        timeCntr[bridgeBufferIndex] += 1;
 
 
                         // determine byte sequence which is defined as message end --> crlf
@@ -89,11 +89,11 @@ namespace User.PluginSdkDemo
                         // check if buffer is large enough otherwise discard in buffer and set offset to 0
                         //if ((bufferSize > currentBufferLength) && (appendedBufferOffset[pedalSelected] >= 0))
                         // Copy all bytes
-                        Buffer.BlockCopy(buffer_appended[3], 0, buffer_appended_clone[3], 0, bufferSize);
+                        Buffer.BlockCopy(buffer_appended[bridgeBufferIndex], 0, buffer_appended_clone[bridgeBufferIndex], 0, bufferSize);
 
-                        int prevOffset = appendedBufferOffset[3];
+                        int prevOffset = appendedBufferOffset[bridgeBufferIndex];
 
-                        if (appendedBufferOffset[3] > 0)
+                        if (appendedBufferOffset[bridgeBufferIndex] > 0)
                         {
                             int tmp = 5;
                         }
@@ -102,24 +102,24 @@ namespace User.PluginSdkDemo
                         int currentBufferLength = 0;
                         if (bufferSize > currentBufferLength)
                         {
-                            sp.Read(buffer_appended[pedalSelected], appendedBufferOffset[pedalSelected], receivedLength);
+                            sp.Read(buffer_appended[bridgeBufferIndex], appendedBufferOffset[bridgeBufferIndex], receivedLength);
 
                             // calculate current buffer length
-                            appendedBufferOffset[pedalSelected] += receivedLength;
-                            currentBufferLength = appendedBufferOffset[pedalSelected];
+                            appendedBufferOffset[bridgeBufferIndex] += receivedLength;
+                            currentBufferLength = appendedBufferOffset[bridgeBufferIndex];
 
-                            Array.Clear(buffer_appended[pedalSelected], currentBufferLength, bufferSize - currentBufferLength);
+                            Array.Clear(buffer_appended[bridgeBufferIndex], currentBufferLength, bufferSize - currentBufferLength);
                         }
                         else
                         {
                             inBufferDicarded = true;
                             sp.DiscardInBuffer();
-                            appendedBufferOffset[3] = 0;
+                            appendedBufferOffset[bridgeBufferIndex] = 0;
                             return;
                         }
 
 
-                        if (!((buffer_appended[3][0] == 170) && (buffer_appended[3][1] == 85)))
+                        if (!((buffer_appended[bridgeBufferIndex][0] == 170) && (buffer_appended[3][1] == 85)))
                         {
                             int tmp = 5;
                         }
@@ -135,15 +135,15 @@ namespace User.PluginSdkDemo
 
 
                         // find all occurences of crlf as they indicate message end
-                        List<int> indices = FindAllOccurrences(buffer_appended[pedalSelected], byteToFind, currentBufferLength);
+                        List<int> indices = FindAllOccurrences(buffer_appended[bridgeBufferIndex], byteToFind, currentBufferLength);
 
 
-                        List<int> indices_sof = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAMCHAR, currentBufferLength);
-                        List<int> indices_sof_extended_struct = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAME_EXTENDED_STRUCT, currentBufferLength);
-                        List<int> indices_sof_basic_struct = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAME_BASIC_STRUCT, currentBufferLength);
-                        List<int> indices_sof_bridge_basic_struct = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAME_BRIDGE_BASIC_STRUCT, currentBufferLength);
-                        List<int> indices_sof_config = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAME_CONFIG, currentBufferLength);
-                        List<int> indices_eof = FindAllOccurrences(buffer_appended[pedalSelected], ENDOFFRAMCHAR, currentBufferLength);
+                        List<int> indices_sof = FindAllOccurrences(buffer_appended[bridgeBufferIndex], STARTOFFRAMCHAR, currentBufferLength);
+                        List<int> indices_sof_extended_struct = FindAllOccurrences(buffer_appended[bridgeBufferIndex], STARTOFFRAME_EXTENDED_STRUCT, currentBufferLength);
+                        List<int> indices_sof_basic_struct = FindAllOccurrences(buffer_appended[bridgeBufferIndex], STARTOFFRAME_BASIC_STRUCT, currentBufferLength);
+                        List<int> indices_sof_bridge_basic_struct = FindAllOccurrences(buffer_appended[bridgeBufferIndex], STARTOFFRAME_BRIDGE_BASIC_STRUCT, currentBufferLength);
+                        List<int> indices_sof_config = FindAllOccurrences(buffer_appended[bridgeBufferIndex], STARTOFFRAME_CONFIG, currentBufferLength);
+                        List<int> indices_eof = FindAllOccurrences(buffer_appended[bridgeBufferIndex], ENDOFFRAMCHAR, currentBufferLength);
 
                         var validPairsExtendedStruct = new List<Tuple<int, int>>();
                         var validPairsBasicStruct = new List<Tuple<int, int>>();
@@ -193,8 +193,8 @@ namespace User.PluginSdkDemo
                             bufferByteAssignedToStruct_class,
                             4);
                         // check if at least SOF1 byte was received, but EOF was not for last packet
-                        List<int> indices_sof1 = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAMCHAR_SOF_byte0, currentBufferLength);
-                        List<int> indices_sof1_and_sof2 = FindAllOccurrences(buffer_appended[pedalSelected], STARTOFFRAMCHAR, currentBufferLength);
+                        List<int> indices_sof1 = FindAllOccurrences(buffer_appended[bridgeBufferIndex], STARTOFFRAMCHAR_SOF_byte0, currentBufferLength);
+                        List<int> indices_sof1_and_sof2 = FindAllOccurrences(buffer_appended[bridgeBufferIndex], STARTOFFRAMCHAR, currentBufferLength);
                         // when last element is SOF1
 
                         try
@@ -260,7 +260,7 @@ namespace User.PluginSdkDemo
                                 int srcBufferOffset_1 = validPairsExtendedStruct[pairId].Item2;
 
                                 // copy bytes to subarray
-                                Buffer.BlockCopy(buffer_appended[3], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_state_extended_st));
+                                Buffer.BlockCopy(buffer_appended[bridgeBufferIndex], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_state_extended_st));
 
                                 int destBuffLength = srcBufferOffset_1 - srcBufferOffset_0;
 
@@ -394,7 +394,6 @@ namespace User.PluginSdkDemo
                             {
                                 int srcBufferOffset_0 = validPairsBasicStruct[pairId].Item1;
                                 int srcBufferOffset_1 = validPairsBasicStruct[pairId].Item2;
-
                                 int destBuffLength = srcBufferOffset_1 - srcBufferOffset_0;
 
                                 // check for pedal extended state struct
@@ -402,7 +401,7 @@ namespace User.PluginSdkDemo
                                 {
 
                                     // copy bytes to subarray
-                                    Buffer.BlockCopy(buffer_appended[3], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_state_basic_st));
+                                    Buffer.BlockCopy(buffer_appended[bridgeBufferIndex], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_state_basic_st));
 
                                     // parse byte array as config struct
                                     DAP_state_basic_st pedalState_read_st = getStateFromBytes(destinationArray);
@@ -419,8 +418,9 @@ namespace User.PluginSdkDemo
                                     }
 
                                     //Pedal version and Plugin DAP version check
+                                    int pedalSelected = pedalState_read_st.payloadHeader_.PedalTag;
                                     Pedal_version[pedalSelected] = pedalState_read_st.payloadHeader_.version;
-
+                                    
 
                                     // CRC check
                                     bool check_crc_state_b = false;
@@ -544,7 +544,7 @@ namespace User.PluginSdkDemo
                                 int srcBufferOffset_1 = validPairsConfig[pairId].Item2;
 
                                 // copy bytes to subarray
-                                Buffer.BlockCopy(buffer_appended[3], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_config_st));
+                                Buffer.BlockCopy(buffer_appended[bridgeBufferIndex], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_config_st));
 
                                 int destBuffLength = srcBufferOffset_1 - srcBufferOffset_0;
 
@@ -578,7 +578,7 @@ namespace User.PluginSdkDemo
                                     if ((check_payload_config_b) && check_crc_config_b)
                                     {
                                         UInt16 pedalSelectedFromPacket_u16 = pedalConfig_read_st.payloadHeader_.PedalTag;
-                                        if (waiting_for_pedal_config[pedalSelected])
+                                        if (waiting_for_pedal_config[pedalSelectedFromPacket_u16])
                                         {
                                             waiting_for_pedal_config[pedalSelectedFromPacket_u16] = false;
                                             dap_config_st[pedalSelectedFromPacket_u16] = pedalConfig_read_st;
@@ -609,11 +609,212 @@ namespace User.PluginSdkDemo
 
 
                             //bridge states here
+                            for (int pairId = 0; pairId < validPairsBridgeState.Count; pairId++)
+                            {
+                                int srcBufferOffset_0 = validPairsBridgeState[pairId].Item1;
+                                int srcBufferOffset_1 = validPairsBridgeState[pairId].Item2;
 
-                            // print all non identified structs to serial monitor
-                            // If non known array datatype was received, assume a text message was received and print it
-                            // only print debug messages when debug mode is active as it degrades performance
-                            if (/*Debug_check.IsChecked == true|| */_serial_monitor_window != null)
+                                int destBuffLength = srcBufferOffset_1 - srcBufferOffset_0;
+
+                                if ((destBuffLength == sizeof(DAP_bridge_state_st)))
+                                {
+                                    // copy bytes to subarray
+                                    Buffer.BlockCopy(buffer_appended[bridgeBufferIndex], srcBufferOffset_0, destinationArray, 0, sizeof(DAP_bridge_state_st));
+                                    // parse byte array as config struct
+                                    DAP_bridge_state_st bridge_state = getStateBridgeFromBytes(destinationArray);
+                                    string buffer_string = BitConverter.ToString(destinationArray);
+                                    // check whether receive struct is plausible
+                                    DAP_bridge_state_st* v_state = &bridge_state;
+                                    byte* p_state = (byte*)v_state;
+
+                                    // payload type check
+                                    bool check_payload_state_b = false;
+                                    if (bridge_state.payLoadHeader_.payloadType == Constants.bridgeStatePayloadType)
+                                    {
+                                        check_payload_state_b = true;
+                                    }
+
+                                    if (bridge_state.payLoadHeader_.version != Constants.pedalConfigPayload_version && bridge_state.payLoadHeader_.payloadType == Constants.bridgeStatePayloadType)
+                                    {
+                                        if (!Version_warning_first_show_b_bridge)
+                                        {
+                                            Version_warning_first_show_b_bridge = true;
+                                            if (bridge_state.payLoadHeader_.version > Constants.pedalConfigPayload_version)
+                                            {
+                                                String MSG_tmp;
+                                                MSG_tmp = "Bridge Dap version: " + bridge_state.payLoadHeader_.version + ", Plugin DAP version: " + Constants.pedalConfigPayload_version + ". Please update Simhub Plugin.";
+                                                System.Windows.MessageBox.Show(MSG_tmp, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                            }
+                                            else
+                                            {
+                                                String MSG_tmp;
+                                                MSG_tmp = "Bridge Dap version: " + bridge_state.payLoadHeader_.version + ", Plugin DAP version: " + Constants.pedalConfigPayload_version + ". Please update Bridge Firmware.";
+                                                System.Windows.MessageBox.Show(MSG_tmp, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                            }
+                                        }
+                                    }
+                                    // CRC check
+                                    bool check_crc_state_b = false;
+                                    if (Plugin.checksumCalc(p_state, sizeof(payloadHeader) + sizeof(payloadBridgeState)) == bridge_state.payloadFooter_.checkSum)
+                                    {
+                                        check_crc_state_b = true;
+                                    }
+
+                                    if ((check_payload_state_b) && check_crc_state_b)
+                                    {
+                                        //Bridge_RSSI = bridge_state.payloadBridgeState_.Pedal_RSSI;
+                                        Plugin._calculations.RSSI_Value = bridge_state.payloadBridgeState_.Pedal_RSSI;
+                                        for (int pedalIDX = 0; pedalIDX < 3; pedalIDX++)
+                                        {
+                                            Plugin._calculations.rssi[pedalIDX] = bridge_state.payloadBridgeState_.Pedal_RSSI_realtime[pedalIDX];
+                                        }
+                                        dap_bridge_state_st.payloadBridgeState_.Pedal_RSSI = bridge_state.payloadBridgeState_.Pedal_RSSI;
+                                        string connection_tmp = "";
+                                        bool wireless_connection_update = false;
+                                        //fill the status into _calculations
+                                        Plugin._calculations.PedalAvailability[0] = bridge_state.payloadBridgeState_.Pedal_availability_0 == 1;
+                                        Plugin._calculations.PedalAvailability[1] = bridge_state.payloadBridgeState_.Pedal_availability_1 == 1;
+                                        Plugin._calculations.PedalAvailability[2] = bridge_state.payloadBridgeState_.Pedal_availability_2 == 1;
+                                        //check wireless pedal connection, if status change make toast notification
+                                        if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_0 != bridge_state.payloadBridgeState_.Pedal_availability_0)
+                                        {
+
+                                            if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_0 == 0)
+                                            {
+                                                //ToastNotification("Wireless Clutch", "Connected");
+                                                connection_tmp += "Clutch Connected";
+                                                wireless_connection_update = true;
+                                                Pedal_wireless_connection_update_b[0] = true;
+
+                                            }
+                                            else
+                                            {
+                                                ///ToastNotification("Wireless Clutch", "Disconnected");
+                                                connection_tmp += "Clutch Disconnected";
+                                                wireless_connection_update = true;
+                                                Plugin.PedalConfigRead_b[0] = false;
+                                                Plugin._calculations.PedalAvailability[0] = false;
+                                            }
+                                            dap_bridge_state_st.payloadBridgeState_.Pedal_availability_0 = bridge_state.payloadBridgeState_.Pedal_availability_0;
+                                            //updateTheGuiFromConfig();
+                                        }
+
+
+                                        if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_1 != bridge_state.payloadBridgeState_.Pedal_availability_1)
+                                        {
+
+                                            if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_1 == 0)
+                                            {
+                                                //ToastNotification("Wireless Brake", "Connected");
+                                                connection_tmp += " Brake Connected";
+                                                wireless_connection_update = true;
+                                                Pedal_wireless_connection_update_b[1] = true;
+
+
+                                            }
+                                            else
+                                            {
+                                                //ToastNotification("Wireless Brake", "Disconnected");
+                                                connection_tmp += " Brake Disconnected";
+                                                wireless_connection_update = true;
+                                                Plugin.PedalConfigRead_b[1] = false;
+                                                Plugin._calculations.PedalAvailability[1] = false;
+                                            }
+                                            dap_bridge_state_st.payloadBridgeState_.Pedal_availability_1 = bridge_state.payloadBridgeState_.Pedal_availability_1;
+
+                                            //updateTheGuiFromConfig();
+                                        }
+
+                                        if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_2 != bridge_state.payloadBridgeState_.Pedal_availability_2)
+                                        {
+
+                                            if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_2 == 0)
+                                            {
+                                                //ToastNotification("Wireless Throttle", "Connected");
+                                                connection_tmp += " Throttle Connected";
+                                                wireless_connection_update = true;
+                                                Pedal_wireless_connection_update_b[2] = true;
+
+                                            }
+                                            else
+                                            {
+                                                //ToastNotification("Wireless Throttle", "Disconnected");
+                                                connection_tmp += " Throttle Disconnected";
+                                                wireless_connection_update = true;
+                                                Plugin.PedalConfigRead_b[2] = false;
+                                                Plugin._calculations.PedalAvailability[2] = false;
+                                            }
+                                            dap_bridge_state_st.payloadBridgeState_.Pedal_availability_2 = bridge_state.payloadBridgeState_.Pedal_availability_2;
+
+                                        }
+
+                                        //Pedal availability status update
+                                        int PedalAvailabilityCheck = dap_bridge_state_st.payloadBridgeState_.Pedal_availability_0 + dap_bridge_state_st.payloadBridgeState_.Pedal_availability_1 + dap_bridge_state_st.payloadBridgeState_.Pedal_availability_2;
+                                        if (PedalAvailabilityCheck == 3)
+                                        {
+                                            Pedal_connect_status = (byte)PedalAvailability.ThreePedalConnect;
+                                        }
+
+                                        if (PedalAvailabilityCheck == 2)
+                                        {
+                                            if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_0 == 1 && dap_bridge_state_st.payloadBridgeState_.Pedal_availability_1 == 1)
+                                            {
+                                                Pedal_connect_status = (byte)PedalAvailability.TwoPedalConnectClutchBrake;
+                                            }
+                                            if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_0 == 1 && dap_bridge_state_st.payloadBridgeState_.Pedal_availability_2 == 1)
+                                            {
+                                                Pedal_connect_status = (byte)PedalAvailability.TwoPedalConnectClutchThrottle;
+                                            }
+                                            if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_1 == 1 && dap_bridge_state_st.payloadBridgeState_.Pedal_availability_2 == 1)
+                                            {
+                                                Pedal_connect_status = (byte)PedalAvailability.TwoPedalConnectBrakeThrottle;
+                                            }
+                                        }
+
+                                        if (PedalAvailabilityCheck == 1)
+                                        {
+                                            if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_0 == 1)
+                                            {
+                                                Pedal_connect_status = (byte)PedalAvailability.SinglePedalClutch;
+                                            }
+                                            if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_1 == 1)
+                                            {
+                                                Pedal_connect_status = (byte)PedalAvailability.SinglePedalBrake;
+                                            }
+                                            if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability_2 == 1)
+                                            {
+                                                Pedal_connect_status = (byte)PedalAvailability.SinglePedalThrottle;
+                                            }
+                                        }
+
+                                        if (wireless_connection_update)
+                                        {
+                                            ToastNotification("Wireless Connection", connection_tmp);
+                                            updateTheGuiFromConfig();
+                                            wireless_connection_update = false;
+                                        }
+                                        //fill the version info
+                                        for (int i = 0; i < 3; i++)
+                                        {
+                                            dap_bridge_state_st.payloadBridgeState_.Bridge_firmware_version_u8[i] = bridge_state.payloadBridgeState_.Bridge_firmware_version_u8[i];
+                                            Plugin._calculations.BridgeFirmwareVersion[i] = bridge_state.payloadBridgeState_.Bridge_firmware_version_u8[i];
+                                        }
+
+
+
+                                        //updateTheGuiFromConfig();
+                                        continue;
+                                    }
+                                }
+                            }
+
+
+
+
+                                // print all non identified structs to serial monitor
+                                // If non known array datatype was received, assume a text message was received and print it
+                                // only print debug messages when debug mode is active as it degrades performance
+                            if (_serial_monitor_window != null)
                             {
                                 // Create a list to hold filtered elements
                                 List<byte> filteredList = new List<byte>();
@@ -630,7 +831,7 @@ namespace User.PluginSdkDemo
 
                                         if (bufferByteAssignedToStruct_class[i] == 0)  // copy only if not true
                                         {
-                                            filteredList.Add(buffer_appended[pedalSelected][i]);
+                                            filteredList.Add(buffer_appended[3][i]);
                                         }
                                     }
 
@@ -645,12 +846,37 @@ namespace User.PluginSdkDemo
                                     byte[] newArray = filteredList.ToArray();
                                     int size = newArray.Length;
                                     string resultString = Encoding.GetEncoding(28591).GetString(newArray);
-                                    if ( (_serial_monitor_window != null) && (size > 0) )
+
+                                    if (resultString.Length > 3)
                                     {
-                                        //_serial_monitor_window.TextBox_SerialMonitor.Text += resultString + "\n";
-                                        _serial_monitor_window.TextBox_SerialMonitor.Text += resultString; ;
-                                        _serial_monitor_window.TextBox_SerialMonitor.ScrollToEnd();
+                                        string str_chk = resultString.Substring(0, 3);
+                                        if (String.Equals(str_chk, "[L]"))
+                                        {
+                                            string temp = resultString.Substring(3, resultString.Length - 3);
+                                            //TextBox_serialMonitor.Text += str_chk + "\n";
+                                            TextBox_serialMonitor_bridge.Text += temp + "\n";
+                                            //TextBox_serialMonitor.Text += temp + "\n";
+                                            if (_serial_monitor_window != null)
+                                            {
+                                                _serial_monitor_window.TextBox_SerialMonitor.Text += temp + "\n";
+                                            }
+                                            TextBox_serialMonitor_bridge.ScrollToEnd();
+
+                                            SimHub.Logging.Current.Info(temp);
+                                        }
+                                        if (String.Equals(str_chk, "E ("))
+                                        {
+                                            TextBox_serialMonitor_bridge.Text += resultString + "\n";
+                                            //TextBox_serialMonitor.Text += resultString + "\n";
+                                            SimHub.Logging.Current.Info(resultString);
+                                            if (_serial_monitor_window != null)
+                                            {
+                                                _serial_monitor_window.TextBox_SerialMonitor.Text += resultString + "\n";
+                                            }
+                                            TextBox_serialMonitor_bridge.ScrollToEnd();
+                                        }
                                     }
+
                                 }
                             }
 
@@ -674,27 +900,27 @@ namespace User.PluginSdkDemo
                                 int remainingMessageLength = currentBufferLength - (lastTrueIndex + 1);
                                 if (remainingMessageLength > 0)
                                 {
-                                    appendedBufferOffset[pedalSelected] = remainingMessageLength;
+                                    appendedBufferOffset[bridgeBufferIndex] = remainingMessageLength;
 
-                                    Buffer.BlockCopy(buffer_appended[pedalSelected], lastTrueIndex + 1, buffer_appended[pedalSelected], 0, remainingMessageLength);
-                                    Array.Clear(buffer_appended[pedalSelected], appendedBufferOffset[pedalSelected], bufferSize - appendedBufferOffset[pedalSelected]); // 120 - 20 + 1 = 101 elements
+                                    Buffer.BlockCopy(buffer_appended[bridgeBufferIndex], lastTrueIndex + 1, buffer_appended[bridgeBufferIndex], 0, remainingMessageLength);
+                                    Array.Clear(buffer_appended[bridgeBufferIndex], appendedBufferOffset[bridgeBufferIndex], bufferSize - appendedBufferOffset[bridgeBufferIndex]); // 120 - 20 + 1 = 101 elements
 
 
 
-                                    if (!((buffer_appended[pedalSelected][0] == 170) && (buffer_appended[pedalSelected][1] == 85)))
+                                    if (!((buffer_appended[bridgeBufferIndex][0] == 170) && (buffer_appended[bridgeBufferIndex][1] == 85)))
                                     {
                                         int tmp = 5;
                                     }
                                 }
                                 else
                                 {
-                                    appendedBufferOffset[pedalSelected] = 0;
+                                    appendedBufferOffset[bridgeBufferIndex] = 0;
                                 }
                             }
                             else
                             {
                                 //appendedBufferOffset[pedalSelected] += receivedLength;
-                                appendedBufferOffset[pedalSelected] = 0;
+                                appendedBufferOffset[bridgeBufferIndex] = 0;
                             }
 
 

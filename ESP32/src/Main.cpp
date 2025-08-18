@@ -2877,12 +2877,52 @@ void ESPNOW_SyncTask( void * pvParameters )
 
       if(basic_state_send_b)
       {
-        ESPNow.send_message(broadcast_mac,(uint8_t *) & dap_state_basic_st,sizeof(dap_state_basic_st));
+        // update pedal states
+        DAP_state_basic_st dap_state_basic_st_lcl;       
+        // initialize with zeros in case semaphore couldn't be aquired
+        memset(&dap_state_basic_st_lcl, 0, sizeof(dap_state_basic_st_lcl));
+        if(semaphore_updatePedalStates!=NULL)
+        {  
+          if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)5)==pdTRUE) 
+          {
+            // UPDATE basic pedal state struct
+            dap_state_basic_st_lcl = dap_state_basic_st;
+
+            // release semaphore
+            xSemaphoreGive(semaphore_updatePedalStates);
+            dap_state_basic_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl.payLoadHeader_)), sizeof(dap_state_basic_st_lcl.payLoadHeader_) + sizeof(dap_state_basic_st_lcl.payloadPedalState_Basic_));
+          }
+        }
+        else
+        {
+          semaphore_updatePedalStates = xSemaphoreCreateMutex();
+        }
+        ESPNow.send_message(broadcast_mac,(uint8_t *) & dap_state_basic_st_lcl,sizeof(dap_state_basic_st_lcl));
         basic_state_send_b=false;
       }
       if(extend_state_send_b)
       {
-        ESPNow.send_message(broadcast_mac,(uint8_t *) & dap_state_extended_st, sizeof(dap_state_extended_st));
+        // update pedal states
+        DAP_state_extended_st dap_state_extended_st_lcl; 
+        // initialize with zeros in case semaphore couldn't be aquired
+        memset(&dap_state_extended_st_lcl, 0, sizeof(dap_state_extended_st_lcl));
+        if(semaphore_updatePedalStates!=NULL)
+        {  
+          if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)5)==pdTRUE) 
+          {
+            // UPDATE extended pedal state struct
+            dap_state_extended_st_lcl = dap_state_extended_st; 
+            // release semaphore
+            xSemaphoreGive(semaphore_updatePedalStates);
+            dap_state_extended_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_extended_st_lcl.payLoadHeader_)), sizeof(dap_state_extended_st_lcl.payLoadHeader_) + sizeof(dap_state_extended_st_lcl.payloadPedalState_Extended_));
+          }
+        }
+        else
+        {
+          semaphore_updatePedalStates = xSemaphoreCreateMutex();
+        }
+
+        ESPNow.send_message(broadcast_mac,(uint8_t *) & dap_state_extended_st_lcl, sizeof(dap_state_extended_st_lcl));
         extend_state_send_b=false;
       }
       if(ESPNow_config_request)

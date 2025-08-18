@@ -1058,6 +1058,11 @@ void Serial_Task( void * pvParameters)
     }
     if(basic_rssi_update)//Bridge action
     {
+      //fill header and footer
+      dap_bridge_state_st.payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
+      dap_bridge_state_st.payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
+      dap_bridge_state_st.payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
+      dap_bridge_state_st.payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
       int rssi_filter_value=constrain(rssi_filter.process(rssi_display),-100,0) ;
       dap_bridge_state_st.payloadBridgeState_.Pedal_RSSI=(uint8_t)(rssi_filter_value+101);
       dap_bridge_state_st.payLoadHeader_.PedalTag=5; //5 means bridge

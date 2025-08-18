@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // define the payload revision
-#define DAP_VERSION_CONFIG 152
+#define DAP_VERSION_CONFIG 154
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -16,8 +16,17 @@
 #define DAP_PAYLOAD_TYPE_BRIDGE_STATE 210
 #define DAP_PAYLOAD_TYPE_ESPNOW_LOG 225
 
+#define SOF_BYTE_0 0xAA
+#define SOF_BYTE_1 0x55
+#define EOF_BYTE_0 0xAA
+#define EOF_BYTE_1 0x56
+
 struct payloadHeader
 {
+
+  // start of frame indicator
+  uint8_t startOfFrame0_u8;
+  uint8_t startOfFrame1_u8;
 
   // structure identification via payload
   uint8_t payloadType;
@@ -264,6 +273,7 @@ struct payloadPedalConfig
   uint8_t kf_Joystick_u8;
   uint8_t kf_modelNoise_joystick;
   uint8_t servoIdleTimeout;
+  uint8_t positionSmoothingFactor_u8;
 };
 
 struct payloadESPNowInfo
@@ -277,6 +287,9 @@ struct payloadFooter
 {
   // To check if structure is valid
   uint16_t checkSum;
+  // end of frame bytes
+  uint8_t enfOfFrame0_u8;
+  uint8_t enfOfFrame1_u8;
 };
 
 struct DAP_actions_st
