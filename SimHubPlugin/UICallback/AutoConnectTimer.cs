@@ -89,7 +89,7 @@ namespace User.PluginSdkDemo
                                     Plugin.Sync_esp_connection_flag = true;
                                     btn_connect_espnow_port.Content = "Disconnect";
                                     ESP_host_serial_timer = new System.Windows.Forms.Timer();
-                                    ESP_host_serial_timer.Tick += new EventHandler(timerCallback_serial_esphost);
+                                    ESP_host_serial_timer.Tick += new EventHandler(timerCallback_serial_esphost_orig);
                                     ESP_host_serial_timer.Tag = 3;
                                     ESP_host_serial_timer.Interval = 8; // in miliseconds
                                     ESP_host_serial_timer.Start();
