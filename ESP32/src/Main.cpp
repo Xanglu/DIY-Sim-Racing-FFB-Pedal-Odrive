@@ -1227,7 +1227,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         // Get the loadcell reading
         if(semaphore_updateLoadcellReading != NULL)
         {
-          if(xSemaphoreTake(semaphore_updateLoadcellReading, (TickType_t)1)==pdTRUE) {
+          if(xSemaphoreTake(semaphore_updateLoadcellReading, (TickType_t)0)==pdTRUE) {
             loadcellReading = loadcellReading_global_fl32;
             xSemaphoreGive(semaphore_updateLoadcellReading);
           }
@@ -1690,7 +1690,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         // set joystick value
         if(semaphore_updateJoystick!=NULL)
         {
-          if(xSemaphoreTake(semaphore_updateJoystick, (TickType_t)1)==pdTRUE) {
+          if(xSemaphoreTake(semaphore_updateJoystick, (TickType_t)0)==pdTRUE) {
             float joystickNormalizedToInt32_orig=0.0f;
             float joystickfrac =0.0f;
             float joystickNormalizedToInt32_eval=0.0f;
@@ -1856,7 +1856,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         // update pedal states
         if(semaphore_updatePedalStates!=NULL)
         {
-          if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)1)==pdTRUE) 
+          if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)0)==pdTRUE) 
           {
             
             // move local structure values to global structures
