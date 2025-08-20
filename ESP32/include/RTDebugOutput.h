@@ -14,7 +14,7 @@ public:
     : _outNames(outNames)
   {
     _queue_data = xQueueCreate(1, sizeof(std::array<TVALUE,NVALS>));
-    xTaskCreatePinnedToCore(this->debugOutputTask, "debugOutputTask", 5000, this, 1, NULL, 1);
+    xTaskCreatePinnedToCore(this->debugOutputTask, "debugOutputTask", 5000, this, 1, NULL, CORE_ID_DEBUG_OUTPUT_TASK);
   }
 
   void offerData(std::array<TVALUE,NVALS> values) {
@@ -54,6 +54,7 @@ private:
   static void debugOutputTask(void* pvParameters) {
     RTDebugOutput* debugOutput = (RTDebugOutput*) pvParameters;
     for (;;) {
+      delay(100);
       debugOutput->printData();
       taskYIELD();
     }
