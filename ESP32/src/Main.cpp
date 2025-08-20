@@ -12,7 +12,7 @@
 
 #define DEBUG_INFO_0_CYCLE_TIMER 1
 #define DEBUG_INFO_0_STEPPER_POS 2
-#define DEBUG_INFO_0_LOADCELL_READING 4
+// #define DEBUG_INFO_0_LOADCELL_READING 4
 #define DEBUG_INFO_0_SERVO_READINGS 8
 #define DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS 16
 #define DEBUG_INFO_0_STATE_BASIC_INFO_STRUCT 32
@@ -121,10 +121,6 @@ DAP_state_basic_st dap_state_basic_st;
 DAP_state_extended_st dap_state_extended_st;
 DAP_ESPPairing_st dap_esppairing_st;//saving
 DAP_ESPPairing_st dap_esppairing_lcl;//sending
-
-#include "CycleTimer.h"
-#include "RTDebugOutput.h"
-
 
 
 
@@ -742,7 +738,7 @@ void setup()
                     7000,       /* Stack size of task */
                     //STACK_SIZE_FOR_TASK_1,
                     NULL,        /* parameter of the task */
-                    10,           /* priority of the task */
+                    2,           /* priority of the task */
                     &Task1,      /* Task handle to keep track of created task */
                     CORE_ID_PEDAL_UPDATE_TASK);          /* pin task to core 1 */
   delay(200);
@@ -753,7 +749,7 @@ void setup()
                     3000,       /* Stack size of task */
                     //STACK_SIZE_FOR_TASK_1,
                     NULL,        /* parameter of the task */
-                    9,           /* priority of the task */
+                    2,           /* priority of the task */
                     &Task1,      /* Task handle to keep track of created task */
                     CORE_ID_LOADCELLREADING_TASK);          /* pin task to core 1 */
   delay(200);
@@ -764,7 +760,7 @@ void setup()
                     5000,  
                     //STACK_SIZE_FOR_TASK_2,    
                     NULL,      
-                    8,         
+                    1,         
                     &Task2,    
                     CORE_ID_SERIAL_COMMUNICATION_TASK);     
   delay(200);
@@ -775,7 +771,7 @@ void setup()
                     5000,  
                     //STACK_SIZE_FOR_TASK_2,    
                     NULL,      
-                    7,         
+                    1,         
                     &Task7,    
                     CORE_ID_JOYSTICK_TASK);     
   delay(200);
@@ -1150,14 +1146,6 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
             moveSlowlyToPosition_b = true;
         }
         
-
-        // print the execution time averaged over multiple cycles
-        if (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
-        {
-          static CycleTimer timerPU("PU cycle time");
-          timerPU.Bump();
-        }
-
         //#define RECALIBRATE_POSITION
         #ifdef RECALIBRATE_POSITION
           stepper->checkLimitsAndResetIfNecessary();
@@ -1340,16 +1328,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         profiler_pedalUpdateTask.end(4);
 
 
-
-
-        //#define DEBUG_FILTER
-        if (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_LOADCELL_READING) 
-        {
-          static RTDebugOutput<float, 3> rtDebugFilter({ "rawReading_g", "pedalForce_fl32", "filtered_g"});
-          rtDebugFilter.offerData({ loadcellReading * 1000.0f, pedalForce_fl32*1000.0f, filteredReading * 1000.0f});
-        }
-
-        
+       
         float FilterReadingJoystick=0.0f;
         if(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.kf_Joystick_u8==1)
         {
@@ -1995,12 +1974,6 @@ void IRAM_ATTR joystickOutputTask( void * pvParameters )
         // print profiler results
         profiler_joystickOutputTask.report();
 
-        // print the execution time averaged over multiple cycles
-        if (jut_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
-        {
-          static CycleTimer timerJoystick("Joystick cycle time");
-          timerJoystick.Bump();
-        }
       }
     }
   }
@@ -2058,13 +2031,6 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
     if(timer_fireSerialCommunication != NULL)
     {
       if (xSemaphoreTake(timer_fireSerialCommunication, portMAX_DELAY) == pdTRUE) {
-
-        // average cycle time averaged over multiple cycles 
-        if (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
-        {
-          static CycleTimer timerSC("SC cycle time");
-          timerSC.Bump();
-        }
 
         // activate profiler depending on pedal config
         if (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 

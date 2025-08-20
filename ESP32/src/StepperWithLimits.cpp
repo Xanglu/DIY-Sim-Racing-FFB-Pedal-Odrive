@@ -1,5 +1,4 @@
 #include "StepperWithLimits.h"
-#include "RTDebugOutput.h"
 #include "Main.h"
 #include "Math.h"
 
@@ -157,7 +156,7 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 						  2000,  
 						  //STACK_SIZE_FOR_TASK_2,    
 						  this,//NULL,      
-						  2,         
+						  1,         
 						  &task_iSV_Communication,    
 						  CORE_ID_SERVO_COMMUNICATION_TASK);   
 

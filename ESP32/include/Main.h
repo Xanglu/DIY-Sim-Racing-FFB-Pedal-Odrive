@@ -28,7 +28,6 @@
 #define CORE_ID_ESPNOW_TASK (uint8_t)0
 #define CORE_ID_STEPPER_TASK (uint8_t)1
 #define CORE_ID_LOADCELLREADING_TASK (uint8_t)0
-#define CORE_ID_DEBUG_OUTPUT_TASK (uint8_t)0
 
 /********************************************************************/
 /*                      Other defines       */

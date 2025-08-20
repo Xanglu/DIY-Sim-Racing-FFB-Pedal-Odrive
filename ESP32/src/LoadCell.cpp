@@ -23,6 +23,24 @@ float updatedConversionFactor_f64 = 1.0f;
 uint8_t global_channel0_u8, global_channel1_u8, global_channel2_u8;
 
 
+static SemaphoreHandle_t timer_fireLoadcellReadingReady_global;
+
+// This is our Interrupt Service Routine
+void IRAM_ATTR drdyInterrupt() {
+
+  if(timer_fireLoadcellReadingReady_global != NULL)
+  {
+    // It immediately gives the semaphore to wake up myCore1Task.
+    xSemaphoreGiveFromISR(timer_fireLoadcellReadingReady_global, NULL);
+  }
+  else
+  {
+    timer_fireLoadcellReadingReady_global = xSemaphoreCreateBinary();
+  }
+
+}
+
+
 ADS1256& ADC() {
   static ADS1256 adc(ADC_CLOCK_MHZ, ADC_VREF, /*useresetpin=*/false
   , PIN_DRDY, PIN_SCK, PIN_MISO, PIN_MOSI, PIN_CS);    // RESETPIN is permanently tied to 3.3v
@@ -54,6 +72,12 @@ ADS1256& ADC() {
     }
     firstTime = false;
   }
+
+
+
+  // assign interrupt to DRDY falling edge to make waiting more efficient
+  timer_fireLoadcellReadingReady_global = xSemaphoreCreateBinary();
+  attachInterrupt(digitalPinToInterrupt(PIN_DRDY), drdyInterrupt, FALLING);
 
   return adc;
 }
@@ -90,11 +114,22 @@ LoadCell_ADS1256::LoadCell_ADS1256(uint8_t channel0, uint8_t channel1)
 
 float LoadCell_ADS1256::getReadingKg() const {
   ADS1256& adc = ADC();
-  adc.waitDRDY();        // wait for DRDY to go low before next register read
-  // adc.setGain(ADS1256_GAIN_64);
-  // adc.setChannel(global_channel0_u8, global_channel1_u8);   // Set the MUX for differential between ch0 and ch1
-  // correct bias, assume AWGN --> 3 * sigma is 99.9 %
-  return adc.readCurrentChannel()*updatedConversionFactor_f64 - ( _zeroPoint + 3.0f * _standardDeviationEstimate );
+
+  float weight_kg = 0.0f;
+  // wait for the timer to fire
+  // This will block until the timer callback gives the semaphore. It won't consume CPU time while waiting.
+  if(timer_fireLoadcellReadingReady_global != NULL)
+  {
+    if (xSemaphoreTake(timer_fireLoadcellReadingReady_global, portMAX_DELAY) == pdTRUE) {
+      // adc.waitDRDY();        // wait for DRDY to go low before next register read
+      // adc.setGain(ADS1256_GAIN_64);
+      // adc.setChannel(global_channel0_u8, global_channel1_u8);   // Set the MUX for differential between ch0 and ch1
+      // correct bias, assume AWGN --> 3 * sigma is 99.9 %
+      weight_kg = adc.readCurrentChannel()*updatedConversionFactor_f64 - ( _zeroPoint + 3.0f * _standardDeviationEstimate );
+    }
+  }
+
+  return weight_kg;
 }
 
 // float LoadCell_ADS1256::getAngleMeasurement() const {
