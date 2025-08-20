@@ -1,3 +1,5 @@
+#pragma once
+
 #include <FastAccelStepper.h>
 #include "isv57communication.h"
 #include "DiyActivePedal_types.h"
