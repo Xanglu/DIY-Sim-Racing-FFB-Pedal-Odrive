@@ -704,15 +704,13 @@ uint32_t stackSizeIdx_u32 = 0;
 
 
 int64_t timeNow_isv57SerialCommunicationTask_l = 0;
-// int64_t timePrevious_isv57SerialCommunicationTask_l = 0;
-#define REPETITION_INTERVAL_ISV57_SERIALCOMMUNICATION_TASK_IN_US (int64_t)10000
 
 #ifdef BRAKE_RESISTOR_PIN
 int64_t time_brakeResistorLastPassive = 0;
 #endif
 
 
-#define REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERVO_COMMUNICATION_TASK_IN_US (int64_t)10000
 static SemaphoreHandle_t timer_fireServoCommunication; // Semaphore to signal the pedal update task
 void IRAM_ATTR timer_servoCommunication_callback(void* arg) {
   if(timer_fireServoCommunication != NULL)
@@ -744,10 +742,7 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 
 	// 3. Start the timer to fire periodically
 	// The second argument is the period in microseconds.
-	esp_timer_start_periodic(timer_handle_servoCommunication, REPETITION_INTERVAL_ISV57_SERIALCOMMUNICATION_TASK_IN_US); 
-
-
-
+	esp_timer_start_periodic(timer_handle_servoCommunication, REPETITION_INTERVAL_SERVO_COMMUNICATION_TASK_IN_US); 
 
   	// Cast the parameter to StepperWithLimits pointer
 	StepperWithLimits* stepper_cl = static_cast<StepperWithLimits*>(pvParameters);
