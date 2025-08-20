@@ -738,7 +738,7 @@ void setup()
                     7000,       /* Stack size of task */
                     //STACK_SIZE_FOR_TASK_1,
                     NULL,        /* parameter of the task */
-                    2,           /* priority of the task */
+                    1,           /* priority of the task */
                     &Task1,      /* Task handle to keep track of created task */
                     CORE_ID_PEDAL_UPDATE_TASK);          /* pin task to core 1 */
   delay(200);
@@ -749,7 +749,7 @@ void setup()
                     3000,       /* Stack size of task */
                     //STACK_SIZE_FOR_TASK_1,
                     NULL,        /* parameter of the task */
-                    2,           /* priority of the task */
+                    1,           /* priority of the task */
                     &Task1,      /* Task handle to keep track of created task */
                     CORE_ID_LOADCELLREADING_TASK);          /* pin task to core 1 */
   delay(200);
@@ -1030,20 +1030,8 @@ void updatePedalCalcParameters()
 /*                         Main function                                                      */
 /*                                                                                            */
 /**********************************************************************************************/
-unsigned long joystick_state_last_update=millis();
 void loop() {
-
-  delay(5000);
-  
-  taskYIELD();
-  /*
-  #ifdef OTA_update
-  server.handleClient();
-  //delay(1);
-  #endif
-  */
-  
-  
+  vTaskDelete(NULL);  // Kill the Arduino loop task
 }
 
 
@@ -1748,8 +1736,6 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         profiler_pedalUpdateTask.start(7);
 
         // update extended pedal structures
-        static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
-
         dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0; // 170
         dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1; // 85
 
@@ -2387,8 +2373,8 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
           DAP_state_extended_st dap_state_extended_st_lcl;
             
           // initialize with zeros in case semaphore couldn't be aquired
-          memset(&dap_state_basic_st_lcl, 0, sizeof(dap_state_basic_st_lcl));
-          memset(&dap_state_extended_st_lcl, 0, sizeof(dap_state_extended_st_lcl));
+          // memset(&dap_state_basic_st_lcl, 0, sizeof(dap_state_basic_st_lcl));
+          // memset(&dap_state_extended_st_lcl, 0, sizeof(dap_state_extended_st_lcl));
 
 
           if(semaphore_updatePedalStates!=NULL)
@@ -2429,7 +2415,7 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
               dap_state_basic_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl.payLoadHeader_)), sizeof(dap_state_basic_st_lcl.payLoadHeader_) + sizeof(dap_state_basic_st_lcl.payloadPedalState_Basic_));
           
               Serial.write((char*)&dap_state_basic_st_lcl, sizeof(DAP_state_basic_st));
-              Serial.flush();
+              // Serial.flush();
           
               // Serial.print("\r\n");
             }
@@ -2449,7 +2435,7 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
 
               Serial.write((char*)&dap_state_extended_st_lcl, sizeof(DAP_state_extended_st));
               // Serial.print("\r\n");
-              Serial.flush();
+              // Serial.flush();
             }
           }
 
