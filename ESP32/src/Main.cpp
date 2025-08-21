@@ -391,7 +391,11 @@ void IRAM_ATTR onTimer(void* arg) {
     tasks[i].counter++;
     if (tasks[i].counter >= tasks[i].intervalTicks) {
       tasks[i].counter = 0;
-      vTaskNotifyGiveFromISR(tasks[i].handle, &xHigherPriorityWoken);
+      if(NULL != tasks[i].handle)
+      {
+        vTaskNotifyGiveFromISR(tasks[i].handle, &xHigherPriorityWoken);
+      }
+      
     }
   }
 
@@ -1009,6 +1013,7 @@ void setup()
   {
     Serial.println("Starting ESP now tasks");
     ESPNow_initialize();
+    Serial.println("ESPNOW initialized, add task in");
     // xTaskCreatePinnedToCore(
     //                     ESPNOW_SyncTask,   
     //                     "ESPNOW_update_Task", 
@@ -1020,6 +1025,7 @@ void setup()
     //                     CORE_ID_ESPNOW_TASK);  
                         
     addScheduledTask(ESPNOW_SyncTask, "ESPNOW_update_Task", REPETITION_INTERVAL_ESPNOW_TASK_IN_US, 1, CORE_ID_ESPNOW_TASK, 10000);
+    Serial.println("ESPNOW task added");
     delay(500);
   }
   else
