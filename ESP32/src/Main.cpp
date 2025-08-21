@@ -443,8 +443,99 @@ static uint16_t timerTicks_espNowTask_u16 = REPETITION_INTERVAL_ESPNOW_TASK_IN_U
 /*                         setup function                                                     */
 /*                                                                                            */
 /**********************************************************************************************/
+#include "driver/uart.h"
+
+
+// Queue to handle UART events
+static QueueHandle_t uart_queue;
+
+#define UART_RX_BUF_SIZE   1024
+
+
+/**
+ * @brief Task to handle UART events.
+ *
+ * This task waits for a UART_PATTERN_DET event, which is triggered
+ * by the hardware when the PACKET_EOF_CHAR is detected.
+ */
+static void uart_event_task(void *pvParameters) {
+  uart_event_t event;
+  uint8_t* dtmp = (uint8_t*) malloc(UART_RX_BUF_SIZE);
+
+  for (;;) {
+    delay(100);
+    // Wait for the next event from the UART driver
+    if (xQueueReceive(uart_queue, (void * )&event, (TickType_t)portMAX_DELAY)) {
+      
+      Serial.println("pattern detected");
+
+      switch (event.type) {
+        
+        // --- MODIFIED: The primary event we now listen for ---
+        // Event triggered when the hardware detects our pattern (EOF character)
+        case UART_PATTERN_DET:
+          {
+            // Get the size of the data available in the buffer
+            size_t buffered_size;
+            uart_get_buffered_data_len(UART_NUM_0, &buffered_size);
+            
+            // Read the complete packet from the UART buffer
+            int pos = uart_read_bytes(UART_NUM_0, dtmp, buffered_size, pdMS_TO_TICKS(100));
+            
+            // Ensure we have at least two bytes and they match the EOF pattern.
+            if (pos >= 2 && dtmp[pos - 2] == EOF_BYTE_0 && dtmp[pos - 1] == EOF_BYTE_1) {
+              // Null-terminate the received data to treat it as a string
+              dtmp[pos] = '\0';
+
+              // Print a header to the main Serial Monitor for clarity
+              Serial.printf("\n[UART PATTERN DETECTED - COMPLETE PACKET (%d bytes)]\n", pos);
+
+              // Write the received packet to the main Serial Monitor
+              Serial.printf("Packet Data: \"%s\"\n", (char*)dtmp);
+              
+              // --- YOUR PACKET PROCESSING LOGIC GOES HERE ---
+              // You can now safely parse the complete packet in `dtmp`
+            }
+          }
+          break;
+
+        // Event for a FIFO buffer overflow
+        case UART_FIFO_OVF:
+          Serial.println("Hardware FIFO overflow");
+          uart_flush_input(UART_NUM_0);
+          xQueueReset(uart_queue);
+          break;
+
+        // Event for a ring buffer full condition
+        case UART_BUFFER_FULL:
+          Serial.println("Ring buffer full");
+          uart_flush_input(UART_NUM_0);
+          xQueueReset(uart_queue);
+          break;
+
+        // Other unhandled events (like UART_DATA) are now ignored but
+        // can be handled here if needed for timeouts or error recovery.
+        default:
+          // Flushing the buffer on unexpected events can help prevent lock-ups
+          uart_flush_input(UART_NUM_0);
+          break;
+      }
+    }
+  }
+  // Free the temporary buffer and delete the task if the loop ever exits
+  free(dtmp);
+  dtmp = NULL;
+  vTaskDelete(NULL);
+}
+
+
+
 void setup()
 {
+
+  
+
+  
 
   DAP_config_st dap_config_st_local;
 
@@ -714,7 +805,49 @@ void setup()
                     CORE_ID_MISC_TASK);     
 
 
+                    
+  // #define SERIAL_PATTERN_DETECTOR
+  #ifdef SERIAL_PATTERN_DETECTOR
+  // This prevents the "UART driver already installed" error.
+  uart_driver_delete(UART_NUM_0);
+  
+  // --- MODIFIED: Install driver over the existing UART0 ---
+  // Note: This will reconfigure the port used by the Arduino `Serial` object.
+  esp_err_t err = uart_driver_install(UART_NUM_0, UART_RX_BUF_SIZE * 2, 0, 20, &uart_queue, 0);
+  if (err != ESP_OK) {
+    Serial.printf("Failed to install UART driver: %d\n", err);
+    return;
+  }
 
+  // Configure UART parameters
+  // SERIAL_8N1
+
+  uart_config_t uart_config = {
+      .baud_rate = BAUD3M,
+      .data_bits = UART_DATA_8_BITS,
+      .parity    = UART_PARITY_DISABLE,
+      .stop_bits = UART_STOP_BITS_1,
+      .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+      .source_clk = UART_SCLK_XTAL,
+  };
+  
+  // Apply the UART configuration
+  uart_param_config(UART_NUM_0, &uart_config);
+
+  // --- NEW: Enable UART pattern detection ---
+  uart_enable_pattern_det_baud_intr(UART_NUM_0, EOF_BYTE_1, 1, 9, 0, 0);
+
+  // Create the task that will handle UART events
+  xTaskCreate(
+      uart_event_task,    // Task function
+      "uart_event_task",  // Name of the task
+      4096,               // Stack size
+      NULL,               // Task input parameter
+      12,                 // Priority of the task
+      NULL                // Task handle
+  );
+
+  #endif
   
 
 
@@ -2588,7 +2721,7 @@ void OTATask( void * pvParameters )
 
 #ifdef ESPNOW_Enable
 
-void ESPNOW_SyncTask( void * pvParameters )
+void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
 {
   FunctionProfiler profiler_espNow;
   profiler_espNow.setName("EspNow");
@@ -2607,7 +2740,6 @@ void ESPNOW_SyncTask( void * pvParameters )
   unsigned long joystickPacketsUpdateLast=0;
   uint32_t espNowTask_stackSizeIdx_u32 = 0;
 
-  int ESPNOW_count=0;
   int error_count=0;
   int print_count=0;
   int ESPNow_no_device_count=0;
@@ -2628,7 +2760,6 @@ void ESPNOW_SyncTask( void * pvParameters )
 
         
         //basic state sendout interval
-        //if(ESPNOW_count%9==0)
         if(millis()-basic_state_update_last>3)
         {
           basic_state_send_b=true;
@@ -2646,9 +2777,6 @@ void ESPNOW_SyncTask( void * pvParameters )
           
         }
 
-
-        // activate profiler depending on pedal config
-
         // activate profiler depending on pedal config
         if (espnow_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
         {
@@ -2662,12 +2790,6 @@ void ESPNOW_SyncTask( void * pvParameters )
         // start profiler 0, overall function
         profiler_espNow.start(0);
 
-        
-        ESPNOW_count++;
-        if(ESPNOW_count>10000)
-        {
-          ESPNOW_count=0;
-        }
         
         if(ESPNow_initial_status==false  )
         {
@@ -2799,6 +2921,9 @@ void ESPNOW_SyncTask( void * pvParameters )
               }
             }
           #endif
+
+          profiler_espNow.start(1);
+
           //joystick value broadcast
           if((joystickPacketsUpdateLast-millis())>joystickPacketInterval) 
           {
@@ -2806,6 +2931,9 @@ void ESPNOW_SyncTask( void * pvParameters )
             joystickPacketsUpdateLast=millis();
           }
           
+          profiler_espNow.end(1);
+
+          profiler_espNow.start(2);
 
           if(basic_state_send_b)
           {
@@ -2832,6 +2960,11 @@ void ESPNOW_SyncTask( void * pvParameters )
             ESPNow.send_message(broadcast_mac,(uint8_t *) & dap_state_basic_st_lcl,sizeof(dap_state_basic_st_lcl));
             basic_state_send_b=false;
           }
+
+          profiler_espNow.end(2);
+
+          profiler_espNow.start(3);
+
           if(extend_state_send_b)
           {
             // update pedal states
@@ -2857,6 +2990,10 @@ void ESPNOW_SyncTask( void * pvParameters )
             ESPNow.send_message(broadcast_mac,(uint8_t *)&dap_state_extended_st_espNow, sizeof(dap_state_extended_st_espNow));
             extend_state_send_b=false;
           }
+
+          profiler_espNow.end(3);
+
+
           if(ESPNow_config_request)
           {
             DAP_config_st * dap_config_st_local_ptr;
@@ -2881,6 +3018,8 @@ void ESPNOW_SyncTask( void * pvParameters )
             }          
             #endif 
           }
+
+
           if(ESPNow_OTA_enable)
           {
             Serial.println("Get OTA command");
@@ -2888,6 +3027,8 @@ void ESPNOW_SyncTask( void * pvParameters )
             OTA_enable_start=true;
             ESPNow_OTA_enable=false;
           }
+
+
           if(OTA_update_action_b)
           {
             Serial.println("Get OTA command");
@@ -2910,6 +3051,8 @@ void ESPNOW_SyncTask( void * pvParameters )
               #endif
 
           }
+
+
           if(printPedalInfo_b)
           {
             printPedalInfo_b=false;
