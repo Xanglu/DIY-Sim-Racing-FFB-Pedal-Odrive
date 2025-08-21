@@ -448,7 +448,6 @@ void setup()
 
   DAP_config_st dap_config_st_local;
 
-
 // setup brake resistor pin
 #ifdef BRAKE_RESISTOR_PIN
   pinMode(BRAKE_RESISTOR_PIN, OUTPUT);  // Set GPIO13 as an output
@@ -676,18 +675,6 @@ void setup()
   disableCore0WDT();
 
   Serial.println("Starting other tasks");
-
-  // // Start the general purpose timer AFTER the tasks it notifies have been created.
-  // // This prevents a race condition where the timer ISR calls vTaskNotifyGiveFromISR
-  // // with a NULL task handle, causing an assertion failure.
-  // const esp_timer_create_args_t timer_args_generalTimer = {
-  //     .callback = &timer_general_callback, // Function to call
-  //     .name = "generalTimer"    // A name for debugging
-  // };
-  // esp_timer_handle_t timer_handle_generalTimer;
-  // esp_timer_create(&timer_args_generalTimer, &timer_handle_generalTimer);
-  // esp_timer_start_periodic(timer_handle_generalTimer, BASE_TICK_US); 
-
 
   // Register tasks
   addScheduledTask(pedalUpdateTask, "pedalUpdateTask", REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US, 1, CORE_ID_PEDAL_UPDATE_TASK, 7000);
@@ -1938,9 +1925,11 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
   static uint16_t timerTicks_serialCommunicationTask_u16 = REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US / BASE_TICK_US;
   static uint16_t timerTicks_serialCommunicationTask_prev_u16 = timerTicks_serialCommunicationTask_u16;
 
+  static DAP_config_st sct_dap_config_received_st;
+  static DAP_config_st sct_dap_config_st;
   for(;;){
 
-    DAP_config_st sct_dap_config_st = global_dap_config_class.getConfig();
+    sct_dap_config_st = global_dap_config_class.getConfig();
 
     // when debug flag == DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT is set --> change the serial communication task time
     if ( (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT) )
@@ -2021,11 +2010,6 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
 
         uint16_t crc;
 
-
-
-
-        //delay( SERIAL_COOMUNICATION_TASK_DELAY_IN_MS );
-
       
         { 
           // read serial input 
@@ -2041,41 +2025,41 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
               case sizeof(DAP_config_st):
 
                 DAP_config_st * dap_config_st_local_ptr;
-                dap_config_st_local_ptr = &sct_dap_config_st;
+                dap_config_st_local_ptr = &sct_dap_config_received_st;
                 Serial.readBytes((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
 
                 // check if data is plausible
-                if ( sct_dap_config_st.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_CONFIG ){ 
+                if ( sct_dap_config_received_st.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_CONFIG ){ 
                   structChecker = false;
                   Serial.print("Payload type expected: ");
                   Serial.print(DAP_PAYLOAD_TYPE_CONFIG);
                   Serial.print(",   Payload type received: ");
-                  Serial.println(sct_dap_config_st.payLoadHeader_.payloadType);
+                  Serial.println(sct_dap_config_received_st.payLoadHeader_.payloadType);
                   break; // Exit case early
                 }
 
-                if ( sct_dap_config_st.payLoadHeader_.version != DAP_VERSION_CONFIG ){ 
+                if ( sct_dap_config_received_st.payLoadHeader_.version != DAP_VERSION_CONFIG ){ 
                   structChecker = false;
                   Serial.print("Config version expected: ");
                   Serial.print(DAP_VERSION_CONFIG);
                   Serial.print(",   Config version received: ");
-                  Serial.println(sct_dap_config_st.payLoadHeader_.version);
+                  Serial.println(sct_dap_config_received_st.payLoadHeader_.version);
                   break; // Exit case early
                 }
                 // checksum validation
-                crc = checksumCalculator((uint8_t*)(&(sct_dap_config_st.payLoadHeader_)), sizeof(sct_dap_config_st.payLoadHeader_) + sizeof(sct_dap_config_st.payLoadPedalConfig_));
-                if (crc != sct_dap_config_st.payloadFooter_.checkSum){ 
+                crc = checksumCalculator((uint8_t*)(&(sct_dap_config_received_st.payLoadHeader_)), sizeof(sct_dap_config_received_st.payLoadHeader_) + sizeof(sct_dap_config_received_st.payLoadPedalConfig_));
+                if (crc != sct_dap_config_received_st.payloadFooter_.checkSum){ 
                   structChecker = false;
                   Serial.print("CRC expected: ");
                   Serial.print(crc);
                   Serial.print(",   CRC received: ");
-                  Serial.println(sct_dap_config_st.payloadFooter_.checkSum);
+                  Serial.println(sct_dap_config_received_st.payloadFooter_.checkSum);
                   
                   // No need to break here, as it's the last check before the final 'if'
                   Serial.print("Headersize: ");
-                  Serial.print(sizeof(sct_dap_config_st.payLoadHeader_));
+                  Serial.print(sizeof(sct_dap_config_received_st.payLoadHeader_));
                   Serial.print(",    Configsize: ");
-                  Serial.println(sizeof(sct_dap_config_st.payLoadPedalConfig_));
+                  Serial.println(sizeof(sct_dap_config_received_st.payLoadPedalConfig_));
                 }
 
 
@@ -2084,7 +2068,8 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
                 {
                   Serial.println("Updating pedal config");
 
-                  global_dap_config_class.setConfig(sct_dap_config_st);
+                  global_dap_config_class.setConfig(sct_dap_config_received_st);
+                  sct_dap_config_st = global_dap_config_class.getConfig();
                   configUpdateAvailable = true; 
 
                   #ifdef USING_BUZZER
@@ -2602,39 +2587,37 @@ void OTATask( void * pvParameters )
 }
 
 #ifdef ESPNOW_Enable
-int ESPNOW_count=0;
-int error_count=0;
-int print_count=0;
-int ESPNow_no_device_count=0;
-bool basic_state_send_b=false;
-bool extend_state_send_b=false;
-uint8_t error_out;
 
-
-uint Pairing_timeout=20000;
-uint rudderPacketInterval=3;
-uint joystickPacketInterval=2;
-bool Pairing_timeout_status=false;
-bool building_dap_esppairing_lcl =false;
-unsigned long Pairing_state_start;
-unsigned long Pairing_state_last_sending;
-unsigned long Debug_rudder_last=0;
-unsigned long basic_state_update_last=0;
-unsigned long extend_state_update_last=0;
-unsigned long rudderPacketsUpdateLast=0;
-unsigned long joystickPacketsUpdateLast=0;
-uint32_t espNowTask_stackSizeIdx_u32 = 0;
 void ESPNOW_SyncTask( void * pvParameters )
 {
+  FunctionProfiler profiler_espNow;
+  profiler_espNow.setName("EspNow");
+
+  uint Pairing_timeout=20000;
+  uint rudderPacketInterval=3;
+  uint joystickPacketInterval=2;
+  bool Pairing_timeout_status=false;
+  bool building_dap_esppairing_lcl =false;
+  unsigned long Pairing_state_start;
+  unsigned long Pairing_state_last_sending;
+  unsigned long Debug_rudder_last=0;
+  unsigned long basic_state_update_last=0;
+  unsigned long extend_state_update_last=0;
+  unsigned long rudderPacketsUpdateLast=0;
+  unsigned long joystickPacketsUpdateLast=0;
+  uint32_t espNowTask_stackSizeIdx_u32 = 0;
+
+  int ESPNOW_count=0;
+  int error_count=0;
+  int print_count=0;
+  int ESPNow_no_device_count=0;
+  bool basic_state_send_b=false;
+  bool extend_state_send_b=false;
+  uint8_t error_out;
+
   for(;;)
   {
-
-    // wait for the timer to fire
-    // This will block until the timer callback gives the semaphore. It won't consume CPU time while waiting.
-    // if(handle_espnowTask != NULL)
-    {
       if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0) {
-
 
         //restart from espnow
         if(ESPNow_restart)
@@ -2662,6 +2645,22 @@ void ESPNOW_SyncTask( void * pvParameters )
           extend_state_update_last=millis();
           
         }
+
+
+        // activate profiler depending on pedal config
+
+        // activate profiler depending on pedal config
+        if (espnow_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+        {
+          profiler_espNow.activate( true );
+        }
+        else
+        {
+          profiler_espNow.activate( false );
+        }
+
+        // start profiler 0, overall function
+        profiler_espNow.start(0);
 
         
         ESPNOW_count++;
@@ -2836,18 +2835,18 @@ void ESPNOW_SyncTask( void * pvParameters )
           if(extend_state_send_b)
           {
             // update pedal states
-            DAP_state_extended_st dap_state_extended_st_lcl; 
+            DAP_state_extended_st dap_state_extended_st_espNow; 
             // initialize with zeros in case semaphore couldn't be aquired
-            memset(&dap_state_extended_st_lcl, 0, sizeof(dap_state_extended_st_lcl));
+            memset(&dap_state_extended_st_espNow, 0, sizeof(dap_state_extended_st_espNow));
             if(semaphore_updatePedalStates!=NULL)
             {  
               if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)5)==pdTRUE) 
               {
                 // UPDATE extended pedal state struct
-                dap_state_extended_st_lcl = dap_state_extended_st; 
+                dap_state_extended_st_espNow = dap_state_extended_st; 
                 // release semaphore
                 xSemaphoreGive(semaphore_updatePedalStates);
-                dap_state_extended_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_extended_st_lcl.payLoadHeader_)), sizeof(dap_state_extended_st_lcl.payLoadHeader_) + sizeof(dap_state_extended_st_lcl.payloadPedalState_Extended_));
+                dap_state_extended_st_espNow.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_extended_st_espNow.payLoadHeader_)), sizeof(dap_state_extended_st_espNow.payLoadHeader_) + sizeof(dap_state_extended_st_espNow.payloadPedalState_Extended_));
               }
             }
             else
@@ -2855,7 +2854,7 @@ void ESPNOW_SyncTask( void * pvParameters )
               semaphore_updatePedalStates = xSemaphoreCreateMutex();
             }
 
-            ESPNow.send_message(broadcast_mac,(uint8_t *) & dap_state_extended_st_lcl, sizeof(dap_state_extended_st_lcl));
+            ESPNow.send_message(broadcast_mac,(uint8_t *)&dap_state_extended_st_espNow, sizeof(dap_state_extended_st_espNow));
             extend_state_send_b=false;
           }
           if(ESPNow_config_request)
@@ -3041,8 +3040,14 @@ void ESPNOW_SyncTask( void * pvParameters )
             espNowTask_stackSizeIdx_u32++;
           #endif
       }
+
+      profiler_espNow.end(0);
+
+      // print profiler results
+      profiler_espNow.report();
+
     }
-  }
+  
 
 }
 #endif
