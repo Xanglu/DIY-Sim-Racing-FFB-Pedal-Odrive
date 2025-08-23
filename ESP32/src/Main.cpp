@@ -3022,6 +3022,7 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
           if(ESPNow_OTA_enable)
           {
             Serial.println("Get OTA command");
+            
             OTA_enable_b=true;
             OTA_enable_start=true;
             ESPNow_OTA_enable=false;
@@ -3081,6 +3082,7 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
           if(Get_Rudder_action_b)
           {
             Get_Rudder_action_b=false;
+            previewConfigGet_b=false;
             #ifdef USING_BUZZER
             Buzzer.single_beep_tone(700,100);
             #endif
@@ -3088,6 +3090,7 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
           if(Get_HeliRudder_action_b)
           {
             Get_HeliRudder_action_b=false;
+            previewConfigGet_b=false;
             #ifdef USING_BUZZER
             Buzzer.single_beep_tone(700,100);
             #endif
