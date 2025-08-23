@@ -46,7 +46,7 @@
 
                 <StackPanel Height="20" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,2,0,0">
                     <styles:SHToggleButton x:Name="CheckBox_USINGESP32S3" Content="" Checked="CheckBox_USINGESP32S3_Checked" Unchecked="CheckBox_USINGESP32S3_Unchecked" IsChecked="False" FontSize="10" Width="35" Height="15" HorizontalAlignment="Left" FontFamily="Arial" ToolTip="Only Enable for GIlphilbert board 1.2. Disable this option for V3/V4/V5/GIlphilbert 2.0 board" RenderTransformOrigin="0.5,0.5" Margin="-10,0,0,0" />
-                    <Label Content="CDC Serial for ESP32S3" Height="20" Width="130" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" FontSize="10" Margin="4,0,0,0"/>
+                    <Label Content="CDC Serial for PCBA v1.2" Height="20" Width="130" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" FontSize="10" Margin="4,0,0,0"/>
                 </StackPanel>
                 <StackPanel Height="20" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,2,0,0">
                     <styles:SHToggleButton x:Name="dump_pedal_response_to_file" Content="" Checked="dump_pedal_response_to_file_Checked" Unchecked="dump_pedal_response_to_file_Unchecked" IsChecked="False" FontSize="10" Width="35" Height="15" HorizontalAlignment="Left" FontFamily="Arial" ToolTip="Dump pedal realtime status to file, it should be off when not in use" RenderTransformOrigin="0.5,0.5" Margin="-10,0,0,0" />
@@ -59,10 +59,10 @@
                        Margin="0,0,0,0"
                        Width="30" RenderTransformOrigin="0.451,1.125"
                         >
-                <Hyperlink NavigateUri="https://github.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/blob/develop/Validation/README_visualizePedalLogs.md"
-                           RequestNavigate="Hyperlink_RequestNavigate">
-                    (docs)
-                </Hyperlink>
+                        <Hyperlink NavigateUri="https://github.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/blob/develop/Validation/README_visualizePedalLogs.md"
+                                   RequestNavigate="Hyperlink_RequestNavigate">
+                            (docs)
+                        </Hyperlink>
                     </TextBlock>
                 </StackPanel>
 

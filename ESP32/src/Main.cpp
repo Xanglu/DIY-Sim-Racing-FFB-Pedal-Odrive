@@ -772,7 +772,7 @@ void setup()
                     "loadcellReadingTask",     /* name of task. */
                     3000,       /* Stack size of task */
                     NULL,        /* parameter of the task */
-                    2,           /* priority of the task */
+                    1,           /* priority of the task */
                     &handle_loadcellReadingTask,      /* Task handle to keep track of created task */
                     CORE_ID_LOADCELLREADING_TASK);          /* pin task to core 1 */  
 
@@ -1846,7 +1846,13 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[2]=versionPatch;
         //error code
         dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8=0;
-        
+        //pedal status update
+        if(dap_calculationVariables_st.Rudder_status)
+        {
+          if(dap_calculationVariables_st.rudder_brake_status) dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalStatus=PEDAL_STATUS_RUDDERBRAKE;
+          else dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalStatus=PEDAL_STATUS_RUDDER;
+        }
+        else dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalStatus=PEDAL_STATUS_NORMAL;
         //servo status update
         dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.servoStatus=stepper->servoStatus;
         
@@ -2710,10 +2716,10 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
   profiler_espNow.setName("EspNow");
 
   uint Pairing_timeout=20000;
-  uint rudderPacketInterval=4;
-  uint joystickPacketInterval=4;
-  uint basicStateUpdateInterval=4;
-  uint extendStateUpdateInterval=9;
+  uint rudderPacketInterval=3;
+  uint joystickPacketInterval=3;
+  uint basicStateUpdateInterval=3;
+  uint extendStateUpdateInterval=10;
   bool Pairing_timeout_status=false;
   bool building_dap_esppairing_lcl =false;
   unsigned long Pairing_state_start;
@@ -2910,11 +2916,13 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
           profiler_espNow.start(1);
 
           //joystick value broadcast
+          /*
           if((joystickPacketsUpdateLast-millis())>joystickPacketInterval) 
           {
             ESPNow_Joystick_Broadcast(joystickNormalizedToInt32);
             joystickPacketsUpdateLast=millis();
           }
+          */
           
           profiler_espNow.end(1);
 

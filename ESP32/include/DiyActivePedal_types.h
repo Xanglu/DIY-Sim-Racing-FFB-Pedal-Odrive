@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "CubicInterpolatorFloat.h"
 // define the payload revision
-#define DAP_VERSION_CONFIG 154
+#define DAP_VERSION_CONFIG 155
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -24,6 +24,19 @@
 #define EOF_BYTE_0 0xAA
 #define EOF_BYTE_1 0x56
 
+
+enum pedalStatus
+{
+  PEDAL_STATUS_NORMAL,
+  PEDAL_STATUS_RUDDER,
+  PEDAL_STATUS_RUDDERBRAKE
+};
+enum pedalID
+{
+  PEDAL_ID_CLUTCH,
+  PEDAL_ID_BRAKE,
+  PEDAL_ID_THROTTLE
+};
 
 
 struct payloadHeader {
@@ -69,6 +82,8 @@ struct payloadPedalState_Basic {
   uint8_t erroe_code_u8;
   uint8_t pedalFirmwareVersion_u8[3];
   uint8_t servoStatus;
+  uint8_t pedalStatus;
+  uint8_t pedalContrlBoardType;
 };
 
 struct payloadPedalState_Extended {

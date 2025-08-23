@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // define the payload revision
-#define DAP_VERSION_CONFIG 154
+#define DAP_VERSION_CONFIG 155
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -66,6 +66,8 @@ struct payloadPedalState_Basic
   uint8_t error_code_u8;
   uint8_t pedalFirmwareVersion_u8[3];
   uint8_t servoStatus;
+  uint8_t pedalStatus;
+  uint8_t pedalContrlBoardType;
 };
 
 struct payloadPedalState_Extended
@@ -96,7 +98,18 @@ struct payloadBridgeState
   uint8_t Bridge_firmware_version_u8[3];
   int32_t Pedal_RSSI_Realtime[3];
 };
-
+enum pedalStatus
+{
+  PEDAL_STATUS_NORMAL,
+  PEDAL_STATUS_RUDDER,
+  PEDAL_STATUS_RUDDERBRAKE
+};
+enum pedalID
+{
+  PEDAL_ID_CLUTCH,
+  PEDAL_ID_BRAKE,
+  PEDAL_ID_THROTTLE
+};
 enum bridgeAction
 {
   BRIDGE_ACTION_NONE,

@@ -542,10 +542,7 @@ namespace User.PluginSdkDemo
             DAP_config_st* v = &tmp;
 
             byte* p = (byte*)v;
-            
             tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalConfig));
-            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
-            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
 
 
             int length = sizeof(DAP_config_st);

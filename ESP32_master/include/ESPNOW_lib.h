@@ -162,63 +162,46 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
       }
 
     }
-    if(data_len==sizeof(Joystick_Data))
-    {
-
-      
-      memcpy(&Joystick_Data, data, sizeof(DAP_Joystick_Message));
-      if(Joystick_Data.payloadtype==DAP_PAYLOAD_TYPE_ESPNOW_JOYSTICK)
-      {
-        //#ifdef ACTIVATE_JOYSTICK_OUTPUT
-        // normalize controller output
-        int32_t joystickNormalizedToInt32 = NormalizeControllerOutputValue(Joystick_Data.controllerValue_i32, 0, 10000, 100); 
-        //if(esp_now_info->src_addr[5]==Clu_mac[5])
-        if(mac_addr[5]==Clu_mac[5])
-        {
-          pedal_cluth_value=joystickNormalizedToInt32;
-          Joystick_value[0]=Joystick_Data.controllerValue_i32;
-          Joystick_value_original[0]=joystickNormalizedToInt32;
-          //joystick_update=true;
-        }
-        if(mac_addr[5]==Brk_mac[5])
-        {
-          pedal_brake_value=joystickNormalizedToInt32;
-          Joystick_value[1]=Joystick_Data.controllerValue_i32;
-          Joystick_value_original[1]=joystickNormalizedToInt32;
-          
-          //joystick_update=true;
-        }
-        if(mac_addr[5]==Gas_mac[5])
-        {
-          pedal_throttle_value=joystickNormalizedToInt32;
-          Joystick_value[2]=Joystick_Data.controllerValue_i32;
-          Joystick_value_original[2]=joystickNormalizedToInt32;
-          pedal_status=Joystick_Data.pedal_status;//control pedal status only by Throttle
-          //joystick_update=true;
-        }
-      }
-
-      #ifdef ESPNow_debug
-      Serial.print("Bytes received: ");
-      Serial.println(len);
-      Serial.print("CycleCnt: ");
-      Serial.println(myData.cycleCnt_u64);
-      Serial.print("TimeSinceBoot in ms (shared): ");
-      Serial.println(myData.timeSinceBoot_i64);
-      Serial.print("controllerValue_i32: ");
-      Serial.println(myData.controllerValue_i32);	
-      Serial.println();
-      #endif
-    }
-    
     if(data_len==sizeof(dap_state_basic_st))
     {
       memcpy(&dap_state_basic_st, data, sizeof(dap_state_basic_st));
       //Joystick_value[dap_state_basic_st.payLoadHeader_.PedalTag]=dap_state_basic_st.payloadPedalState_Basic_.joystickOutput_u16;
-      update_basic_state=true;
-      if(dap_state_basic_st.payloadPedalState_Basic_.error_code_u8!=0)
+      
+      bool structChecker=true;
+      if(dap_state_basic_st.payLoadHeader_.version!=DAP_VERSION_CONFIG) structChecker=false;
+      if(dap_state_basic_st.payLoadHeader_.payloadType!=DAP_PAYLOAD_TYPE_STATE_BASIC) structChecker=false;
+      uint16_t crcChecker = checksumCalculator((uint8_t*)(&(dap_state_basic_st.payLoadHeader_)), sizeof(dap_state_basic_st.payLoadHeader_) + sizeof(dap_state_basic_st.payloadPedalState_Basic_));
+      if(crcChecker!=dap_state_basic_st.payloadFooter_.checkSum) structChecker=false;
+      if(dap_state_basic_st.payloadPedalState_Basic_.error_code_u8!=0 && structChecker) ESPNow_error_b=true;
+      
+      //fill the joystick value
+      if(structChecker)
       {
-        ESPNow_error_b=true;
+        update_basic_state=true;
+        float joystickData_u32= dap_state_basic_st.payloadPedalState_Basic_.joystickOutput_u16/32767.0f*10000.0f;
+        int32_t joystickNormalizedToInt32 = NormalizeControllerOutputValue(dap_state_basic_st.payloadPedalState_Basic_.joystickOutput_u16, 0, 32767, 100); 
+        switch (dap_state_basic_st.payLoadHeader_.PedalTag)
+        {
+          case PEDAL_ID_CLUTCH:
+            pedal_cluth_value=joystickNormalizedToInt32;
+            Joystick_value[0]=joystickData_u32;
+            Joystick_value_original[0]=joystickNormalizedToInt32;
+          break;
+          case PEDAL_ID_BRAKE:
+            pedal_brake_value=joystickNormalizedToInt32;
+            Joystick_value[1]=joystickData_u32;
+            Joystick_value_original[1]=joystickNormalizedToInt32;
+          break;
+          case PEDAL_ID_THROTTLE:
+            pedal_throttle_value=joystickNormalizedToInt32;
+            Joystick_value[2]=joystickData_u32;
+            Joystick_value_original[2]=joystickNormalizedToInt32;
+            pedal_status=dap_state_basic_st.payloadPedalState_Basic_.pedalStatus;//control pedal status only by Throttle
+          break;
+          default:
+          break;
+        }
+
       }
     }
 
