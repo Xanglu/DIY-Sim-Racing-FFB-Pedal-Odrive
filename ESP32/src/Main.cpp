@@ -286,6 +286,7 @@ char* APhost;
 
 #ifdef USING_BUZZER
   #include "Buzzer.h"
+  bool buzzerBeepAction_b = false;
 #endif
 #include <cstring>
 
@@ -355,8 +356,8 @@ void IRAM_ATTR loadcellReadingTask( void * pvParameters )
 #define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST_IN_US (int64_t)200
 
 
-#define REPETITION_INTERVAL_ESPNOW_TASK_IN_US (int64_t)2000
-#define REPETITION_INTERVAL_OTA_TASK_IN_US (int64_t)3000
+#define REPETITION_INTERVAL_ESPNOW_TASK_IN_US (int64_t)5000
+#define REPETITION_INTERVAL_OTA_TASK_IN_US (int64_t)10000
 
 
 
@@ -2733,8 +2734,10 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
   profiler_espNow.setName("EspNow");
 
   uint Pairing_timeout=20000;
-  uint rudderPacketInterval=3;
-  uint joystickPacketInterval=2;
+  uint rudderPacketInterval=4;
+  uint joystickPacketInterval=4;
+  uint basicStateUpdateInterval=4;
+  uint extendStateUpdateInterval=9;
   bool Pairing_timeout_status=false;
   bool building_dap_esppairing_lcl =false;
   unsigned long Pairing_state_start;
@@ -2766,7 +2769,7 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
 
         
         //basic state sendout interval
-        if(millis()-basic_state_update_last>3)
+        if(millis()-basic_state_update_last>basicStateUpdateInterval)
         {
           basic_state_send_b=true;
           basic_state_update_last=millis();
@@ -2776,7 +2779,7 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
         DAP_config_st espnow_dap_config_st = global_dap_config_class.getConfig();
 
         //entend state send out interval
-        if((millis()-extend_state_update_last>10) && espnow_dap_config_st.payLoadPedalConfig_.debug_flags_0 == DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT)
+        if((millis()-extend_state_update_last>extendStateUpdateInterval) && espnow_dap_config_st.payLoadPedalConfig_.debug_flags_0 == DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT)
         {
           extend_state_send_b=true;
           extend_state_update_last=millis();
@@ -3014,16 +3017,6 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
             ESPNow.send_message(broadcast_mac,(uint8_t *) & espnow_dap_config_st, sizeof(espnow_dap_config_st));
             ESPNow_config_request=false;
           }
-          if(Config_update_b)
-          {
-            Config_update_b=false;
-            #ifdef USING_BUZZER
-            if (espnow_dap_config_st.payLoadHeader_.storeToEeprom == 1)
-            {
-              Buzzer.single_beep_tone(700, 100);
-            }          
-            #endif 
-          }
 
 
           if(ESPNow_OTA_enable)
@@ -3038,6 +3031,9 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
           if(OTA_update_action_b)
           {
             Serial.println("Get OTA command");
+            #ifdef USING_BUZZER
+              buzzerBeepAction_b=true;
+            #endif
             OTA_enable_b=true;
             OTA_enable_start=true;
             ESPNow_OTA_enable=false;
@@ -3054,7 +3050,7 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
                 PASS[_dap_OtaWifiInfo_st.PASS_Length]=0;
                 OTA_enable_b=true;
               }
-              #endif
+            #endif
 
           }
 
@@ -3062,6 +3058,9 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
           if(printPedalInfo_b)
           {
             printPedalInfo_b=false;
+            #ifdef USING_BUZZER
+              buzzerBeepAction_b=true;
+            #endif
             /*
             char logString[200];
             snprintf(logString, sizeof(logString),
@@ -3227,9 +3226,21 @@ void miscTask( void * pvParameters )
         delay(50);
         Buzzer.single_beep_tone(700,50);
       #endif 
-
-
     }
-    delay(100);
+    #ifdef USING_BUZZER
+      //make buzzer sound actions here
+      if(Config_update_Buzzer_b)
+      {
+        Buzzer.single_beep_tone(700,50);
+        Config_update_Buzzer_b=false;
+      }
+      if(buzzerBeepAction_b)
+      {
+        Buzzer.single_beep_tone(700,50);
+        buzzerBeepAction_b=false;
+      }
+    #endif
+
+    delay(50);
   }
 }

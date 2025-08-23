@@ -45,6 +45,7 @@ bool ESPNOW_BootIntoDownloadMode = false;
 bool Get_Rudder_action_b=false;
 bool Get_HeliRudder_action_b=false;
 bool printPedalInfo_b=false;
+bool Config_update_Buzzer_b = false;
 unsigned long Rudder_initialized_time=0;
 
 DAP_Rudder_st dap_rudder_receiving;
@@ -264,8 +265,12 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
           {
             // Serial.println("Updating pedal config");
             global_dap_config_class.setConfig(dap_config_espnow_recv_st);
+            if(dap_config_espnow_recv_st.payLoadHeader_.storeToEeprom==1)
+            {
+              Config_update_Buzzer_b = true;
+            }
             configUpdateAvailable = true;
-            Config_update_b = true;
+            
 
           }
         }
