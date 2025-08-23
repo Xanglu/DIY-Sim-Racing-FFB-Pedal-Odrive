@@ -30,31 +30,22 @@ void IRAM_ATTR drdyInterrupt() {
     // It immediately gives the semaphore to wake up myCore1Task.
     xSemaphoreGiveFromISR(timer_fireLoadcellReadingReady_global, NULL);
   }
-  else
-  {
-    timer_fireLoadcellReadingReady_global = xSemaphoreCreateBinary();
-  }
-
 }
 
-
-ADS1220_WE& ADC() {
+/* Provides a singleton instance of the ADS1220 ADC driver. */
+ADS1220_WE& getADC() {
   
-  // Init custom SPI
   static SPIClass adsSPI(FSPI);  // Or use VSPI or HSPI for ESP32
-  adsSPI.begin(FFB_ADS1220_SCLK, FFB_ADS1220_DOUT, FFB_ADS1220_DIN, FFB_ADS1220_CS);
-
-
   static ADS1220_WE adc(&adsSPI, FFB_ADS1220_CS, FFB_ADS1220_DRDY, true);
   
   //static ADS1220_WE adc(FFB_ADS1220_CS, FFB_ADS1220_DRDY);
 
   static bool firstTime = true;
   if (firstTime) {
-    Serial.println("Starting ADC");  
+    Serial.println("Initializing ADS1220 ADC...");
 
-    // Use custom SPI pins on ESP32-S3
-    SPI.begin(FFB_ADS1220_SCLK, FFB_ADS1220_DOUT, FFB_ADS1220_DIN, FFB_ADS1220_CS);
+    // Initialize custom SPI bus. This should be done only once.
+    adsSPI.begin(FFB_ADS1220_SCLK, FFB_ADS1220_DOUT, FFB_ADS1220_DIN, FFB_ADS1220_CS);
 
     // Initialize ADS1220
     if (!adc.init()) {
@@ -94,7 +85,8 @@ ADS1220_WE& ADC() {
     //adc.setDrdyMode(ADS1220_DOUT_DRDY);
     adc.setDrdyMode(ADS1220_DRDY);
 
-    // adc.setNonBlockingMode(true); // switch ton non-blocking mode
+    // needs to wait fir DRDY come from low to high --> do not use
+    //adc.setNonBlockingMode(true); // switch ton non-blocking mode
     
     // assign interrupt to DRDY falling edge to make waiting more efficient
     attachInterrupt(digitalPinToInterrupt(FFB_ADS1220_DRDY), drdyInterrupt, FALLING);
@@ -117,15 +109,14 @@ LoadCell_ADS1220::LoadCell_ADS1220()
   : _zeroPoint(0.0f), _varianceEstimate(DEFAULT_VARIANCE_ESTIMATE)
 {
   // differential channels
-  ADC().setCompareChannels(ADS1220_MUX_0_1);              // Differential AIN0 - AIN1
+  getADC().setCompareChannels(ADS1220_MUX_0_1);              // Differential AIN0 - AIN1
   timer_fireLoadcellReadingReady_global = xSemaphoreCreateBinary();
 }
 
 
 
 void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
-  ADS1220_WE& adc = ADC();
-  float originalConversionFactor_f64 = CONVERSION_FACTOR;
+  getADC(); // Ensure ADC is initialized
   
   updatedConversionFactor_f64 = 1.0f;
   if (LOADCELL_WEIGHT_RATING_KG>0)
@@ -142,7 +133,7 @@ void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
 
 // #define LOADCELL_RADING_INTERVALL_IN_US (uint32_t)500
 float LoadCell_ADS1220::getReadingKg() const {
-  ADS1220_WE& adc = ADC();
+  ADS1220_WE& adc = getADC();
   unsigned int timeout_us = 0; //TIMEOUT_FOR_DRDY_TO_BECOME_LOW;
   boolean timeoutReached_b = false;
   float voltage_mV = 0.0f;
@@ -157,6 +148,10 @@ float LoadCell_ADS1220::getReadingKg() const {
       voltage_mV = adc.getVoltage_mV();
     }
   }
+  else
+  {
+    timer_fireLoadcellReadingReady_global = xSemaphoreCreateBinary();
+  }
 
   float weight_grams = voltage_mV * updatedConversionFactor_f64;
   float weight_kg = weight_grams * 0.001f; // convert grams to kg
@@ -168,7 +163,7 @@ float LoadCell_ADS1220::getReadingKg() const {
 
 
 void LoadCell_ADS1220::estimateBiasAndVariance() {
-  ADS1220_WE& adc = ADC();
+  getADC(); // Ensure ADC is initialized
   
   Serial.println("Identify loadcell bias and variance");
   float varEstimate;
@@ -207,6 +202,3 @@ void LoadCell_ADS1220::estimateBiasAndVariance() {
 }
 
 #endif
-
-
-

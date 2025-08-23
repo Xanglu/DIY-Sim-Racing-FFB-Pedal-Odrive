@@ -129,7 +129,11 @@ float LoadCell_ADS1256::getReadingKg() const {
   if (drdySemaphore != NULL) {
       // Wait for the ISR to give the semaphore.
       // This blocks indefinitely until the DRDY interrupt occurs.
-      if (xSemaphoreTake(drdySemaphore, portMAX_DELAY) == pdTRUE) {        
+      if (xSemaphoreTake(drdySemaphore, portMAX_DELAY) == pdTRUE) {  
+
+          // additional DRDY check for better smoothness
+          adc.waitDRDY();
+
           // Read the value and apply corrections
           // NOTE: The ADC channel is set in the constructor and doesn't need to be set again here
           // unless you are switching between multiple channels in your application.
