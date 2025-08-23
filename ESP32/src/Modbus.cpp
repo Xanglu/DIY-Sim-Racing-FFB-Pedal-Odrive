@@ -111,8 +111,6 @@ bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t param
   bool registerWritten_b = false;
   bool registerValueAsTarget_b = false;
 
-  
-
   // check and set the register at maximum N times
   for (uint8_t tryIdx_u8 = 0; tryIdx_u8 < 10; tryIdx_u8++)
   {
@@ -162,7 +160,6 @@ bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t param
     {
       registerValueAsTarget_b = true;
     }
-
   }
 
   return registerWritten_b;
@@ -262,6 +259,8 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
 
     bool allDataReceived_b = false;
     while( (false == allDataReceived_b) && ((millis() - t) < timeout_)){
+        // delay for certain time to allow a context switch
+        delay(1);
        if(this->s->available())
        {
         rx = this->s->read();
@@ -548,6 +547,7 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
   
   bool returnSignalIsCopyOfTransmittedSignal_b = false;
   while((millis() - t) < timeout_){
+      delay(1);
       if(this->s->available())
       {
         rx = this->s->read();
@@ -562,6 +562,7 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
         }
 
       }
+      
   }
 
   // Serial.print("Returnsignal: ");

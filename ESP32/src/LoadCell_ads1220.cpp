@@ -86,7 +86,7 @@ ADS1220_WE& getADC() {
     adc.setDrdyMode(ADS1220_DRDY);
 
     // needs to wait fir DRDY come from low to high --> do not use
-    //adc.setNonBlockingMode(true); // switch ton non-blocking mode
+    adc.setNonBlockingMode(true); // switch ton non-blocking mode
     
     // assign interrupt to DRDY falling edge to make waiting more efficient
     attachInterrupt(digitalPinToInterrupt(FFB_ADS1220_DRDY), drdyInterrupt, FALLING);
@@ -136,7 +136,7 @@ float LoadCell_ADS1220::getReadingKg() const {
   ADS1220_WE& adc = getADC();
   unsigned int timeout_us = 0; //TIMEOUT_FOR_DRDY_TO_BECOME_LOW;
   boolean timeoutReached_b = false;
-  float voltage_mV = 0.0f;
+  static float voltage_mV;
 
   // wait for the timer to fire
   // This will block until the timer callback gives the semaphore. It won't consume CPU time while waiting.
@@ -144,8 +144,13 @@ float LoadCell_ADS1220::getReadingKg() const {
   {
     if (xSemaphoreTake(timer_fireLoadcellReadingReady_global, portMAX_DELAY) == pdTRUE) {
       
-      // Read the voltage from the ADS1220
-      voltage_mV = adc.getVoltage_mV();
+      // final check if DRDY is low. If nor, just discard the measurement.
+      if (digitalRead(FFB_ADS1220_DRDY) == LOW)
+      {
+        // Read the voltage from the ADS1220
+        voltage_mV = adc.getVoltage_mV();
+      }
+      
     }
   }
   else

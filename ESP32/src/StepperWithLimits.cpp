@@ -709,7 +709,7 @@ int64_t time_brakeResistorLastPassive = 0;
 #endif
 
 
-#define REPETITION_INTERVAL_SERVO_COMMUNICATION_TASK_IN_US (int64_t)10000
+
 static SemaphoreHandle_t timer_fireServoCommunication; // Semaphore to signal the pedal update task
 void IRAM_ATTR timer_servoCommunication_callback(void* arg) {
   if(timer_fireServoCommunication != NULL)

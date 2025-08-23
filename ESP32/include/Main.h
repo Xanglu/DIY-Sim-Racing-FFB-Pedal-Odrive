@@ -21,13 +21,23 @@
 /********************************************************************/
 #define CORE_ID_PEDAL_UPDATE_TASK (uint8_t)1
 #define CORE_ID_SERIAL_COMMUNICATION_TASK (uint8_t)0
-#define CORE_ID_JOYSTICK_TASK (uint8_t)0
+#define CORE_ID_JOYSTICK_TASK (uint8_t)1
 #define CORE_ID_MISC_TASK (uint8_t)0
 #define CORE_ID_OTA_TASK (uint8_t)0
 #define CORE_ID_SERVO_COMMUNICATION_TASK (uint8_t)0
 #define CORE_ID_ESPNOW_TASK (uint8_t)0
 #define CORE_ID_STEPPER_TASK (uint8_t)1
 #define CORE_ID_LOADCELLREADING_TASK (uint8_t)0
+
+
+
+#define REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US (int64_t)300
+#define REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST_IN_US (int64_t)200
+#define REPETITION_INTERVAL_ESPNOW_TASK_IN_US (int64_t)5000
+#define REPETITION_INTERVAL_OTA_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERVO_COMMUNICATION_TASK_IN_US (int64_t)20000
 
 /********************************************************************/
 /*                      Other defines       */

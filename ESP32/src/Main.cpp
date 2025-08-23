@@ -333,33 +333,6 @@ void IRAM_ATTR loadcellReadingTask( void * pvParameters )
 }
 
 
-/**********************************************************************************************/
-/*                                                                                            */
-/*                         pedal update                                                       */
-/*                                                                                            */
-/**********************************************************************************************/
-#define REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US (int64_t)300
-
-/**********************************************************************************************/
-/*                                                                                            */
-/*                         joystick update                                                    */
-/*                                                                                            */
-/**********************************************************************************************/
-#define REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US (int64_t)10000
-
-/**********************************************************************************************/
-/*                                                                                            */
-/*                         serial communication                                               */
-/*                                                                                            */
-/**********************************************************************************************/
-#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US (int64_t)10000
-#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST_IN_US (int64_t)200
-
-
-#define REPETITION_INTERVAL_ESPNOW_TASK_IN_US (int64_t)5000
-#define REPETITION_INTERVAL_OTA_TASK_IN_US (int64_t)10000
-
-
 
 // === Scheduler config ===
 #define BASE_TICK_US 100   // base tick in microseconds
@@ -796,7 +769,7 @@ void setup()
                     "loadcellReadingTask",     /* name of task. */
                     3000,       /* Stack size of task */
                     NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
+                    2,           /* priority of the task */
                     &handle_loadcellReadingTask,      /* Task handle to keep track of created task */
                     CORE_ID_LOADCELLREADING_TASK);          /* pin task to core 1 */  
 
