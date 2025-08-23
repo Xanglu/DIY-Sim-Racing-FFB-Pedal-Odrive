@@ -329,6 +329,9 @@ void IRAM_ATTR loadcellReadingTask( void * pvParameters )
         semaphore_updateLoadcellReading = xSemaphoreCreateMutex();
       }
     }
+
+    // force a context switch
+		taskYIELD();
   }
 }
 

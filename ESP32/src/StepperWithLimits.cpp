@@ -755,7 +755,7 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 			if (xSemaphoreTake(timer_fireServoCommunication, portMAX_DELAY) == pdTRUE) {
 
 	  
-
+				
 				// measure callback time and continue, when desired period is reached
 				timeNow_isv57SerialCommunicationTask_l = millis();
 				// int64_t timeDiff_serialCommunicationTask_l = ( timePrevious_isv57SerialCommunicationTask_l + REPETITION_INTERVAL_ISV57_SERIALCOMMUNICATION_TASK) - timeNow_isv57SerialCommunicationTask_l;
@@ -1171,6 +1171,9 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 				}
 			}
 		}
+
+		// force a context switch
+		taskYIELD();
 	}
 }
 
