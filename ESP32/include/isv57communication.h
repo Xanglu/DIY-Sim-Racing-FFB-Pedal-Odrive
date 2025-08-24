@@ -102,6 +102,7 @@ class isv57communication {
     uint8_t  raw[200];
     uint8_t len;
     int16_t zeroPos;
+    bool printProfilingFlag_b;
     //Modbus modbus;
   
 };

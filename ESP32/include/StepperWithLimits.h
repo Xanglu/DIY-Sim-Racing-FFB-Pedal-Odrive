@@ -59,6 +59,7 @@ public:
 
 	void checkLimitsAndResetIfNecessary();
 	void updatePedalMinMaxPos(uint8_t pedalStartPosPct, uint8_t pedalEndPosPct);
+	void pauseTask();
 	bool isAtMinPos();
 	void correctPos();
 	void findMinMaxSensorless(DAP_config_st dap_config_st);
@@ -97,6 +98,7 @@ public:
 	void configSetPositionCommandSmoothingFactor(uint8_t posCommandSmoothingFactorArg_u8);
 	void printAllServoParameters();
 	void clearAllServoAlarms();
+	void configSetProfilingFlag(bool proFlag_b);
 
 
 	void setServosInternalPositionCorrected(int32_t posCorrected_i32);

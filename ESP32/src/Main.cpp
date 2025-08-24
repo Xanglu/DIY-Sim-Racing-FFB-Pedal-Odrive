@@ -116,7 +116,7 @@ MovingAverageFilter averagefilter_joystick(40);
 #include "DiyActivePedal_types.h"
 
 DAP_config_class global_dap_config_class;
-DAP_calculationVariables_st dap_calculationVariables_st;
+DRAM_ATTR DAP_calculationVariables_st dap_calculationVariables_st;
 DAP_state_basic_st dap_state_basic_st;
 DAP_state_extended_st dap_state_extended_st;
 DAP_ESPPairing_st dap_esppairing_st;//saving
@@ -310,10 +310,35 @@ char* APhost;
 float loadcellReading_global_fl32 = 0.0f;
 void IRAM_ATTR loadcellReadingTask( void * pvParameters )
 {
+
+  FunctionProfiler profiler_loadcellReading;
+  profiler_loadcellReading.setName("loadcellReading");
+  profiler_loadcellReading.setNumberOfCalls(3000);
+
+
   for(;;){
 
     if (loadcell != NULL)
     {
+
+
+      // copy global struct to local for faster and safe executiion
+      DAP_config_st jut_dap_config_st = global_dap_config_class.getConfig();
+
+      // activate profiler depending on pedal config
+      if (jut_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+      {
+        profiler_loadcellReading.activate( true );
+      }
+      else
+      {
+        profiler_loadcellReading.activate( false );
+      }
+
+      
+      // start profiler 0, overall function
+      profiler_loadcellReading.start(0);
+
       // no need for delay, since getReadingKg will block until DRDY edge down is detected
       float loadcellReading = loadcell->getReadingKg();
       
@@ -328,6 +353,13 @@ void IRAM_ATTR loadcellReadingTask( void * pvParameters )
       {
         semaphore_updateLoadcellReading = xSemaphoreCreateMutex();
       }
+
+
+      profiler_loadcellReading.end(0);
+
+      // print profiler results
+      // profiler_loadcellReading.report();
+
     }
 
     // force a context switch
@@ -1057,6 +1089,9 @@ void setup()
     }    
     //Buzzer.single_beep_tone(440,1500);
   #endif
+
+    // stepper->pauseTask();
+
 }
 
 
@@ -1115,6 +1150,19 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
   uint32_t pos_printCount = 0;
   uint32_t controlTask_stackSizeIdx_u32 = 0;
   float previousLoadcellReadingInKg_fl32 = 0.0f;
+
+
+  float effect_force;
+  int32_t Position_effect;
+  int32_t BP_trigger_value;
+  int32_t BP_trigger_min;
+  int32_t BP_trigger_max;
+  int32_t Position_check;
+  int32_t Rudder_real_poisiton;
+  float joystickNormalizedToInt32_orig;
+  float joystickfrac;
+  float joystickNormalizedToInt32_eval;
+  int32_t ABS_trigger_value;
  
   for(;;){
 
@@ -1499,25 +1547,25 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
       
         // //Adding effects
         //Add effect by force
-        float effect_force = _BitePointOscillation.BitePoint_Force_offset + _WSOscillation.WS_Force_offset + CV1.CV_Force_offset + CV2.CV_Force_offset;
+        effect_force = _BitePointOscillation.BitePoint_Force_offset + _WSOscillation.WS_Force_offset + CV1.CV_Force_offset + CV2.CV_Force_offset;
 
         if(filteredReading>=dap_calculationVariables_st.Force_Min)
         {
           Position_Next -= absPosOffset;
           effect_force += absForceOffset;
         }
-        int32_t Position_effect= effect_force/dap_calculationVariables_st.Force_Range*dap_calculationVariables_st.stepperPosRange;
+        Position_effect= effect_force/dap_calculationVariables_st.Force_Range*dap_calculationVariables_st.stepperPosRange;
         Position_Next -=_RPMOscillation.RPM_position_offset;
 
         Position_Next -= Position_effect;
         Position_Next = (int32_t)constrain(Position_Next, dap_calculationVariables_st.stepperPosMinEndstop, dap_calculationVariables_st.stepperPosMaxEndstop);
         
         //bitepoint trigger
-        int32_t BP_trigger_value = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.BP_trigger_value;
-        int32_t BP_trigger_min = (BP_trigger_value-4);
-        int32_t BP_trigger_max = (BP_trigger_value+4);
-        int32_t Position_check = 100*((Position_Next-dap_calculationVariables_st.stepperPosMin) / dap_calculationVariables_st.stepperPosRange);
-        int32_t Rudder_real_poisiton= 100*((Position_Next-dap_calculationVariables_st.stepperPosMin_default) / dap_calculationVariables_st.stepperPosRange_default);
+        BP_trigger_value = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.BP_trigger_value;
+        BP_trigger_min = (BP_trigger_value-4);
+        BP_trigger_max = (BP_trigger_value+4);
+        Position_check = 100*((Position_Next-dap_calculationVariables_st.stepperPosMin) / dap_calculationVariables_st.stepperPosRange);
+        Rudder_real_poisiton= 100*((Position_Next-dap_calculationVariables_st.stepperPosMin_default) / dap_calculationVariables_st.stepperPosRange_default);
 
         dap_calculationVariables_st.current_pedal_position = Position_Next;
         dap_calculationVariables_st.current_pedal_position_ratio=((float)(dap_calculationVariables_st.current_pedal_position-dap_calculationVariables_st.stepperPosMin_default))/((float)dap_calculationVariables_st.stepperPosRange_default);
@@ -1646,6 +1694,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
 
         // set position command smoothing
         stepper->configSetPositionCommandSmoothingFactor(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.positionSmoothingFactor_u8);
+        stepper->configSetProfilingFlag( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) );
 
         // reset all servo alarms
         if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS) )
@@ -1716,9 +1765,9 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         if(semaphore_updateJoystick!=NULL)
         {
           if(xSemaphoreTake(semaphore_updateJoystick, (TickType_t)0)==pdTRUE) {
-            float joystickNormalizedToInt32_orig=0.0f;
-            float joystickfrac =0.0f;
-            float joystickNormalizedToInt32_eval=0.0f;
+            joystickNormalizedToInt32_orig=0.0f;
+            joystickfrac =0.0f;
+            joystickNormalizedToInt32_eval=0.0f;
             if(dap_calculationVariables_st.Rudder_status&&dap_calculationVariables_st.rudder_brake_status)
             {
               if (1 == dap_config_pedalUpdateTask_st.payLoadPedalConfig_.travelAsJoystickOutput_u8)
@@ -1779,7 +1828,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         // simulate ABS trigger 
         if(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.Simulate_ABS_trigger==1)
         {
-          int32_t ABS_trigger_value=dap_config_pedalUpdateTask_st.payLoadPedalConfig_.Simulate_ABS_value;
+          ABS_trigger_value=dap_config_pedalUpdateTask_st.payLoadPedalConfig_.Simulate_ABS_value;
           if( (normalizedPedalReading_fl32*100.0f) > ABS_trigger_value)
           {
             absOscillation.trigger();
@@ -1924,7 +1973,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         profiler_pedalUpdateTask.end(0);
 
         // print profiler results
-        profiler_pedalUpdateTask.report();
+        // profiler_pedalUpdateTask.report();
       
       }
     }

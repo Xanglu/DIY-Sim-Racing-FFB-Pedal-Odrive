@@ -260,8 +260,8 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
     bool allDataReceived_b = false;
     while( (false == allDataReceived_b) && ((millis() - t) < timeout_)){
         // delay for certain time to allow a context switch
-        delay(1);
-       if(this->s->available())
+       delay(1);
+       while(this->s->available())
        {
         rx = this->s->read();
         t = millis();
@@ -548,7 +548,7 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
   bool returnSignalIsCopyOfTransmittedSignal_b = false;
   while((millis() - t) < timeout_){
       delay(1);
-      if(this->s->available())
+      while(this->s->available())
       {
         rx = this->s->read();
         t = millis();

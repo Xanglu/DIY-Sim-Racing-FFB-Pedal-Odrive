@@ -2,7 +2,7 @@
 #include "Main.h"
 #include "Math.h"
 
-
+#include "FunctionProfiler.h"
 
 #define STEPPER_WITH_LIMITS_SENSORLESS_CURRENT_THRESHOLD_IN_PERCENT 30
 #define MIN_POS_MAX_ENDSTOP 10000 // servo has to drive minimum N steps before it allows the detection of the max endstop
@@ -37,6 +37,8 @@ static SemaphoreHandle_t semaphore_getSetCorrectedServoPos = xSemaphoreCreateMut
 
 static float servoBusVoltageParameterized_fl32 = SERVO_MAX_VOLTAGE_IN_V_36V;
 static bool servoBusVoltageParameterized_b = true;
+
+static bool printProfilingFlag_b = false;
 
 bool setServoToSleep_b = false;
 
@@ -153,7 +155,7 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 		xTaskCreatePinnedToCore(
 						  this->servoCommunicationTask,   
 						  "servoCommunicationTask", 
-						  2000,  
+						  4096,  
 						  //STACK_SIZE_FOR_TASK_2,    
 						  this,//NULL,      
 						  1,         
@@ -184,6 +186,12 @@ void StepperWithLimits::printAllServoParameters()
 {
 	logAllServoParams = true;
 }
+
+void StepperWithLimits::configSetProfilingFlag(bool proFlag_b)
+{
+	printProfilingFlag_b = proFlag_b;
+}
+
 
 void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 {
@@ -407,7 +415,10 @@ void StepperWithLimits::moveSlowlyToPos(int32_t targetPos_ui32) {
 }
 
 
-
+void StepperWithLimits::pauseTask()
+{
+	vTaskSuspend( task_iSV_Communication );
+}
 
 void StepperWithLimits::updatePedalMinMaxPos(uint8_t pedalStartPosPct, uint8_t pedalEndPosPct) {
   int32_t limitRange = _endstopLimitMax - _endstopLimitMin;
@@ -692,6 +703,8 @@ void StepperWithLimits::configSetPositionCommandSmoothingFactor(uint8_t posComma
 	}
 }
 
+
+
 int64_t timeSinceLastServoPosChange_l = 0;
 int64_t timeDiff = 0;
 int16_t servoPos_last_i16 = 0;
@@ -746,6 +759,11 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
   	// Cast the parameter to StepperWithLimits pointer
 	StepperWithLimits* stepper_cl = static_cast<StepperWithLimits*>(pvParameters);
 
+	FunctionProfiler profiler_servoCommunication;
+  	profiler_servoCommunication.setName("servoCommunication");
+  	profiler_servoCommunication.setNumberOfCalls(300);
+	// profiler_servoCommunication.activate( true );
+
 	for(;;){
 
 		// wait for the timer to fire
@@ -754,8 +772,13 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 		{
 			if (xSemaphoreTake(timer_fireServoCommunication, portMAX_DELAY) == pdTRUE) {
 
-	  
 				
+				profiler_servoCommunication.activate( printProfilingFlag_b );
+
+
+				// start profiler 0, overall function
+      			profiler_servoCommunication.start(0);
+
 				// measure callback time and continue, when desired period is reached
 				timeNow_isv57SerialCommunicationTask_l = millis();
 				// int64_t timeDiff_serialCommunicationTask_l = ( timePrevious_isv57SerialCommunicationTask_l + REPETITION_INTERVAL_ISV57_SERIALCOMMUNICATION_TASK) - timeNow_isv57SerialCommunicationTask_l;
@@ -874,9 +897,11 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 					
 					
 					
+					
 					// read servo states
+					profiler_servoCommunication.start(1);
 					stepper_cl->isv57.readServoStates();
-
+					profiler_servoCommunication.end(1);
 					
 
 					// Activate brake resistor once a certain voltage level is exceeded, 
@@ -1169,6 +1194,10 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 						stepper_cl->brakeResistorState_b = false;
 					#endif
 				}
+
+
+				// start profiler 0, overall function
+      			profiler_servoCommunication.end(0);
 			}
 		}
 
