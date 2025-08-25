@@ -312,41 +312,50 @@ float loadcellReading_global_fl32 = 0.0f;
 void IRAM_ATTR loadcellReadingTask( void * pvParameters )
 {
 
-  FunctionProfiler profiler_loadcellReading;
+  static FunctionProfiler profiler_loadcellReading;
   profiler_loadcellReading.setName("loadcellReading");
   profiler_loadcellReading.setNumberOfCalls(3000);
 
+  static float loadcellReading_fl32 = 0.0f;
+  static DAP_config_st loadcellTask_dap_config_st;
+  static uint16_t updateConfigCounter_u16 = 0;
 
   for(;;){
 
     if (loadcell != NULL)
     {
 
-
-      // copy global struct to local for faster and safe executiion
-      DAP_config_st jut_dap_config_st = global_dap_config_class.getConfig();
-
-      // activate profiler depending on pedal config
-      if (jut_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+      if (updateConfigCounter_u16 == 0)
       {
-        profiler_loadcellReading.activate( true );
-      }
-      else
-      {
-        profiler_loadcellReading.activate( false );
+        // copy global struct to local for faster and safe executiion
+        loadcellTask_dap_config_st = global_dap_config_class.getConfig();
+
+        // activate profiler depending on pedal config
+        if (loadcellTask_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+        {
+          profiler_loadcellReading.activate( true );
+        }
+        else
+        {
+          profiler_loadcellReading.activate( false );
+        }
+        
       }
 
+      updateConfigCounter_u16++;
+      updateConfigCounter_u16 %= 2000;
       
+
       // start profiler 0, overall function
       profiler_loadcellReading.start(0);
 
       // no need for delay, since getReadingKg will block until DRDY edge down is detected
-      float loadcellReading = loadcell->getReadingKg();
+      loadcellReading_fl32 = loadcell->getReadingKg();
       
       if(semaphore_updateLoadcellReading != NULL)
       {
         if(xSemaphoreTake(semaphore_updateLoadcellReading, (TickType_t)1)==pdTRUE) {
-          loadcellReading_global_fl32 = loadcellReading;
+          loadcellReading_global_fl32 = loadcellReading_fl32;
           xSemaphoreGive(semaphore_updateLoadcellReading);
         }
       }
@@ -360,6 +369,7 @@ void IRAM_ATTR loadcellReadingTask( void * pvParameters )
 
       // print profiler results
       // profiler_loadcellReading.report();
+
 
     }
 

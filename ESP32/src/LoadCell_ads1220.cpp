@@ -133,7 +133,7 @@ void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
 
 
 // #define LOADCELL_RADING_INTERVALL_IN_US (uint32_t)500
-float LoadCell_ADS1220::getReadingKg() const {
+float IRAM_ATTR LoadCell_ADS1220::getReadingKg() const {
   ADS1220_WE& adc = getADC();
   static float voltage_mV;
 
@@ -151,10 +151,6 @@ float LoadCell_ADS1220::getReadingKg() const {
       }
       
     }
-  }
-  else
-  {
-    timer_fireLoadcellReadingReady_global = xSemaphoreCreateBinary();
   }
 
   float weight_grams = voltage_mV * updatedConversionFactor_f64;
