@@ -11,7 +11,7 @@
 //#define PRINT_SERVO_STATES
 
 #define DEBUG_INFO_0_CYCLE_TIMER 1
-#define DEBUG_INFO_0_STEPPER_POS 2
+#define DEBUG_INFO_0_NET_RUNTIME 2
 // #define DEBUG_INFO_0_LOADCELL_READING 4
 #define DEBUG_INFO_0_SERVO_READINGS 8
 #define DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS 16
@@ -1125,39 +1125,79 @@ void updatePedalCalcParameters()
 /*                         Main function                                                      */
 /*                                                                                            */
 /**********************************************************************************************/
+
+void printTaskStats() {
+    // Static variables to persist between calls
+    static TaskStatus_t *pxPreviousTaskArray = NULL;
+    static uint32_t ulPreviousTotalRunTime = 0;
+    static UBaseType_t uxPreviousArraySize = 0;
+
+    TaskStatus_t *pxCurrentTaskArray;
+    volatile UBaseType_t uxCurrentArraySize;
+    uint32_t ulCurrentTotalRunTime;
+
+    // Allocate memory for the current snapshot
+    uxCurrentArraySize = uxTaskGetNumberOfTasks();
+    pxCurrentTaskArray = (TaskStatus_t *)pvPortMalloc(uxCurrentArraySize * sizeof(TaskStatus_t));
+
+    // Get the current system state
+    if (pxCurrentTaskArray != NULL) {
+        uxCurrentArraySize = uxTaskGetSystemState(pxCurrentTaskArray, uxCurrentArraySize, &ulCurrentTotalRunTime);
+
+        // Check if this is the first run
+        if (pxPreviousTaskArray != NULL) {
+            // Calculate the time difference over the last second
+            uint32_t ulTotalRunTimeDelta = ulCurrentTotalRunTime - ulPreviousTotalRunTime;
+
+            if (ulTotalRunTimeDelta > 0) {
+                Serial.println("\n--- Task CPU Usage (Last Second) ---");
+                Serial.printf("%-25s %15s %14s %15s\n", "Task", "Runtime [us]", "CPU %", "Free stack space [byte]");
+
+                for (UBaseType_t i = 0; i < uxCurrentArraySize; i++) {
+                    // Find the matching task in the previous snapshot
+                    for (UBaseType_t j = 0; j < uxPreviousArraySize; j++) {
+                        if (pxCurrentTaskArray[i].xHandle == pxPreviousTaskArray[j].xHandle) {
+                            uint32_t ulRunTimeDelta = pxCurrentTaskArray[i].ulRunTimeCounter - pxPreviousTaskArray[j].ulRunTimeCounter;
+                            float cpuPercent = (100.0f * (float)ulRunTimeDelta) / (float)ulTotalRunTimeDelta;
+
+                            Serial.printf("%-25s %15lu %14.2f %15lu\n",
+                              pxCurrentTaskArray[i].pcTaskName,
+                              (unsigned long)pxCurrentTaskArray[i].ulRunTimeCounter,
+                              cpuPercent,
+                              pxCurrentTaskArray[i].usStackHighWaterMark);
+                            break;
+                        }
+                    }
+                }
+                Serial.println("-----------------------\n");
+            }
+        }
+
+        // Free the previous snapshot and save the current one for the next cycle
+        if (pxPreviousTaskArray != NULL) {
+            vPortFree(pxPreviousTaskArray);
+        }
+        pxPreviousTaskArray = pxCurrentTaskArray;
+        ulPreviousTotalRunTime = ulCurrentTotalRunTime;
+        uxPreviousArraySize = uxCurrentArraySize;
+    } else {
+        Serial.println("Failed to allocate memory for task stats.");
+    }
+}
+
+
+
 void loop() {
   // vTaskDelete(NULL);  // Kill the Arduino loop task
 
   
+  // copy global struct to local for faster and safe executiion
+  DAP_config_st dap_config_profilerTask_st = global_dap_config_class.getConfig();
 
-  TaskStatus_t *taskArray;
-  volatile UBaseType_t arraySize;
-  uint32_t totalRunTime;
-
-  arraySize = uxTaskGetNumberOfTasks();
-  taskArray = (TaskStatus_t *)pvPortMalloc(arraySize * sizeof(TaskStatus_t));
-
-
-  Serial.println(F("---------------------------------------------"));
-  if (taskArray != NULL) {
-      arraySize = uxTaskGetSystemState(taskArray, arraySize, &totalRunTime);
-
-      if (totalRunTime > 0) {
-          Serial.println("\n--- Task CPU Usage ---");
-          Serial.printf("%-40s %30s %12s\n", "Task", "Runtime [us]", "CPU %");
-
-          for (UBaseType_t i = 0; i < arraySize; i++) {
-              float cpuPercent = (100.0f * (float)taskArray[i].ulRunTimeCounter) / (float)totalRunTime;
-
-              Serial.printf("%-40s %30lu %11.2f%%\n",
-                            taskArray[i].pcTaskName,
-                            (unsigned long)taskArray[i].ulRunTimeCounter,
-                            cpuPercent);
-          }
-          Serial.println("-----------------------\n");
-      }
-
-      vPortFree(taskArray);
+  // activate profiler depending on pedal config
+  if (dap_config_profilerTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_NET_RUNTIME) 
+  {
+   printTaskStats();
   }
 
 

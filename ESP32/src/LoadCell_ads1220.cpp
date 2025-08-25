@@ -67,7 +67,8 @@ ADS1220_WE& getADC() {
     float refVolt_fl32 = adc.getVRef_V();
     refVoltageInMV_fl32 = refVolt_fl32 * 1000.0f; // convert to mV
     Serial.print("Reference voltage: ");
-    Serial.println(refVolt_fl32);
+    Serial.print(refVolt_fl32);
+    Serial.println("V");
 
     // differential channels
     adc.setCompareChannels(ADS1220_MUX_0_1);              // Differential AIN0 - AIN1
