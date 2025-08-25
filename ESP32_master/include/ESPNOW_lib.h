@@ -142,15 +142,16 @@ void ESPNow_Pairing_callback(const uint8_t *mac_addr, const uint8_t *data, int d
 
 }
 //void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len)
-void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
+//void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
+void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len)
 {
   //only get mac in pairing
   if(ESPNow_pairing_action_b)
   {
-    ESPNow_Pairing_callback(mac_addr, data, data_len);
+    ESPNow_Pairing_callback(esp_now_info->src_addr, data, data_len);
   }
   //only recieve the package from registed mac address
-  if(MacCheck((uint8_t*)mac_addr, Clu_mac)||MacCheck((uint8_t*)mac_addr, Brk_mac)||MacCheck((uint8_t*)mac_addr, Gas_mac))
+  if(MacCheck((uint8_t*)esp_now_info->src_addr, Clu_mac)||MacCheck((uint8_t*)esp_now_info->src_addr, Brk_mac)||MacCheck((uint8_t*)esp_now_info->src_addr, Gas_mac))
   {
     if(data[0]==DAP_PAYLOAD_TYPE_ESPNOW_LOG && data[1]==ESPNOW_LOG_MAGIC_KEY && data[2]==ESPNOW_LOG_MAGIC_KEY_2)
     {
@@ -249,7 +250,7 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
 
 
 }
-void OnSent(const uint8_t *mac_addr, esp_now_send_status_t status)
+void OnSent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status)
 {
 
 }

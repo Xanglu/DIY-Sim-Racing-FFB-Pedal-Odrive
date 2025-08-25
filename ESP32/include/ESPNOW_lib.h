@@ -594,7 +594,7 @@ void ESPNow_initialize()
   global_peer_config.rate=WIFI_PHY_RATE_MCS0_LGI;
   #ifdef ESPNow_S3
     // esp_wifi_config_espnow_rate(WIFI_IF_STA, 	WIFI_PHY_RATE_54M);
-    //esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_11M_L);
+    esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_11M_L);
     global_peer_config.rate=WIFI_PHY_RATE_11M_L;
   // esp_wifi_set_max_tx_power(WIFI_POWER_8_5dBm);
     #if PCB_VERSION == 9
@@ -604,8 +604,8 @@ void ESPNow_initialize()
     #endif
   #endif
   #ifdef ESPNow_ESP32
-    //esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_MCS0_LGI);
-    global_peer_config.rate=WIFI_PHY_RATE_MCS0_LGI;
+    esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_MCS0_LGI);
+    //global_peer_config.rate=WIFI_PHY_RATE_MCS0_LGI;
     // esp_wifi_config_espnow_rate(WIFI_IF_STA, 	WIFI_PHY_RATE_54M);
   #endif
   #ifdef ESPNow_Pairing_function
@@ -653,7 +653,7 @@ void ESPNow_initialize()
     {
       Recv_mac=Gas_mac;
       ESPNow.add_peer(Recv_mac);
-      esp_now_set_peer_rate_config(Recv_mac, &global_peer_config);
+      //esp_now_set_peer_rate_config(Recv_mac, &global_peer_config);
     }
 
     if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 2)
@@ -661,14 +661,14 @@ void ESPNow_initialize()
       Recv_mac=Brk_mac;
       ESPNow.add_peer(Brk_mac);
       ESPNow.add_peer(Clu_mac);
-      esp_now_set_peer_rate_config(Brk_mac, &global_peer_config);
-      esp_now_set_peer_rate_config(Clu_mac, &global_peer_config);
+      //esp_now_set_peer_rate_config(Brk_mac, &global_peer_config);
+      //esp_now_set_peer_rate_config(Clu_mac, &global_peer_config);
     }
     if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 0)
     {
       Recv_mac=Gas_mac;
       ESPNow.add_peer(Recv_mac);
-      esp_now_set_peer_rate_config(Recv_mac, &global_peer_config);
+      //esp_now_set_peer_rate_config(Recv_mac, &global_peer_config);
     }
     
 
@@ -677,19 +677,19 @@ void ESPNow_initialize()
     if(ESPNow.add_peer(esp_master)== ESP_OK)
     {
       ESPNOW_status=true;
-      esp_now_set_peer_rate_config(esp_master, &global_peer_config);
+      //esp_now_set_peer_rate_config(esp_master, &global_peer_config);
       Serial.println("Sucess to add joystick peer");
     }
     if(ESPNow.add_peer(esp_Host)== ESP_OK)
     {
       ESPNOW_status=true;
-      esp_now_set_peer_rate_config(esp_Host, &global_peer_config);
+      //esp_now_set_peer_rate_config(esp_Host, &global_peer_config);
       Serial.println("Sucess to add host peer");
     }
     if(ESPNow.add_peer(broadcast_mac)== ESP_OK)
     {
       ESPNOW_status=true;
-      esp_now_set_peer_rate_config(broadcast_mac, &global_peer_config);
+      //esp_now_set_peer_rate_config(broadcast_mac, &global_peer_config);
       Serial.println("Sucess to add broadcast peer");
     }
     ESPNow.reg_recv_cb(onRecv);
