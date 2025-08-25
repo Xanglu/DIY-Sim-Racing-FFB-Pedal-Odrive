@@ -243,14 +243,14 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
     txout[7] = crc >> 8;
  
      
-    if(log){
-      Serial.print("TX: ");
-       for(int i =0; i < 8; i++)
-            {
-                Serial.printf("%02X ",txout[i] );
-            }
-            Serial.print("\t");
-     }
+    // if(log){
+    //   Serial.print("TX: ");
+    //    for(int i =0; i < 8; i++)
+    //         {
+    //             Serial.printf("%02X ",txout[i] );
+    //         }
+    //         Serial.print("\t");
+    //  }
 
     //digitalWrite(mode_,1);
     //delay(1);
@@ -266,7 +266,7 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
     // this->s->flush();
     //digitalWrite(mode_,0);
     //delay(1);
-    uint32_t t = millis();
+    unsigned long t = millis();
     lenRx   = 0;
     datalen = 0;
     int ll = 0;
@@ -277,11 +277,12 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
     while( (false == allDataReceived_b) && ((millis() - t) < timeout_)){
         // delay for certain time to allow a context switch
        delay(1);
+       
        while(this->s->available())
        {
-        rx = this->s->read();
         t = millis();
-        
+        rx = this->s->read();
+
         if(found == 0)
         {
           if(txout[ll] == rx){ll++;}else{ll = 0;}
@@ -322,14 +323,14 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
 
     }
 
-    if(log){
-        Serial.print("RX: ");
-        for(int i =0; i < lenRx; i++)
-            {
-             Serial.printf("%02X ",rawRx[i] );
-            }
-            Serial.println();
-     }
+    // if(log){
+    //     Serial.print("RX: ");
+    //     for(int i =0; i < lenRx; i++)
+    //         {
+    //          Serial.printf("%02X ",rawRx[i] );
+    //         }
+    //         Serial.println();
+    //  }
 
     /*Serial.print(lenRx);
     Serial.println();*/
@@ -567,18 +568,17 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
   // verify return signal
   // should be identical to transmit signal, otherwise error
 
-  uint32_t t = millis();
+  unsigned long t = millis();
   int ll = 0;
   int rx;
   
   bool returnSignalIsCopyOfTransmittedSignal_b = false;
-  while((millis() - t) < timeout_){
+  while( ( (millis() - t) < timeout_)  && (false == returnSignalIsCopyOfTransmittedSignal_b)) {
       delay(1);
+      t = millis();
       while(this->s->available())
       {
         rx = this->s->read();
-        t = millis();
-        
         if(txout[ll] == rx){ll++;}else{ll = 0;}
 
         if (ll == 8)
@@ -586,21 +586,11 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
           returnSignalIsCopyOfTransmittedSignal_b = true;
           break;
         }
-
       }
       
   }
 
-  // Serial.print("Returnsignal: ");
-  // Serial.print(returnSignalIsCopyOfTransmittedSignal_b);
-  // Serial.print(",    Adress: ");
-  // Serial.print(address);
-  // Serial.print(",    value: ");
-  // Serial.println(value);
-	
-
   delay(5);
 
   return returnSignalIsCopyOfTransmittedSignal_b;
-
 }
