@@ -142,7 +142,7 @@ ForceCurve_Interpolated forceCurve;
 /*                                                                                            */
 /**********************************************************************************************/
 #ifndef CONFIG_IDF_TARGET_ESP32S3
-  #include "soc/rtc_wdt.h"
+  #include "rtc_wdt.h"
 #endif
 
 
