@@ -730,10 +730,10 @@ void IRAM_ATTR timer_servoCommunication_callback(void* arg) {
     // It immediately gives the semaphore to wake up myCore1Task.
     xSemaphoreGiveFromISR(timer_fireServoCommunication, NULL);
   }
-  else
-  {
-    timer_fireServoCommunication = xSemaphoreCreateBinary();
-  }
+//   else
+//   {
+//     timer_fireServoCommunication = xSemaphoreCreateBinary();
+//   }
 }
 
 

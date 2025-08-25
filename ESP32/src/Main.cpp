@@ -776,7 +776,8 @@ void setup()
   }
 
 
-  disableCore0WDT();
+  // disableCore0WDT();
+  // disableCore1WDT();
 
   Serial.println("Starting other tasks");
 
@@ -1124,7 +1125,43 @@ void updatePedalCalcParameters()
 /*                                                                                            */
 /**********************************************************************************************/
 void loop() {
-  vTaskDelete(NULL);  // Kill the Arduino loop task
+  // vTaskDelete(NULL);  // Kill the Arduino loop task
+
+  
+
+  TaskStatus_t *taskArray;
+  volatile UBaseType_t arraySize;
+  uint32_t totalRunTime;
+
+  arraySize = uxTaskGetNumberOfTasks();
+  taskArray = (TaskStatus_t *)pvPortMalloc(arraySize * sizeof(TaskStatus_t));
+
+
+  Serial.println(F("---------------------------------------------"));
+  if (taskArray != NULL) {
+      arraySize = uxTaskGetSystemState(taskArray, arraySize, &totalRunTime);
+
+      if (totalRunTime > 0) {
+          Serial.println("\n--- Task CPU Usage ---");
+          Serial.printf("%-40s %30s %12s\n", "Task", "Runtime [us]", "CPU %");
+
+          for (UBaseType_t i = 0; i < arraySize; i++) {
+              float cpuPercent = (100.0f * (float)taskArray[i].ulRunTimeCounter) / (float)totalRunTime;
+
+              Serial.printf("%-40s %30lu %11.2f%%\n",
+                            taskArray[i].pcTaskName,
+                            (unsigned long)taskArray[i].ulRunTimeCounter,
+                            cpuPercent);
+          }
+          Serial.println("-----------------------\n");
+      }
+
+      vPortFree(taskArray);
+  }
+
+
+  delay(5000);
+  taskYIELD();
 }
 
 
@@ -1978,6 +2015,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
       }
     }
 
+    taskYIELD();
   }
 }
 
