@@ -81,6 +81,10 @@ void Modbus::readParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress)
   uint8_t raw2[2];
   uint8_t len;
   int16_t regArray[4];
+  regArray[0] = -1;
+  regArray[1] = -1;
+  regArray[2] = -1;
+  regArray[3] = -1;
 
   // read the four registers simultaneously
   if(requestFrom(slaveId_local_u16, 0x03, parameterAdress,  2) > 0)
@@ -127,7 +131,11 @@ bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t param
     uint8_t raw2[2];
     uint8_t len;
     int16_t regArray[4];
-
+    regArray[0] = -1;
+    regArray[1] = -1;
+    regArray[2] = -1;
+    regArray[3] = -1;
+    
     // read the four registers simultaneously
     if(requestFrom(slaveId_local_u16, 0x03, parameterAdress,  2) > 0)
     {

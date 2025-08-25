@@ -363,7 +363,7 @@ bool isv57communication::findServosSlaveId()
 
   if (false == slaveIdFound )
   {
-    for (int slaveIdTest = 0; slaveIdTest<256; slaveIdTest++)
+    for (slaveIdTest = 0; slaveIdTest<256; slaveIdTest++)
     {
         if(modbus.requestFrom(slaveIdTest, 0x03, 0x0000, 2) > 0)
         {
@@ -485,7 +485,7 @@ void isv57communication::readServoStates() {
 bool isv57communication::clearServoAlarms() {
 
   // read the alarm list
-  int8_t numberOfRegistersToRead_u8 = 0;
+  // int8_t numberOfRegistersToRead_u8 = 0;
   // Alarm register address: 0x02
   //int bytesReceived_i = modbus.requestFrom(slaveId, 0x03, 0x02, numberOfRegistersToRead_u8);
 

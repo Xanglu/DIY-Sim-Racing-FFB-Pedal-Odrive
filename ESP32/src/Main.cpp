@@ -56,6 +56,7 @@
 void updatePedalCalcParameters();
 void pedalUpdateTask( void * pvParameters );
 void loadcellReadingTask( void * pvParameters );
+void profilerTask( void * pvParameters );
 void serialCommunicationTask( void * pvParameters );
 void joystickOutputTask( void * pvParameters );
 void OTATask( void * pvParameters );
@@ -437,6 +438,7 @@ void addScheduledTask(TaskFunction_t fn, const char *name, uint16_t intervalUs,
 TaskHandle_t handle_pedalUpdateTask = NULL;
 TaskHandle_t handle_joystickOutput = NULL;
 TaskHandle_t handle_loadcellReadingTask = NULL;
+TaskHandle_t handle_profilerTask = NULL;
 TaskHandle_t handle_serialCommunication = NULL; 
 TaskHandle_t handle_miscTask = NULL; 
 TaskHandle_t handle_otaTask = NULL;
@@ -809,6 +811,16 @@ void setup()
                     &handle_loadcellReadingTask,      /* Task handle to keep track of created task */
                     CORE_ID_LOADCELLREADING_TASK);          /* pin task to core 1 */  
 
+
+xTaskCreatePinnedToCore(
+                    profilerTask,   /* Task function. */
+                    "profilerTask",     /* name of task. */
+                    3000,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    10,           /* priority of the task */
+                    &handle_profilerTask,      /* Task handle to keep track of created task */
+                    CORE_ID_PROFILER_TASK);          /* pin task to core 1 */
+
   xTaskCreatePinnedToCore(
                     miscTask,   
                     "miscTask", 
@@ -1150,24 +1162,37 @@ void printTaskStats() {
 
             if (ulTotalRunTimeDelta > 0) {
                 Serial.println("\n--- Task CPU Usage (Last Second) ---");
-                Serial.printf("%-25s %15s %14s %15s\n", "Task", "Runtime [us]", "CPU %", "Free stack space [byte]");
+                Serial.printf("%-25s %10s %15s %14s %30s\n", "Task", "Core ID", "Runtime [us]", "CPU %", "Free stack space [byte]");
 
-                for (UBaseType_t i = 0; i < uxCurrentArraySize; i++) {
-                    // Find the matching task in the previous snapshot
-                    for (UBaseType_t j = 0; j < uxPreviousArraySize; j++) {
-                        if (pxCurrentTaskArray[i].xHandle == pxPreviousTaskArray[j].xHandle) {
-                            uint32_t ulRunTimeDelta = pxCurrentTaskArray[i].ulRunTimeCounter - pxPreviousTaskArray[j].ulRunTimeCounter;
-                            float cpuPercent = (100.0f * (float)ulRunTimeDelta) / (float)ulTotalRunTimeDelta;
+                for (uint8_t coreIdx = 0; coreIdx < 2; coreIdx++)
+                {
 
-                            Serial.printf("%-25s %15lu %14.2f %15lu\n",
-                              pxCurrentTaskArray[i].pcTaskName,
-                              (unsigned long)pxCurrentTaskArray[i].ulRunTimeCounter,
-                              cpuPercent,
-                              pxCurrentTaskArray[i].usStackHighWaterMark);
-                            break;
+                  for (UBaseType_t i = 0; i < uxCurrentArraySize; i++) {
+
+                      if (pxCurrentTaskArray[i].xCoreID == coreIdx)
+                      {
+                        // Find the matching task in the previous snapshot
+                        for (UBaseType_t j = 0; j < uxPreviousArraySize; j++) {
+                            if (pxCurrentTaskArray[i].xHandle == pxPreviousTaskArray[j].xHandle) {
+                                uint32_t ulRunTimeDelta = pxCurrentTaskArray[i].ulRunTimeCounter - pxPreviousTaskArray[j].ulRunTimeCounter;
+                                float cpuPercent = (100.0f * (float)ulRunTimeDelta) / (float)ulTotalRunTimeDelta;
+
+                                Serial.printf("%-25s %10lu %15lu %14.2f %30lu\n",
+                                  pxCurrentTaskArray[i].pcTaskName,
+                                  pxCurrentTaskArray[i].xCoreID,
+                                  (unsigned long)ulRunTimeDelta,
+                                  cpuPercent,
+                                  pxCurrentTaskArray[i].usStackHighWaterMark);
+                                break;
+                            }
                         }
-                    }
+                      }
+                  }
+
+
                 }
+
+                
                 Serial.println("-----------------------\n");
             }
         }
@@ -1184,21 +1209,27 @@ void printTaskStats() {
     }
 }
 
+void profilerTask( void * pvParameters )
+{
+  for(;;){
+    // copy global struct to local for faster and safe executiion
+    DAP_config_st dap_config_profilerTask_st = global_dap_config_class.getConfig();
+
+    // activate profiler depending on pedal config
+    if (dap_config_profilerTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_NET_RUNTIME) 
+    {
+      printTaskStats();
+    }
+
+
+    delay(5000);
+    taskYIELD();
+  }
+}
 
 
 void loop() {
   // vTaskDelete(NULL);  // Kill the Arduino loop task
-
-  
-  // copy global struct to local for faster and safe executiion
-  DAP_config_st dap_config_profilerTask_st = global_dap_config_class.getConfig();
-
-  // activate profiler depending on pedal config
-  if (dap_config_profilerTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_NET_RUNTIME) 
-  {
-   printTaskStats();
-  }
-
 
   delay(5000);
   taskYIELD();
@@ -2150,6 +2181,10 @@ void IRAM_ATTR joystickOutputTask( void * pvParameters )
         // print profiler results
         profiler_joystickOutputTask.report();
 
+
+        // force a context switch
+		    taskYIELD();
+
       }
     }
   }
@@ -2682,6 +2717,9 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
         profiler_serialCommunicationTask.report();
       }
     }
+
+    // force a context switch
+		taskYIELD();
   }
 }
 
@@ -2832,6 +2870,9 @@ void OTATask( void * pvParameters )
       
       #endif
     }
+
+    // force a context switch
+		taskYIELD();
   }
 }
 
@@ -3308,9 +3349,9 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
       // print profiler results
       profiler_espNow.report();
 
+      // force a context switch
+		taskYIELD();
     }
-  
-
 }
 #endif
 

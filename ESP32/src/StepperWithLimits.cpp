@@ -1001,7 +1001,7 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 					
 					
 					
-					int32_t servo_offset_compensation_steps_local_i32 = 0;
+					int32_t servo_offset_compensation_steps_local_i32;// = 0;
 
 					// condition 1: servo must be at halt
 					// condition 2: the esp accel lib must be at halt	
@@ -1057,7 +1057,7 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 						
 
 					}
-
+					else {}
 					
 
 
@@ -1081,16 +1081,16 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 							{
 
 								// positive current means positive rotation 
-								bool minBlockCrashDetected_b = false;
-								bool maxBlockCrashDetected_b = false;
+								// bool minBlockCrashDetected_b = false;
+								// bool maxBlockCrashDetected_b = false;
 								if (stepper_cl->isv57.isv57dynamicStates_.servo_current_percent > 0) // if current is positive, the rotation will be positive and thus the sled will move towards the user
 								{
-									minBlockCrashDetected_b = true; 
+									// minBlockCrashDetected_b = true; 
 									stepper_cl->isv57.applyOfsetToZeroPos(-500); // bump up a bit to prevent the servo from pushing against the endstop continously
 								}
 								else
 								{
-									maxBlockCrashDetected_b = true;
+									// maxBlockCrashDetected_b = true;
 									stepper_cl->isv57.applyOfsetToZeroPos(500); // bump up a bit to prevent the servo from pushing against the endstop continously
 								}
 
@@ -1156,7 +1156,7 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 
 
 					}
-
+					else {}
 
 
 
