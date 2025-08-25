@@ -325,7 +325,10 @@ void setup()
   }
   */
 
-  disableCore0WDT();
+  #ifndef CONFIG_IDF_TARGET_ESP32S3
+    disableCore0WDT();
+    disableCore1WDT();
+  #endif
   //enable ESP-NOW
   ESPNow_initialize();
   //ESPNow multi-tasking    
@@ -513,6 +516,7 @@ bool building_dap_esppairing_lcl =false;
 void loop() 
 {
   taskYIELD();
+  delay(10000);
 }
 
 void ESPNOW_SyncTask( void * pvParameters )
