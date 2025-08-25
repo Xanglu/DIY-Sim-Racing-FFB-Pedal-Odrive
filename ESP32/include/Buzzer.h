@@ -7,13 +7,13 @@ private:
     int channel;
     void noTone_buzzer()
     {
-        ledcDetachPin(buzzer_pin);
+        ledcDetach(buzzer_pin);
         ledcWrite(channel, 0); 
     }
     void tone_buzzer(uint16_t frequency, uint16_t duration, uint8_t volume)// should add notone_buzzer after that
     {
-        ledcSetup(channel, frequency, 12);
-        ledcAttachPin(buzzer_pin, channel);
+        //ledcSetup(channel, frequency, 12);
+        ledcAttach(buzzer_pin, frequency, 12);
         ledcWrite(channel, volume);
         if (duration) {
             delay(duration);
@@ -50,8 +50,8 @@ public:
     {
         buzzer_pin=pin;
         channel = _channel;
-        ledcSetup(channel, 6000, 8);
-        ledcAttachPin(buzzer_pin, channel);
+        //ledcSetup(channel, 6000, 8);
+        ledcAttach(buzzer_pin, 6000, 12);
     }
 
 
