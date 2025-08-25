@@ -1253,9 +1253,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
   float filteredReading_exp_filter = 0;
   unsigned long servoActionLast = millis();
   bool firstReadConfig=true;
-  unsigned long debugMessageLast=0;
 
-  uint32_t pos_printCount = 0;
   uint32_t controlTask_stackSizeIdx_u32 = 0;
   float previousLoadcellReadingInKg_fl32 = 0.0f;
 
@@ -1312,7 +1310,6 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         // if a config update was received over serial, update the variables required for further computation
         if (configUpdateAvailable == true)
         {
-            bool configWasUpdated_b = false;
             // Take the semaphore and just update the config file, then release the semaphore
             
             Serial.println("Updating pedal config");
@@ -1320,7 +1317,6 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
 
             // update the calc params
             Serial.println("Updating the calc params");
-            configWasUpdated_b = false;
             //Serial.print("save to eeprom tag:");
             //Serial.println(dap_config_pedalUpdateTask_st.payLoadHeader_.storeToEeprom);
             if(firstReadConfig)
@@ -1463,14 +1459,6 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
 
         // Get the angle measurement reading
         // float angleReading = loadcell->getAngleMeasurement();
-
-        
-        // if (pos_printCount >= 100)
-        // {
-        //   Serial.printf("Ang.: %f\n", angleReading);
-        //   pos_printCount = 0;
-        // }
-        // pos_printCount++;
       
 
         // start profiler 3, loadcell reading conversion
@@ -2065,17 +2053,6 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
 
         
 
-        #ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
-          if( controlTask_stackSizeIdx_u32 == 1000)
-          {
-            UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
-            Serial.print("StackSize (Pedal update): ");
-            Serial.println(stackHighWaterMark);
-            controlTask_stackSizeIdx_u32 = 0;
-          }
-          controlTask_stackSizeIdx_u32++;
-        #endif
-
 
 
         profiler_pedalUpdateTask.end(0);
@@ -2198,7 +2175,6 @@ void IRAM_ATTR joystickOutputTask( void * pvParameters )
 uint32_t communicationTask_stackSizeIdx_u32 = 0;
 void IRAM_ATTR serialCommunicationTask( void * pvParameters )
 { 
-  int32_t joystickNormalizedToInt32_local = 0;
   FunctionProfiler profiler_serialCommunicationTask;
   profiler_serialCommunicationTask.setName("SerialCommunication");
   profiler_serialCommunicationTask.setNumberOfCalls(500);
@@ -2697,16 +2673,6 @@ void IRAM_ATTR serialCommunicationTask( void * pvParameters )
         }
 
 
-        #ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
-          if( communicationTask_stackSizeIdx_u32 == 1000)
-          {
-            UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
-            Serial.print("StackSize (Serial communication): ");
-            Serial.println(stackHighWaterMark);
-            communicationTask_stackSizeIdx_u32 = 0;
-          }
-          communicationTask_stackSizeIdx_u32++;
-        #endif
 
         // end profiler 3, serial send
         profiler_serialCommunicationTask.end(3);
@@ -3331,17 +3297,6 @@ void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
 
 
 
-        
-          #ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
-            if( espNowTask_stackSizeIdx_u32 == 1000)
-            {
-              UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
-              Serial.print("StackSize (ESP-Now): ");
-              Serial.println(stackHighWaterMark);
-              espNowTask_stackSizeIdx_u32 = 0;
-            }
-            espNowTask_stackSizeIdx_u32++;
-          #endif
       }
 
       profiler_espNow.end(0);

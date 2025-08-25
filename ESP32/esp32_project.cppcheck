@@ -1,49 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="1">
-  <projectname>ESP32_Arduino_Project</projectname>
-
-  <!-- Ordner, die analysiert werden sollen -->
-  <paths>
-    <dir>src</dir>
-    <dir>include</dir>
-  </paths>
-
-  <!-- Ignorierte Ordner -->
-  <excluded>
-    <dir>.pio</dir>
-    <dir>.vscode</dir>
-    <dir>build</dir>
-  </excluded>
-
-  <!-- Spracheinstellungen -->
-  <settings>
-    <language>c++</language>
-    <standard>c++17</standard>
-  </settings>
-
-  <!-- Analyseoptionen -->
-  <options>
-    <check>all</check>
-    <inconclusive>true</inconclusive>
-    <unusedFunctions>false</unusedFunctions>
-    <force>false</force>
-  </options>
-
-  <!-- Defines für Arduino/ESP32 -->
-  <defines>
-    <define>ARDUINO=10805</define>
-    <define>ESP32=1</define>
-  </defines>
-
-  <!-- Include-Pfade (wichtig für Arduino/ESP32 Core) -->
-  <includePaths>
-	<dir>src</dir>
-	<dir>include</dir>
-	<dir>lib</dir>
-	<dir>.pio/libdeps/esp32dev</dir>
-	<dir>.pio/build/esp32dev</dir>
-	<dir>C:/Users/chris/.platformio/packages/framework-arduinoespressif32/cores/esp32</dir>
-	<dir>C:/Users/chris/.platformio/packages/framework-arduinoespressif32/libraries</dir>
-	<dir>C:/Users/chris/.platformio/packages/framework-arduinoespressif32/variants/esp32</dir>
-  </includePaths>
+    <analyze-all-vs-configs>false</analyze-all-vs-configs>
+    <check-headers>true</check-headers>
+    <check-unused-templates>true</check-unused-templates>
+    <inline-suppression>true</inline-suppression>
+    <max-ctu-depth>2</max-ctu-depth>
+    <max-template-recursion>100</max-template-recursion>
+    <paths>
+        <dir name="include"/>
+        <dir name="src"/>
+    </paths>
+    <check-level-normal/>
 </project>

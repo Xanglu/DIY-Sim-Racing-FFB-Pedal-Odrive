@@ -1159,18 +1159,6 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 					else {}
 
 
-
-
-					#ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
-						if( stackSizeIdx_u32 == 1000)
-						{
-							UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
-							Serial.print("StackSize (Servo communication): ");
-							Serial.println(stackHighWaterMark);
-							stackSizeIdx_u32 = 0;
-						}
-						stackSizeIdx_u32++;
-					#endif
 					
 					
 				}

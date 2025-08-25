@@ -254,8 +254,16 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
 
     //digitalWrite(mode_,1);
     //delay(1);
+    size_t bufferCapacity = this->s->availableForWrite();
     this->s->write(txout,8);
-    this->s->flush();
+    delay(1);
+    uint8_t timeOutInMs_u8 = 10;
+    while( (bufferCapacity != this->s->availableForWrite() ) && (timeOutInMs_u8 > 0) ) 
+    { 
+      delay(1);
+      timeOutInMs_u8--;
+    }
+    // this->s->flush();
     //digitalWrite(mode_,0);
     //delay(1);
     uint32_t t = millis();
@@ -539,10 +547,20 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
     txout[7] = crc >> 8;
 	
 	// send signal
+  size_t bufferCapacity = this->s->availableForWrite();
 	digitalWrite(mode_,1);
   delay(1);
   this->s->write(txout,8);
-  this->s->flush();
+  delay(1);
+  uint8_t timeOutInMs_u8 = 10;
+  while( (bufferCapacity != this->s->availableForWrite() ) && (timeOutInMs_u8 > 0) ) 
+  { 
+    delay(1);
+    timeOutInMs_u8--;
+  }
+
+  // this->s->write(txout,8);
+  // this->s->flush();
   digitalWrite(mode_,0);
   delay(1);
 

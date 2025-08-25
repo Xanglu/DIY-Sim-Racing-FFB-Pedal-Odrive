@@ -135,8 +135,6 @@ void LoadCell_ADS1220::setLoadcellRating(uint8_t loadcellRating_u8) const {
 // #define LOADCELL_RADING_INTERVALL_IN_US (uint32_t)500
 float LoadCell_ADS1220::getReadingKg() const {
   ADS1220_WE& adc = getADC();
-  unsigned int timeout_us = 0; //TIMEOUT_FOR_DRDY_TO_BECOME_LOW;
-  boolean timeoutReached_b = false;
   static float voltage_mV;
 
   // wait for the timer to fire
