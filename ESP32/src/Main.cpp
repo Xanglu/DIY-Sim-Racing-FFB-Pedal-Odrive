@@ -22,7 +22,6 @@
 
 
 
-//#define PI 3.14159267
 #define BAUD3M 3000000
 #define DEFAULTBAUD 921600
 #include "Arduino.h"
@@ -1462,7 +1461,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
         float b = (float)dap_config_pedalUpdateTask_st.payLoadPedalConfig_.lengthPedal_b;
         float d = (float)dap_config_pedalUpdateTask_st.payLoadPedalConfig_.lengthPedal_d;
         float d_x_hor_d_phi = -(float)(b+d) * isin(pedalInclineAngleInDeg_fl32);
-        d_x_hor_d_phi *= DEG_TO_RAD; // inner derivative
+        d_x_hor_d_phi *= DEG_TO_RAD_FL32; // inner derivative
 
         // start profiler 3, loadcell reading conversion
         profiler_pedalUpdateTask.end(3);

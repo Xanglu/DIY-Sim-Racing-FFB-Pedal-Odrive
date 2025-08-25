@@ -75,17 +75,18 @@ public:
       }
 
 
-      
+      float sineArgInDeg_fl32;
       switch (absPattern) {
         case 0:
           // sine wave pattern
-          absForceOffset_local =  absAmp_fl32 * isin(2.0f * PI * absFreq * absTimeSeconds * RAD_TO_DEG);
+          sineArgInDeg_fl32 = 360.0f * absFreq * absTimeSeconds;
+          absForceOffset_local =  absAmp_fl32 * isin(sineArgInDeg_fl32);
           break;
         case 1:
           // sawtooth pattern
           if (calcVars_st->absFrequency > 0.0f)
           {
-            absForceOffset_local = absAmp_fl32 * fmod(absTimeSeconds, 1.0f / (float)absFreq) * (float)absFreq;
+            absForceOffset_local = absAmp_fl32 * fmodf(absTimeSeconds, 1.0f / (float)absFreq) * (float)absFreq;
             absForceOffset_local -= absAmp_fl32 * 0.5f; // make it symmetrical around 0
           }
           break;
@@ -160,7 +161,7 @@ public:
       float RPM_freq = constrain(RPM_value*(RPM_max_freq-RPM_min_freq)* 0.01f, RPM_min_freq, RPM_max_freq);
       _RPMTimeMillis += timeNowMillis - _lastCallTimeMillis;
       float RPMTimeSeconds = _RPMTimeMillis * 0.001f;
-      RPMForceOffset = RPM_amp * isin( 2.0f*PI* RPM_freq* RPMTimeSeconds * RAD_TO_DEG); 
+      RPMForceOffset = RPM_amp * isin( 2.0f*PI_FL32* RPM_freq* RPMTimeSeconds * RAD_TO_DEG_FL32); 
     }
 
     _lastCallTimeMillis = timeNowMillis;
@@ -211,7 +212,7 @@ public:
       float BPTimeSeconds = _BiteTimeMillis * 0.001f;
 
       //RPMForceOffset = calcVars_st->absAmplitude * sin(calcVars_st->absFrequency * RPMTimeSeconds);
-      BitePointForceOffset = BP_amp * isin( 2.0f*PI* BP_freq* BPTimeSeconds * RAD_TO_DEG);
+      BitePointForceOffset = BP_amp * isin( 360.0f * BP_freq* BPTimeSeconds);
     }
 
     BitePoint_Force_offset = BitePointForceOffset;
@@ -288,7 +289,7 @@ public:
       float WS_freq = calcVars_st->WS_freq;
       _WSTimeMillis += timeNowMillis - _lastCallTimeMillis;
       float WSTimeSeconds = _WSTimeMillis * 0.001f;
-      WSForceOffset = WS_amp * isin( 2.0f*PI* WS_freq* WSTimeSeconds * RAD_TO_DEG);   
+      WSForceOffset = WS_amp * isin( 360.0f * WS_freq* WSTimeSeconds );   
     }
 
     WS_Force_offset = WSForceOffset;
@@ -353,7 +354,7 @@ public:
     {
       _CVTimeMillis += timeNowMillis - _lastCallTimeMillis;
       float CVTimeSeconds = _CVTimeMillis * 0.001f;
-      CVForceOffset = 0.05f * CV_amp * isin( 2.0f*PI* CV_freq* CVTimeSeconds * RAD_TO_DEG);  
+      CVForceOffset = 0.05f * CV_amp * isin( 360.0f * CV_freq* CVTimeSeconds );  
     }
 
     CV_Force_offset = CVForceOffset;

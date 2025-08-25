@@ -42,11 +42,11 @@ static inline float pedalInclineAngleDeg(float sledPositionMM, DAP_config_st * c
   if (abs(den) > 0.01f) {
     // alpha = acos( nom / den );
     // alpha = fastAcos( nom / den );
-    alpha = iacos( nom / den ) * DEG_TO_RAD;
+    alpha = iacos( nom / den ) * DEG_TO_RAD_FL32;
   }
 
 #ifdef DEBUG_PEDAL_INCLINE
-  Serial.print(", alpha1: ");  Serial.print(alpha * RAD_TO_DEG);
+  Serial.print(", alpha1: ");  Serial.print(alpha * RAD_TO_DEG_FL32);
 #endif
 
   // add incline due to AB incline --> result is incline realtive to horizontal 
@@ -60,12 +60,12 @@ static inline float pedalInclineAngleDeg(float sledPositionMM, DAP_config_st * c
 
 
 #ifdef DEBUG_PEDAL_INCLINE
-  Serial.print(", alpha2: ");  Serial.print(alpha * RAD_TO_DEG);
+  Serial.print(", alpha2: ");  Serial.print(alpha * RAD_TO_DEG_FL32);
   Serial.println(" ");
 #endif
 
   
-  return alpha * RAD_TO_DEG;
+  return alpha * RAD_TO_DEG_FL32;
 }
 
 
@@ -152,7 +152,7 @@ static inline float convertToPedalForceGain(float sledPositionMM, DAP_config_st 
 
   // float alpha = acos( (b*b + c*c - a*a) / (2.0f*b*c) );
   // float alpha = fastAcos( (b*b + c*c - a*a) / (2.0f*b*c) );
-  float alpha = iacos( (b*b + c*c - a*a) / (2.0f*b*c) ) * DEG_TO_RAD;
+  float alpha = iacos( (b*b + c*c - a*a) / (2.0f*b*c) ) * DEG_TO_RAD_FL32;
 
 
   // float alphaPlus = atan2f(c_ver, c_hor); // y, x
@@ -165,8 +165,8 @@ static inline float convertToPedalForceGain(float sledPositionMM, DAP_config_st 
   // float sinAlphaPlus = sin(alphaPlus);
   // float cosAlphaPlus = cos(alphaPlus);
 
-  float alphaInDeg = alpha * RAD_TO_DEG;
-  float alphaPlusInDeg = alphaPlus * RAD_TO_DEG;
+  float alphaInDeg = alpha * RAD_TO_DEG_FL32;
+  float alphaPlusInDeg = alphaPlus * RAD_TO_DEG_FL32;
   float sinAlpha = isin(alphaInDeg);
   float cosAlpha = icos(alphaInDeg);
   float sinAlphaPlus = isin(alphaPlusInDeg);
@@ -181,5 +181,5 @@ static inline float convertToPedalForceGain(float sledPositionMM, DAP_config_st 
   float d_phi_d_x = d_alpha_d_x + d_alphaPlus_d_x;
 
   // return in deg/mm
-  return d_phi_d_x * RAD_TO_DEG;
+  return d_phi_d_x * RAD_TO_DEG_FL32;
 }
