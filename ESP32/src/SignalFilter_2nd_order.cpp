@@ -2,35 +2,6 @@
 
 // Define constants from the original code
 static const float KF_MODEL_NOISE_FORCE_JERK = 8.0f * 1e9;
-
-// Kalman Filter class definition
-class KalmanFilter_2nd_order {
-public:
-    KalmanFilter_2nd_order(float varianceEstimate);
-    float filteredValue(float observation, float command, uint8_t modelNoiseScaling_u8);
-    float changeVelocity();
-    float changeAccel();
-
-private:
-    // State
-    float _x[3]; // position, velocity, acceleration
-    float _P_cov[3][3]; // 3x3 error covariance matrix
-
-    // Matrices
-    float _F[3][3]; // State transition matrix
-    float _H[1][3]; // Measurement matrix
-    float _Q[3][3]; // Process noise covariance
-    float _R;       // Measurement noise covariance (scalar)
-    float _K[3];    // Kalman Gain vector
-
-    // Time
-    unsigned long _timeLastObservation;
-
-    // Helper functions
-    void multiplyMatrices(float mat1[][3], float mat2[][3], float result[][3]);
-    void multiplyMatrices_3x3_3x1(float mat1[][3], float vec1[], float result[]);
-};
-
 // Constructor
 KalmanFilter_2nd_order::KalmanFilter_2nd_order(float varianceEstimate)
   : _timeLastObservation(micros()), _R(varianceEstimate)
