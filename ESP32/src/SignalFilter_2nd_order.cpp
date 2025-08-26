@@ -1,7 +1,7 @@
 #include "SignalFilter_2nd_order.h"
 
 // Define constants from the original code
-static const float KF_MODEL_NOISE_FORCE_JERK = 1.0f * 1e9;
+static const float KF_MODEL_NOISE_FORCE_JERK = 1.0f * 1e13;
 // Constructor
 KalmanFilter_2nd_order::KalmanFilter_2nd_order(float varianceEstimate)
   : _timeLastObservation(micros()), _R(varianceEstimate)
