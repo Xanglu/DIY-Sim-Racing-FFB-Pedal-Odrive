@@ -10,7 +10,7 @@
 // a = 300 / delta_t^2
 // adjust model noise here s = 1/6 * j * delta_t^3 --> j = 6 * s / delta_t^3
 //static const float KF_MODEL_NOISE_FORCE_ACCELERATION = ( 2.0f * 1000.0f / 0.05f/ 0.05f );
-static const float KF_MODEL_NOISE_FORCE_JERK = 2000 * ( 2.0f * 4.0f / 0.1f/ 0.1f );
+static const float KF_MODEL_NOISE_FORCE_JERK = 10000000 * ( 2.0f * 4.0f / 0.1f/ 0.1f );
 
 //static const float KF_MODEL_NOISE_FORCE_ACCELERATION = 180 * 1e6;//( 2.0f * 4.0f / 0.1f/ 0.1f );
 

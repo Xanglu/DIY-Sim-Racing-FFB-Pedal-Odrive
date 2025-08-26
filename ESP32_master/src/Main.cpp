@@ -76,8 +76,8 @@ uint16_t checksumCalculator(uint8_t * data, uint16_t length)
 #include "DiyActivePedal_types.h"
 DAP_config_st dap_config_st;
 DAP_calculationVariables_st dap_calculationVariables_st;
-DAP_state_basic_st dap_state_basic_st;
-DAP_state_extended_st dap_state_extended_st;
+DAP_state_basic_st dap_state_basic_st[3];
+DAP_state_extended_st dap_state_extended_st[3];
 DAP_actions_st dap_actions_st;
 DAP_bridge_state_st dap_bridge_state_st;
 DAP_config_st dap_config_st_Clu;
@@ -325,7 +325,10 @@ void setup()
   }
   */
 
-  disableCore0WDT();
+  #ifndef CONFIG_IDF_TARGET_ESP32S3
+    disableCore0WDT();
+    disableCore1WDT();
+  #endif
   //enable ESP-NOW
   ESPNow_initialize();
   //ESPNow multi-tasking    
@@ -513,6 +516,7 @@ bool building_dap_esppairing_lcl =false;
 void loop() 
 {
   taskYIELD();
+  delay(10000);
 }
 
 void ESPNOW_SyncTask( void * pvParameters )
@@ -988,28 +992,38 @@ void Serial_Task( void * pvParameters)
     }
 
 
-
-    if(update_basic_state)
+    for(int i =0; i<3; i++)
     {
-      update_basic_state=false;
-      Serial.write((char*)&dap_state_basic_st, sizeof(DAP_state_basic_st));
-      Serial.print("\r\n");
-      if(dap_bridge_state_st.payloadBridgeState_.Pedal_availability[dap_state_basic_st.payLoadHeader_.PedalTag]==0)
+      if(update_basic_state[i])
       {
-        Serial.print("[L]Found Pedal:");
-        Serial.println(dap_state_basic_st.payLoadHeader_.PedalTag);
+        update_basic_state[i]=false;
+        Serial.write((char*)&dap_state_basic_st[i], sizeof(DAP_state_basic_st));
+        Serial.print("\r\n");
+        if(dap_bridge_state_st.payloadBridgeState_.Pedal_availability[dap_state_basic_st[i].payLoadHeader_.PedalTag]==0)
+        {
+          Serial.print("[L]Found Pedal:");
+          Serial.println(dap_state_basic_st[i].payLoadHeader_.PedalTag);
+        }
+        dap_bridge_state_st.payloadBridgeState_.Pedal_availability[dap_state_basic_st[i].payLoadHeader_.PedalTag]=1;
+        pedal_last_update[dap_state_basic_st[i].payLoadHeader_.PedalTag]=millis();
+        if(ESPNow_error_b[i])
+        {
+          Serial.print("[L]Pedal:");
+          Serial.print(dap_state_basic_st[i].payLoadHeader_.PedalTag);
+          Serial.print(" E:");
+          Serial.println(dap_state_basic_st[i].payloadPedalState_Basic_.error_code_u8);
+          ESPNow_error_b[i]=false;    
+        }
       }
-      dap_bridge_state_st.payloadBridgeState_.Pedal_availability[dap_state_basic_st.payLoadHeader_.PedalTag]=1;
-      pedal_last_update[dap_state_basic_st.payLoadHeader_.PedalTag]=millis();
+      if(update_extend_state[i])
+      {
+        update_extend_state[i]=false;
+        Serial.write((char*)&dap_state_extended_st[i], sizeof(DAP_state_extended_st));
+        Serial.print("\r\n");
 
+      }
     }
-    if(update_extend_state)
-    {
-      update_extend_state=false;
-      Serial.write((char*)&dap_state_extended_st, sizeof(dap_state_extended_st));
-      Serial.print("\r\n");
 
-    }
     int pedal_config_IDX=0;
     for(pedal_config_IDX=0;pedal_config_IDX<3;pedal_config_IDX++)
     {
@@ -1048,16 +1062,14 @@ void Serial_Task( void * pvParameters)
       }
     }
 
-    if(ESPNow_error_b)
-    {
-      Serial.print("[L]Pedal:");
-      Serial.print(dap_state_basic_st.payLoadHeader_.PedalTag);
-      Serial.print(" E:");
-      Serial.println(dap_state_basic_st.payloadPedalState_Basic_.error_code_u8);
-      ESPNow_error_b=false;    
-    }
+
     if(basic_rssi_update)//Bridge action
     {
+      //fill header and footer
+      dap_bridge_state_st.payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
+      dap_bridge_state_st.payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
+      dap_bridge_state_st.payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
+      dap_bridge_state_st.payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
       int rssi_filter_value=constrain(rssi_filter.process(rssi_display),-100,0) ;
       dap_bridge_state_st.payloadBridgeState_.Pedal_RSSI=(uint8_t)(rssi_filter_value+101);
       dap_bridge_state_st.payLoadHeader_.PedalTag=5; //5 means bridge

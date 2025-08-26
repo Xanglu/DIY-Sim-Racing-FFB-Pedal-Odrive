@@ -693,6 +693,20 @@ namespace User.PluginSdkDemo
         }
 
         public string[] STOPCHAR = { "\r\n" };
+
+        public byte[] STARTOFFRAMCHAR = { 0xAA , 0x55};
+        public byte[] ENDOFFRAMCHAR = { 0xAA, 0x56 };
+
+
+        public byte[] STARTOFFRAME_EXTENDED_STRUCT = { 0xAA, 0x55, 130 };
+        public byte[] STARTOFFRAME_BASIC_STRUCT = { 0xAA, 0x55, 120 };
+        public byte[] STARTOFFRAME_BRIDGE_BASIC_STRUCT = { 0xAA, 0x55, 210 };
+        public byte[] STARTOFFRAME_CONFIG = { 0xAA, 0x55, 100 };
+
+        public byte[] STARTOFFRAMCHAR_SOF_byte0 = { 0xAA};
+        public byte[] STARTOFFRAMCHAR_SOF_byte1 = { 0x55};
+
+        //public string[] ENDOFFRAMCHAR = { "\r\n" };
         public bool EndsWithStop(string incomingData)
         {
             for (int i = 0; i < STOPCHAR.Length; i++)

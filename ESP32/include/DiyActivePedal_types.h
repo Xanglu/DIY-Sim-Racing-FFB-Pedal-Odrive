@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "CubicInterpolatorFloat.h"
 // define the payload revision
-#define DAP_VERSION_CONFIG 153
+#define DAP_VERSION_CONFIG 155
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -17,7 +17,33 @@
 #define DAP_PAYLOAD_TYPE_BRIDGE_STATE 210
 #define DAP_PAYLOAD_TYPE_ESPNOW_LOG 225
 
+
+
+#define SOF_BYTE_0 0xAA
+#define SOF_BYTE_1 0x55
+#define EOF_BYTE_0 0xAA
+#define EOF_BYTE_1 0x56
+
+
+enum pedalStatus
+{
+  PEDAL_STATUS_NORMAL,
+  PEDAL_STATUS_RUDDER,
+  PEDAL_STATUS_RUDDERBRAKE
+};
+enum pedalID
+{
+  PEDAL_ID_CLUTCH,
+  PEDAL_ID_BRAKE,
+  PEDAL_ID_THROTTLE
+};
+
+
 struct payloadHeader {
+
+  // start of frame indicator
+  uint8_t startOfFrame0_u8;
+  uint8_t startOfFrame1_u8;
   
   // structure identification via payload
   uint8_t payloadType;
@@ -30,7 +56,6 @@ struct payloadHeader {
 
   //pedal tag
   uint8_t PedalTag;
-
 };
 
 struct payloadPedalAction {
@@ -57,11 +82,14 @@ struct payloadPedalState_Basic {
   uint8_t erroe_code_u8;
   uint8_t pedalFirmwareVersion_u8[3];
   uint8_t servoStatus;
+  uint8_t pedalStatus;
+  uint8_t pedalContrlBoardType;
 };
 
 struct payloadPedalState_Extended {
 
   unsigned long timeInUs_u32;
+  //unsigned long timeInUsFromSerialTask_u32;
   float pedalForce_raw_fl32;
   float pedalForce_filtered_fl32;
   float forceVel_est_fl32;
@@ -278,6 +306,10 @@ struct payloadESPNowInfo{
 struct payloadFooter {
   // To check if structure is valid
   uint16_t checkSum;
+
+  // end of frame bytes
+  uint8_t enfOfFrame0_u8;
+  uint8_t enfOfFrame1_u8;
 };
 
 

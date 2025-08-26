@@ -45,6 +45,7 @@ bool ESPNOW_BootIntoDownloadMode = false;
 bool Get_Rudder_action_b=false;
 bool Get_HeliRudder_action_b=false;
 bool printPedalInfo_b=false;
+bool Config_update_Buzzer_b = false;
 unsigned long Rudder_initialized_time=0;
 
 DAP_Rudder_st dap_rudder_receiving;
@@ -167,8 +168,11 @@ void ESPNow_Pairing_callback(const uint8_t *mac_addr, const uint8_t *data, int d
 
 
 }
-void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
+
+void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len) 
 {
+  //uint8_t mac_addr[6]={0};
+  
   DAP_config_st dap_config_espnow_recv_st = global_dap_config_class.getConfig();
   /*
   if(ESPNOW_status)
@@ -180,12 +184,12 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
   //only get mac in pairing
   if(ESPNow_pairing_action_b)
   {
-    ESPNow_Pairing_callback(mac_addr, data, data_len);
+    ESPNow_Pairing_callback(esp_now_info->src_addr, data, data_len);
   }
   if(ESPNOW_status)
   {
     //rudder message
-    if(MacCheck(Recv_mac,(uint8_t *)mac_addr))
+    if(MacCheck(Recv_mac,(uint8_t *)esp_now_info->src_addr))
     {
       if(data_len==sizeof(DAP_Rudder_st))
       {
@@ -218,12 +222,12 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
 
       }
     }
-    if(MacCheck(esp_Host,(uint8_t *)mac_addr))
+    if(MacCheck(esp_Host,(uint8_t *)esp_now_info->src_addr))
     {
       
       if (data_len == sizeof(DAP_config_st))
       {
-        if (mac_addr[5] == esp_Host[5])
+        if (esp_now_info->src_addr[5] == esp_Host[5])
         {
           // Serial.println("dap_config_st ESPNow recieved");
 
@@ -264,8 +268,12 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
           {
             // Serial.println("Updating pedal config");
             global_dap_config_class.setConfig(dap_config_espnow_recv_st);
+            if(dap_config_espnow_recv_st.payLoadHeader_.storeToEeprom==1)
+            {
+              Config_update_Buzzer_b = true;
+            }
             configUpdateAvailable = true;
-            Config_update_b = true;
+            
 
           }
         }
@@ -505,7 +513,7 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
   }
 
 }
-void OnSent(const uint8_t *mac_addr, esp_now_send_status_t status)
+void OnSent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status)
 {
 
 }
@@ -579,9 +587,15 @@ void ESPNow_initialize()
   ESPNow.init();
   Serial.println("Wait for ESPNOW");
   delay(3000);
+  esp_now_rate_config_t global_peer_config;
+  global_peer_config.dcm=false;
+  global_peer_config.ersu=false;
+  global_peer_config.phymode=WIFI_PHY_MODE_HT20;
+  global_peer_config.rate=WIFI_PHY_RATE_MCS0_LGI;
   #ifdef ESPNow_S3
     // esp_wifi_config_espnow_rate(WIFI_IF_STA, 	WIFI_PHY_RATE_54M);
     esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_11M_L);
+    global_peer_config.rate=WIFI_PHY_RATE_11M_L;
   // esp_wifi_set_max_tx_power(WIFI_POWER_8_5dBm);
     #if PCB_VERSION == 9
       //esp_wifi_set_max_tx_power(WIFI_POWER_19_5dBm);
@@ -591,6 +605,7 @@ void ESPNow_initialize()
   #endif
   #ifdef ESPNow_ESP32
     esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_MCS0_LGI);
+    //global_peer_config.rate=WIFI_PHY_RATE_MCS0_LGI;
     // esp_wifi_config_espnow_rate(WIFI_IF_STA, 	WIFI_PHY_RATE_54M);
   #endif
   #ifdef ESPNow_Pairing_function
@@ -637,7 +652,8 @@ void ESPNow_initialize()
     if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 1)
     {
       Recv_mac=Gas_mac;
-      ESPNow.add_peer(Recv_mac);    
+      ESPNow.add_peer(Recv_mac);
+      //esp_now_set_peer_rate_config(Recv_mac, &global_peer_config);
     }
 
     if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 2)
@@ -645,11 +661,14 @@ void ESPNow_initialize()
       Recv_mac=Brk_mac;
       ESPNow.add_peer(Brk_mac);
       ESPNow.add_peer(Clu_mac);
+      //esp_now_set_peer_rate_config(Brk_mac, &global_peer_config);
+      //esp_now_set_peer_rate_config(Clu_mac, &global_peer_config);
     }
     if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 0)
     {
       Recv_mac=Gas_mac;
       ESPNow.add_peer(Recv_mac);
+      //esp_now_set_peer_rate_config(Recv_mac, &global_peer_config);
     }
     
 
@@ -658,16 +677,19 @@ void ESPNow_initialize()
     if(ESPNow.add_peer(esp_master)== ESP_OK)
     {
       ESPNOW_status=true;
+      //esp_now_set_peer_rate_config(esp_master, &global_peer_config);
       Serial.println("Sucess to add joystick peer");
     }
     if(ESPNow.add_peer(esp_Host)== ESP_OK)
     {
       ESPNOW_status=true;
+      //esp_now_set_peer_rate_config(esp_Host, &global_peer_config);
       Serial.println("Sucess to add host peer");
     }
     if(ESPNow.add_peer(broadcast_mac)== ESP_OK)
     {
       ESPNOW_status=true;
+      //esp_now_set_peer_rate_config(broadcast_mac, &global_peer_config);
       Serial.println("Sucess to add broadcast peer");
     }
     ESPNow.reg_recv_cb(onRecv);

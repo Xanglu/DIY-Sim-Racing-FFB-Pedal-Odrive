@@ -81,6 +81,10 @@ void Modbus::readParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress)
   uint8_t raw2[2];
   uint8_t len;
   int16_t regArray[4];
+  regArray[0] = -1;
+  regArray[1] = -1;
+  regArray[2] = -1;
+  regArray[3] = -1;
 
   // read the four registers simultaneously
   if(requestFrom(slaveId_local_u16, 0x03, parameterAdress,  2) > 0)
@@ -111,8 +115,6 @@ bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t param
   bool registerWritten_b = false;
   bool registerValueAsTarget_b = false;
 
-  
-
   // check and set the register at maximum N times
   for (uint8_t tryIdx_u8 = 0; tryIdx_u8 < 10; tryIdx_u8++)
   {
@@ -129,7 +131,11 @@ bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t param
     uint8_t raw2[2];
     uint8_t len;
     int16_t regArray[4];
-
+    regArray[0] = -1;
+    regArray[1] = -1;
+    regArray[2] = -1;
+    regArray[3] = -1;
+    
     // read the four registers simultaneously
     if(requestFrom(slaveId_local_u16, 0x03, parameterAdress,  2) > 0)
     {
@@ -162,7 +168,6 @@ bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t param
     {
       registerValueAsTarget_b = true;
     }
-
   }
 
   return registerWritten_b;
@@ -238,22 +243,30 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
     txout[7] = crc >> 8;
  
      
-    if(log){
-      Serial.print("TX: ");
-       for(int i =0; i < 8; i++)
-            {
-                Serial.printf("%02X ",txout[i] );
-            }
-            Serial.print("\t");
-     }
+    // if(log){
+    //   Serial.print("TX: ");
+    //    for(int i =0; i < 8; i++)
+    //         {
+    //             Serial.printf("%02X ",txout[i] );
+    //         }
+    //         Serial.print("\t");
+    //  }
 
     //digitalWrite(mode_,1);
     //delay(1);
+    size_t bufferCapacity = this->s->availableForWrite();
     this->s->write(txout,8);
-    this->s->flush();
+    delay(1);
+    uint8_t timeOutInMs_u8 = 10;
+    while( (bufferCapacity != this->s->availableForWrite() ) && (timeOutInMs_u8 > 0) ) 
+    { 
+      delay(1);
+      timeOutInMs_u8--;
+    }
+    // this->s->flush();
     //digitalWrite(mode_,0);
     //delay(1);
-    uint32_t t = millis();
+    unsigned long t = millis();
     lenRx   = 0;
     datalen = 0;
     int ll = 0;
@@ -262,11 +275,14 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
 
     bool allDataReceived_b = false;
     while( (false == allDataReceived_b) && ((millis() - t) < timeout_)){
-       if(this->s->available())
+        // delay for certain time to allow a context switch
+       delay(1);
+       
+       while(this->s->available())
        {
-        rx = this->s->read();
         t = millis();
-        
+        rx = this->s->read();
+
         if(found == 0)
         {
           if(txout[ll] == rx){ll++;}else{ll = 0;}
@@ -307,14 +323,14 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
 
     }
 
-    if(log){
-        Serial.print("RX: ");
-        for(int i =0; i < lenRx; i++)
-            {
-             Serial.printf("%02X ",rawRx[i] );
-            }
-            Serial.println();
-     }
+    // if(log){
+    //     Serial.print("RX: ");
+    //     for(int i =0; i < lenRx; i++)
+    //         {
+    //          Serial.printf("%02X ",rawRx[i] );
+    //         }
+    //         Serial.println();
+    //  }
 
     /*Serial.print(lenRx);
     Serial.println();*/
@@ -532,27 +548,37 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
     txout[7] = crc >> 8;
 	
 	// send signal
+  size_t bufferCapacity = this->s->availableForWrite();
 	digitalWrite(mode_,1);
   delay(1);
   this->s->write(txout,8);
-  this->s->flush();
+  delay(1);
+  uint8_t timeOutInMs_u8 = 10;
+  while( (bufferCapacity != this->s->availableForWrite() ) && (timeOutInMs_u8 > 0) ) 
+  { 
+    delay(1);
+    timeOutInMs_u8--;
+  }
+
+  // this->s->write(txout,8);
+  // this->s->flush();
   digitalWrite(mode_,0);
   delay(1);
 
   // verify return signal
   // should be identical to transmit signal, otherwise error
 
-  uint32_t t = millis();
+  unsigned long t = millis();
   int ll = 0;
   int rx;
   
   bool returnSignalIsCopyOfTransmittedSignal_b = false;
-  while((millis() - t) < timeout_){
-      if(this->s->available())
+  while( ( (millis() - t) < timeout_)  && (false == returnSignalIsCopyOfTransmittedSignal_b)) {
+      delay(1);
+      t = millis();
+      while(this->s->available())
       {
         rx = this->s->read();
-        t = millis();
-        
         if(txout[ll] == rx){ll++;}else{ll = 0;}
 
         if (ll == 8)
@@ -560,20 +586,11 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
           returnSignalIsCopyOfTransmittedSignal_b = true;
           break;
         }
-
       }
+      
   }
-
-  // Serial.print("Returnsignal: ");
-  // Serial.print(returnSignalIsCopyOfTransmittedSignal_b);
-  // Serial.print(",    Adress: ");
-  // Serial.print(address);
-  // Serial.print(",    value: ");
-  // Serial.println(value);
-	
 
   delay(5);
 
   return returnSignalIsCopyOfTransmittedSignal_b;
-
 }

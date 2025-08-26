@@ -17,6 +17,7 @@ namespace User.PluginSdkDemo
         public byte error_code_u8;
         public fixed byte pedalFirmwareVersion_u8[3];
         public byte servoStatus;
-
+        public byte pedalStatus;
+        public byte pedalContrlBoardType;
     };
 }

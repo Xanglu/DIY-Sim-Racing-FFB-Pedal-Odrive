@@ -25,13 +25,13 @@ bool ESPNOW_status =false;
 bool ESPNow_initial_status=false;
 bool ESPNow_update= false;
 bool ESPNow_no_device=false;
-bool update_basic_state=false;
-bool update_extend_state=false;
+bool update_basic_state[3]={false,false,false};
+bool update_extend_state[3]={false,false,false};
 bool pedal_OTA_action_b=false;
 uint16_t Joystick_value[]={0,0,0};
 uint16_t Joystick_value_original[]={0,0,0};
 bool ESPNow_request_config_b[3]={false,false,false};
-bool ESPNow_error_b=false;
+bool ESPNow_error_b[3]={false,false,false};
 uint16_t pedal_throttle_value=0;
 uint16_t pedal_brake_value=0;
 uint16_t pedal_cluth_value=0;
@@ -142,15 +142,16 @@ void ESPNow_Pairing_callback(const uint8_t *mac_addr, const uint8_t *data, int d
 
 }
 //void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len)
-void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
+//void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
+void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len)
 {
   //only get mac in pairing
   if(ESPNow_pairing_action_b)
   {
-    ESPNow_Pairing_callback(mac_addr, data, data_len);
+    ESPNow_Pairing_callback(esp_now_info->src_addr, data, data_len);
   }
   //only recieve the package from registed mac address
-  if(MacCheck((uint8_t*)mac_addr, Clu_mac)||MacCheck((uint8_t*)mac_addr, Brk_mac)||MacCheck((uint8_t*)mac_addr, Gas_mac))
+  if(MacCheck((uint8_t*)esp_now_info->src_addr, Clu_mac)||MacCheck((uint8_t*)esp_now_info->src_addr, Brk_mac)||MacCheck((uint8_t*)esp_now_info->src_addr, Gas_mac))
   {
     if(data[0]==DAP_PAYLOAD_TYPE_ESPNOW_LOG && data[1]==ESPNOW_LOG_MAGIC_KEY && data[2]==ESPNOW_LOG_MAGIC_KEY_2)
     {
@@ -162,70 +163,68 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
       }
 
     }
-    if(data_len==sizeof(Joystick_Data))
+    if(data_len==sizeof(DAP_state_basic_st))
     {
-
       
-      memcpy(&Joystick_Data, data, sizeof(DAP_Joystick_Message));
-      if(Joystick_Data.payloadtype==DAP_PAYLOAD_TYPE_ESPNOW_JOYSTICK)
-      {
-        //#ifdef ACTIVATE_JOYSTICK_OUTPUT
-        // normalize controller output
-        int32_t joystickNormalizedToInt32 = NormalizeControllerOutputValue(Joystick_Data.controllerValue_i32, 0, 10000, 100); 
-        //if(esp_now_info->src_addr[5]==Clu_mac[5])
-        if(mac_addr[5]==Clu_mac[5])
-        {
-          pedal_cluth_value=joystickNormalizedToInt32;
-          Joystick_value[0]=Joystick_Data.controllerValue_i32;
-          Joystick_value_original[0]=joystickNormalizedToInt32;
-          //joystick_update=true;
-        }
-        if(mac_addr[5]==Brk_mac[5])
-        {
-          pedal_brake_value=joystickNormalizedToInt32;
-          Joystick_value[1]=Joystick_Data.controllerValue_i32;
-          Joystick_value_original[1]=joystickNormalizedToInt32;
-          
-          //joystick_update=true;
-        }
-        if(mac_addr[5]==Gas_mac[5])
-        {
-          pedal_throttle_value=joystickNormalizedToInt32;
-          Joystick_value[2]=Joystick_Data.controllerValue_i32;
-          Joystick_value_original[2]=joystickNormalizedToInt32;
-          pedal_status=Joystick_Data.pedal_status;//control pedal status only by Throttle
-          //joystick_update=true;
-        }
-      }
-
-      #ifdef ESPNow_debug
-      Serial.print("Bytes received: ");
-      Serial.println(len);
-      Serial.print("CycleCnt: ");
-      Serial.println(myData.cycleCnt_u64);
-      Serial.print("TimeSinceBoot in ms (shared): ");
-      Serial.println(myData.timeSinceBoot_i64);
-      Serial.print("controllerValue_i32: ");
-      Serial.println(myData.controllerValue_i32);	
-      Serial.println();
-      #endif
-    }
-    
-    if(data_len==sizeof(dap_state_basic_st))
-    {
-      memcpy(&dap_state_basic_st, data, sizeof(dap_state_basic_st));
       //Joystick_value[dap_state_basic_st.payLoadHeader_.PedalTag]=dap_state_basic_st.payloadPedalState_Basic_.joystickOutput_u16;
-      update_basic_state=true;
-      if(dap_state_basic_st.payloadPedalState_Basic_.error_code_u8!=0)
+      DAP_state_basic_st dap_state_basic_st_lcl;
+      memcpy(&dap_state_basic_st_lcl, data, sizeof(DAP_state_basic_st));
+      bool structChecker=true;
+      if(dap_state_basic_st_lcl.payLoadHeader_.version!=DAP_VERSION_CONFIG) structChecker=false;
+      if(dap_state_basic_st_lcl.payLoadHeader_.payloadType!=DAP_PAYLOAD_TYPE_STATE_BASIC) structChecker=false;
+      uint16_t crcChecker = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl.payLoadHeader_)), sizeof(dap_state_basic_st_lcl.payLoadHeader_) + sizeof(dap_state_basic_st_lcl.payloadPedalState_Basic_));
+      if(crcChecker!=dap_state_basic_st_lcl.payloadFooter_.checkSum) structChecker=false;
+      
+      //fill the joystick value
+      if(structChecker)
       {
-        ESPNow_error_b=true;
+        uint8_t pedalTag=dap_state_basic_st_lcl.payLoadHeader_.PedalTag;
+        memcpy(&dap_state_basic_st[pedalTag], data, sizeof(DAP_state_basic_st));
+        update_basic_state[pedalTag]=true;
+        if(dap_state_basic_st_lcl.payloadPedalState_Basic_.error_code_u8!=0) ESPNow_error_b[pedalTag]=true;
+        float joystickData_u32= dap_state_basic_st[pedalTag].payloadPedalState_Basic_.joystickOutput_u16/32767.0f*10000.0f;
+        int32_t joystickNormalizedToInt32 = NormalizeControllerOutputValue(dap_state_basic_st[pedalTag].payloadPedalState_Basic_.joystickOutput_u16, 0, 32767, 100); 
+        switch (pedalTag)
+        {
+          case PEDAL_ID_CLUTCH:
+            pedal_cluth_value=joystickNormalizedToInt32;
+            Joystick_value[0]=joystickData_u32;
+            Joystick_value_original[0]=joystickNormalizedToInt32;
+          break;
+          case PEDAL_ID_BRAKE:
+            pedal_brake_value=joystickNormalizedToInt32;
+            Joystick_value[1]=joystickData_u32;
+            Joystick_value_original[1]=joystickNormalizedToInt32;
+          break;
+          case PEDAL_ID_THROTTLE:
+            pedal_throttle_value=joystickNormalizedToInt32;
+            Joystick_value[2]=joystickData_u32;
+            Joystick_value_original[2]=joystickNormalizedToInt32;
+            pedal_status=dap_state_basic_st[pedalTag].payloadPedalState_Basic_.pedalStatus;//control pedal status only by Throttle
+          break;
+          default:
+          break;
+        }
+
       }
     }
 
-    if(data_len==sizeof(dap_state_extended_st))
+    if(data_len==sizeof(DAP_state_extended_st))
     {
-      memcpy(&dap_state_extended_st, data, sizeof(dap_state_extended_st));
-      update_extend_state=true;
+      DAP_state_extended_st dap_state_extend_st_lcl;
+      memcpy(&dap_state_extend_st_lcl, data, sizeof(DAP_state_extended_st));
+      bool structChecker=true;      
+      uint8_t pedalTag=dap_state_extend_st_lcl.payLoadHeader_.PedalTag;
+      if(dap_state_extend_st_lcl.payLoadHeader_.version!=DAP_VERSION_CONFIG) structChecker=false;
+      if(dap_state_extend_st_lcl.payLoadHeader_.payloadType!=DAP_PAYLOAD_TYPE_STATE_EXTENDED) structChecker=false;
+      uint16_t crcChecker = checksumCalculator((uint8_t*)(&(dap_state_extend_st_lcl.payLoadHeader_)), sizeof(dap_state_extend_st_lcl.payLoadHeader_) + sizeof(dap_state_extend_st_lcl.payloadPedalState_Extended_));
+      if(crcChecker!=dap_state_extend_st_lcl.payloadFooter_.checkSum) structChecker=false;
+      if(structChecker)
+      {
+        memcpy(&dap_state_extended_st[pedalTag], data, sizeof(DAP_state_extended_st));
+        update_extend_state[pedalTag]=true;
+      }
+
     }
 
     if(data_len==sizeof(DAP_config_st))
@@ -251,7 +250,7 @@ void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
 
 
 }
-void OnSent(const uint8_t *mac_addr, esp_now_send_status_t status)
+void OnSent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status)
 {
 
 }

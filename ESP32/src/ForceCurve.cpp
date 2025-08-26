@@ -41,7 +41,7 @@ float ForceCurve_Interpolated::EvalForceCubicSpline(const DAP_config_st* config_
   }
   uint8_t splineSegment_u8 = (uint8_t)floor(splineSegment_fl32);
   
-  if (splineSegment_u8 < 0){splineSegment_u8 = 0;}
+  // if (splineSegment_u8 < 0){splineSegment_u8 = 0;}
   if (splineSegment_u8 > (numberOfSplineSegments) )
   {
     splineSegment_u8 = numberOfSplineSegments;
@@ -138,7 +138,7 @@ float ForceCurve_Interpolated::EvalForceGradientCubicSpline(const DAP_config_st*
   }
   uint8_t splineSegment_u8 = (uint8_t)floor(splineSegment_fl32);
   
-  if (splineSegment_u8 < 0){splineSegment_u8 = 0;}
+  // if (splineSegment_u8 < 0){splineSegment_u8 = 0;}
   if (splineSegment_u8 > (numberOfSplineSegments) )
   {
     splineSegment_u8 = numberOfSplineSegments;
@@ -267,7 +267,7 @@ float ForceCurve_Interpolated::EvalJoystickCubicSpline(const DAP_config_st* conf
     }
     uint8_t splineSegment_u8 = (uint8_t)floor(splineSegment_fl32);
     
-    if (splineSegment_u8 < 0){splineSegment_u8 = 0;}
+    // if (splineSegment_u8 < 0){splineSegment_u8 = 0;}
     if (splineSegment_u8 > (numberOfSplineSegments) )
     {
       splineSegment_u8 = numberOfSplineSegments;

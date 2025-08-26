@@ -1,7 +1,10 @@
 #pragma once
 #include <stdint.h>
+// #include <task.h>
 
-//#define PRINT_TASK_FREE_STACKSIZE_IN_WORDS
+#define PI_FL32         3.1415926535897932384626433832795f
+#define DEG_TO_RAD_FL32 0.017453292519943295769236907684886f
+#define RAD_TO_DEG_FL32 57.295779513082320876798154814105f
 
 /********************************************************************/
 /*                      Select the PCB      */
@@ -21,12 +24,33 @@
 /********************************************************************/
 #define CORE_ID_PEDAL_UPDATE_TASK (uint8_t)1
 #define CORE_ID_SERIAL_COMMUNICATION_TASK (uint8_t)0
-#define CORE_ID_JOYSTICK_TASK (uint8_t)0
+#define CORE_ID_JOYSTICK_TASK (uint8_t)1
 #define CORE_ID_MISC_TASK (uint8_t)0
 #define CORE_ID_OTA_TASK (uint8_t)0
 #define CORE_ID_SERVO_COMMUNICATION_TASK (uint8_t)0
 #define CORE_ID_ESPNOW_TASK (uint8_t)0
 #define CORE_ID_STEPPER_TASK (uint8_t)1
+#define CORE_ID_LOADCELLREADING_TASK (uint8_t)1
+#define CORE_ID_PROFILER_TASK (uint8_t)0
+
+// #define CORE_ID_PEDAL_UPDATE_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_SERIAL_COMMUNICATION_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_JOYSTICK_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_MISC_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_OTA_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_SERVO_COMMUNICATION_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_ESPNOW_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_STEPPER_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_LOADCELLREADING_TASK ( 0x7FFFFFFF )
+
+
+#define REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US (int64_t)300
+#define REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST_IN_US (int64_t)200
+#define REPETITION_INTERVAL_ESPNOW_TASK_IN_US (int64_t)3000
+#define REPETITION_INTERVAL_OTA_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERVO_COMMUNICATION_TASK_IN_US (int64_t)10000
 
 /********************************************************************/
 /*                      Other defines       */
@@ -50,6 +74,8 @@
 // 2.0kHz
 #define ADC_SAMPLE_RATE ADS1256_DRATE_2000SPS
 #define PUT_TARGET_CYCLE_TIME_IN_US DAP_MICROSECONDS_PER_SECOND / 2000
+
+// #define PUT_TARGET_CYCLE_TIME_IN_US 300
 
 // 1.0kHz
 //#define ADC_SAMPLE_RATE ADS1256_DRATE_1000SPS

@@ -184,12 +184,6 @@ int32_t MoveByPidStrategy(float loadCellReadingKg, float stepperPosFraction, Ste
   
   // clamp target position to range
   posStepperNew=constrain(posStepperNew,calc_st->stepperPosMin,calc_st->stepperPosMax );
-
-  //#define PLOT_PID_VALUES
-  #ifdef PLOT_PID_VALUES
-    static RTDebugOutput<float, 8> rtDebugFilter({ "stepperPosFraction", "loadCellTargetKg", "loadCellReadingKg", "loadCellReadingKg_clip", "Setpoint", "Input", "Output", "posStepperNew"});
-    rtDebugFilter.offerData({ stepperPosFraction, loadCellTargetKg, loadCellReadingKg, loadCellReadingKg_clip, Setpoint, Input, Output, posStepperNew});       
-  #endif
   
 
   return posStepperNew;
@@ -623,9 +617,7 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
       // get current position
       currentPos = stepper->getCurrentPositionFraction();
       loadcellReading = (loadcellReading - calc_st->Force_Min) / calc_st->Force_Range; 
-
-      static RTDebugOutput<float, 3, 9> rtDebugFilter;
-      rtDebugFilter.offerData({ ((float)t) *1e-6f , currentPos,  loadcellReading});   
+  
     }
   }
 
