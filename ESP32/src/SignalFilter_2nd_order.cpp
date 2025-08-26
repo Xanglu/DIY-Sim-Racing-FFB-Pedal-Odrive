@@ -1,7 +1,7 @@
 #include "SignalFilter_2nd_order.h"
 
 // Define constants from the original code
-static const float KF_MODEL_NOISE_FORCE_JERK = 8.0f * 1e9;
+static const float KF_MODEL_NOISE_FORCE_JERK = 1.0f * 1e9;
 // Constructor
 KalmanFilter_2nd_order::KalmanFilter_2nd_order(float varianceEstimate)
   : _timeLastObservation(micros()), _R(varianceEstimate)
@@ -17,9 +17,15 @@ KalmanFilter_2nd_order::KalmanFilter_2nd_order(float varianceEstimate)
   }
 
   // Measurement matrix (position measurement only)
+  // 1x3
+  // 1 measurement
+  // 3 states
   _H[0][0] = 1.0f;
   _H[0][1] = 0.0f;
   _H[0][2] = 0.0f;
+
+  // 1x1
+  _R = varianceEstimate;
 }
 
 // Matrix multiplication for 3x3 matrices
@@ -95,8 +101,8 @@ float KalmanFilter_2nd_order::filteredValue(float observation, float command, ui
     { _F[0][1], _F[1][1], _F[2][1] },
     { _F[0][2], _F[1][2], _F[2][2] }
   };
-  float FP[3][3];
-  float FPFtrans[3][3];
+  float FP[3][3] = {0};
+  float FPFtrans[3][3]= {0};
   multiplyMatrices(_F, _P_cov, FP);
   multiplyMatrices(FP, Ftrans, FPFtrans);
   float P_pred[3][3];
@@ -109,15 +115,14 @@ float KalmanFilter_2nd_order::filteredValue(float observation, float command, ui
   // Update Step
   // y = z - H * x_pred
   // Since observation is position (1x1), we don't need to include the velocity and acceleration prediction
-  float y = observation - ( _H[0][0] * x_pred[0] );
+  float y = observation -  x_pred[0];
   
   // S = H * P_pred * H' + R
   // H = [1; 0; 0]
   // P = 3x3
-  // H * P = [P_00, P_01, P_02; 0, 0, 0; 0, 0, 0]
-  // [P_00, P_01, P_02; 0, 0, 0; 0, 0, 0] * [1, 0, 0] = [P_00, 0, 0; 0, 0, 0; 0, 0, 0]
   // H * P_pred * H' simplifies to P_pred[0][0]
-  
+  // (H * P) = 1x3 = [1, 0, 0] * [P_00, P_01, P_02; P_10, P_11, P_12; P_20, P_21, P_22] = [P_00, P_01, P_02]
+  // (H * P) * H' = 1x3 * 3x1 = 1x1 = [P_00, P_01, P_02] * [1; 0; 0] = P_00
   // S_cov = [P_00, 0, 0; 0, 0, 0; 0, 0, 0] + R
   float S_cov = P_pred[0][0] + _R;
   
@@ -127,8 +132,9 @@ float KalmanFilter_2nd_order::filteredValue(float observation, float command, ui
   if (fabsf(S_cov) > 0.000001f) {
     // K = P_pred * H' * inv(S)
 	
-	// P_pred * H' = 3x3 * [1, 0, 0]
-	// K = 3x3 but only first column is not zero
+	  // P_pred * H' = 3x3 * (1x3)' = 3x1
+
+	  // K = 3x1 * 1x1 = 3x1
     _K[0] = P_pred[0][0] * inv_S_cov;
     _K[1] = P_pred[1][0] * inv_S_cov;
     _K[2] = P_pred[2][0] * inv_S_cov;
@@ -139,45 +145,52 @@ float KalmanFilter_2nd_order::filteredValue(float observation, float command, ui
     _x[2] = x_pred[2] + _K[2] * y;
 
     // Update error covariance: P = (I - K*H) * P_pred
-	// K = 3x3 
-	// H = 3x1 with only first element beeing non zero
-	// --> K*H = 3x3 = [_K[0]*_H[0], 0, 0; 0, 0, 0; 0, 0, 0]
-	float KH[3][3];
-    //for (int i = 0; i < 3; ++i) {
-    //  for (int j = 0; j < 3; ++j) {
-    //    KH[i][j] = _K[i] * _H[0][j];
-    //  }
-    //}
-	KH[0][0] = _K[0] * _H[0][0];
-	KH[0][1] = 0.0f;
-	KH[0][2] = 0.0f;
-	KH[1][0] = 0.0f;
-	KH[1][1] = 0.0f;
-	KH[1][2] = 0.0f;
-	KH[1][0] = 0.0f;
-	KH[1][1] = 0.0f;
-	KH[1][2] = 0.0f;
-	
-    float I_KH[3][3];
-    //for (int i = 0; i < 3; ++i) {
-    //  for (int j = 0; j < 3; ++j) {
-    //    if (i == j) I_KH[i][j] = 1.0f - KH[i][j];
-    //    else I_KH[i][j] = -KH[i][j];
-    //  }
-    //}
-	
-	I_KH[0][0] = 1.0f - KH[0][0];
-	I_KH[0][1] = 0.0f;
-	I_KH[0][2] = 0.0f;
-	I_KH[1][0] = 0.0f;
-	I_KH[1][1] = 1.0f;
-	I_KH[1][2] = 0.0f;
-	I_KH[1][0] = 0.0f;
-	I_KH[1][1] = 0.0f;
-	I_KH[1][2] = 1.0f;
-	
-	
-    multiplyMatrices(I_KH, P_pred, _P_cov);
+    // K = 3x1
+    // H = 1x3 with only first element beeing non zero
+    // --> K*H = 3x1 * 1x3 = 3x3 = [_K[0], 0, 0; _K[1], 0, 0; _K[2], 0, 0]
+  
+
+    // --- START: JOSEPH FORM COVARIANCE UPDATE ---
+    // Update error covariance using the numerically stable Joseph form:
+    // P = (I - K*H) * P_pred * (I - K*H)' + K*R*K'
+
+    // 1. Calculate (I - K*H)
+    // Since H = [1, 0, 0], K*H results in a matrix with only the first column being non-zero.
+    float I_minus_KH[3][3] = {
+      {1.0f - _K[0], 0.0f, 0.0f},
+      {-_K[1]      , 1.0f, 0.0f},
+      {-_K[2]      , 0.0f, 1.0f}
+    };
+
+    // 2. Calculate the transpose (I - K*H)'
+    float I_minus_KH_T[3][3] = {
+      {I_minus_KH[0][0], I_minus_KH[1][0], I_minus_KH[2][0]},
+      {I_minus_KH[0][1], I_minus_KH[1][1], I_minus_KH[2][1]},
+      {I_minus_KH[0][2], I_minus_KH[1][2], I_minus_KH[2][2]}
+    };
+
+    // 3. Calculate the first term: (I - K*H) * P_pred * (I - K*H)'
+    float term1_intermediate[3][3];
+    float term1_final[3][3];
+    multiplyMatrices(I_minus_KH, P_pred, term1_intermediate);
+    multiplyMatrices(term1_intermediate, I_minus_KH_T, term1_final);
+
+    // 4. Calculate the second term: K * R * K'
+    // This is an outer product of the Kalman gain vector K with itself, scaled by the scalar R.
+    float term2_final[3][3];
+    for (int i = 0; i < 3; ++i) {
+      for (int j = 0; j < 3; ++j) {
+        term2_final[i][j] = _K[i] * _R * _K[j];
+      }
+    }
+
+    // 5. Add the two terms to get the final updated P_cov
+    for (int i = 0; i < 3; ++i) {
+      for (int j = 0; j < 3; ++j) {
+        _P_cov[i][j] = term1_final[i][j] + term2_final[i][j];
+      }
+    }
+    // --- END: JOSEPH FORM COVARIANCE UPDATE ---
 
   } else {
     // S is zero, reset P_cov to avoid issues
