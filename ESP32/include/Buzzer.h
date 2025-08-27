@@ -27,16 +27,17 @@ private:
             ledc_stop(mode, ch, 0);
             return;
         }
-
+        
         // setup buzzer
         ledc_set_freq(mode, timer, frequency);
-        float duty = ((float)duty_max*(float)volume/255.0f);
+        float duty = ((float)duty_50*(float)volume/255.0f);
         ledc_set_duty(mode, ch, (uint32_t)duty);
         ledc_update_duty(mode, ch);
         delay(duration);
 
         // stop buzzer
         ledc_stop(mode, ch, 0);
+        
     }
 public:
     void single_beep_tone(int sound_Hz, int duration)
@@ -124,14 +125,22 @@ public:
         float step_quantity=80.0f;
         float duration_steps = ((float)duration/step_quantity);
         float volume=0.0f;
-        float volume_step=255.0f/step_quantity;
+        float volume_max=50.0f;
+        float volume_step=volume_max/step_quantity;
         for(int i=0;i<step_quantity;i++)
         {
-            volume=(i+1)*volume_step*sin(PI*cycle*(float)((float)(i+1)/step_quantity));
-            tone_buzzer(sound_Hz,duration_steps,volume);
+            volume=volume_max*(float)sin(PI*cycle*(float)((float)(i+1)/step_quantity));
+            constrain(volume,0.0f,volume_max);
+            tone_buzzer(sound_Hz,duration_steps,(uint8_t)(volume));
         }
-        noTone_buzzer();
-  
+        delay(10);
+        //noTone_buzzer();
+        /*
+        ledc_set_freq(mode, timer, 0);
+        ledc_set_duty(mode, ch, 0);
+        ledc_update_duty(mode, ch);
+        */
+        ledc_stop(mode, ch, 0);
     }
 };
 
