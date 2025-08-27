@@ -190,9 +190,9 @@ float motorRevolutionsPerSteps_fl32 = 1.0f / 3200.0f;
 /*                                                                                            */
 /**********************************************************************************************/
 
-#include "SignalFilter.h"
-KalmanFilter* kalman = NULL;
-KalmanFilter* kalman_joystick = NULL;
+#include "SignalFilter_1st_order.h"
+KalmanFilter_1st_order* kalman = NULL;
+KalmanFilter_1st_order* kalman_joystick = NULL;
 
 #include "SignalFilter_2nd_order.h"
 KalmanFilter_2nd_order* kalman_2nd_order = NULL;
@@ -751,8 +751,8 @@ void setup()
   // setup Kalman filters
   // Serial.print("Given loadcell variance: ");
   // Serial.println(loadcell->getVarianceEstimate(), 5);
-  kalman = new KalmanFilter(loadcell->getVarianceEstimate());
-  kalman_joystick =new KalmanFilter(0.1f);
+  kalman = new KalmanFilter_1st_order(loadcell->getVarianceEstimate());
+  kalman_joystick =new KalmanFilter_1st_order(0.1f);
   kalman_2nd_order = new KalmanFilter_2nd_order(loadcell->getVarianceEstimate());
 
 

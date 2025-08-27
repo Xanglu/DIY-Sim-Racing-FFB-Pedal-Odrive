@@ -2,7 +2,7 @@
 #define Rudder_timeout 1500
 #include "DiyActivePedal_types.h"
 #include "MovingAverageFilter.h"
-#include "SignalFilter.h"
+#include "SignalFilter_1st_order.h"
 MovingAverageFilter averagefilter_rudder(200);
 MovingAverageFilter averagefilter_rudder_force(50);
 class Rudder{
@@ -24,11 +24,11 @@ class Rudder{
   float position_ratio_sync;
   float position_ratio_current;
   int debug_count=0;
-  KalmanFilter* kalman_rudder = NULL;
+  KalmanFilter_1st_order* kalman_rudder = NULL;
   //bool IsReady = false;
   Rudder()
   {
-    kalman_rudder=new KalmanFilter(3.0f);
+    kalman_rudder=new KalmanFilter_1st_order(3.0f);
   }
   void offset_calculate(DAP_calculationVariables_st* calcVars_st)
   {
@@ -162,11 +162,11 @@ class helicoptersRudder{
   float deadzoneTolerance=0.01;
   float position_ratio_last;
   unsigned long debugPrintLast=0;
-  KalmanFilter* kalman_rudder = NULL;
+  KalmanFilter_1st_order* kalman_rudder = NULL;
   //bool IsReady = false;
   helicoptersRudder()
   {
-    kalman_rudder=new KalmanFilter(3.0f);
+    kalman_rudder=new KalmanFilter_1st_order(3.0f);
   }
   void offset_calculate(DAP_calculationVariables_st* calcVars_st)
   {
