@@ -94,7 +94,7 @@ float KalmanFilter_2nd_order::filteredValue(float observation, float command, ui
   // This is what the following code implements in a single line for each element of P_pred,
   // taking advantage of the zeros in F and the symmetry of P.
   float P_pred[3][3];
-  P_pred[0][0] = (P_cov[0][0] + _F[0][1] * _P_cov[1][0] + _F[0][2] * _P_cov[2][0]) +
+  P_pred[0][0] = (_P_cov[0][0] + _F[0][1] * _P_cov[1][0] + _F[0][2] * _P_cov[2][0]) +
                  _F[0][1] * (_P_cov[0][1] + _F[0][1] * _P_cov[1][1] + _F[0][2] * _P_cov[2][1]) +
                  _F[0][2] * (_P_cov[0][2] + _F[0][1] * _P_cov[1][2] + _F[0][2] * _P_cov[2][2]) + _Q[0][0];
                  

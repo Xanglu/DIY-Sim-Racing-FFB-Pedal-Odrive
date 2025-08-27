@@ -120,7 +120,7 @@ public:
 
     void single_beep_ledc_fade(int sound_Hz, int duration, float cycle)
     {
-        /*
+        
         float step_quantity=80.0f;
         float duration_steps = ((float)duration/step_quantity);
         float volume=0.0f;
@@ -131,31 +131,7 @@ public:
             tone_buzzer(sound_Hz,duration_steps,volume);
         }
         noTone_buzzer();
-        */
-        /*
-        ledcWriteTone(channel, sound_Hz);
-        int steps = (duration/100);
-        uint32_t dutyCycle=0;
-        int dutyCycle_step=2^8/2/100;
-        
-        {
-            dutyCycle=dutyCycle_step*(i+1);
-            ledcWrite(channel, dutyCycle);
-            delay(steps);
-        }
-        */
-        ledc_set_freq(mode, timer, sound_Hz);
-        float rise_ms = (float)duration / 3.0f;
-        ledc_set_duty(mode, ch, 0);
-        ledc_update_duty(mode, ch);
-        if(rise_ms<1.0f) rise_ms=1.0f;
-        ledc_set_fade_with_time(mode, ch, duty_50, (int)rise_ms);
-        ledc_fade_start(mode, ch, LEDC_FADE_NO_WAIT);   
-        
-        delay(rise_ms);
-        ledc_set_fade_with_time(mode, ch, 0, (int)rise_ms);
-        ledc_fade_start(mode, ch, LEDC_FADE_NO_WAIT);   
-        ledc_stop(mode, ch, 0);  
+  
     }
 };
 
