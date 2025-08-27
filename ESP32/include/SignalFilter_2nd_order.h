@@ -8,7 +8,7 @@
 class KalmanFilter_2nd_order {
 public:
     KalmanFilter_2nd_order(float varianceEstimate);
-    float filteredValue(float observation, float command, uint8_t modelNoiseScaling_u8);
+    float filteredValue(float measurement, float command, uint8_t modelNoiseScaling_u8);
     float changeVelocity();
     float changeAccel();
 

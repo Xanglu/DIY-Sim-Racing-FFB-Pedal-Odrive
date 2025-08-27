@@ -1,7 +1,8 @@
 #include "SignalFilter_2nd_order.h"
 
 // Define constants from the original code
-static const float KF_MODEL_NOISE_FORCE_JERK = 1.0f * 1e8;
+static const float KF_MODEL_NOISE_FORCE_JERK = 1.0f * 1e-5;
+
 // Constructor
 KalmanFilter_2nd_order::KalmanFilter_2nd_order(float varianceEstimate)
   : _timeLastObservation(micros()), _R(varianceEstimate)
@@ -28,30 +29,34 @@ KalmanFilter_2nd_order::KalmanFilter_2nd_order(float varianceEstimate)
 
   // Measurement noise covariance R = 1x1 (scalar)
   _R = varianceEstimate;
+  // convert to grams
+  _R *= 1000.0f * 1000.0f;
 }
 
-float KalmanFilter_2nd_order::filteredValue(float observation, float command, uint8_t modelNoiseScaling_u8) {
+float KalmanFilter_2nd_order::filteredValue(float measurement, float command, uint8_t modelNoiseScaling_u8) {
   // Obtain time
   unsigned long currentTime = micros();
   unsigned long elapsedTime = currentTime - _timeLastObservation;
   _timeLastObservation = currentTime;
+  float measurement_gram_fl32 = measurement * 1000.0f;
 
   float modelNoiseScaling = modelNoiseScaling_u8 / 255.0f;
   if (modelNoiseScaling < 0.001f) modelNoiseScaling = 0.001f;
   if (elapsedTime < 1) elapsedTime = 1;
   if (elapsedTime > 5000) elapsedTime = 5000;
 
-  float delta_t = elapsedTime / 1000000.0f;
-  float delta_t_pow2 = delta_t * delta_t;
-  float delta_t_pow3 = delta_t_pow2 * delta_t;
-  float delta_t_pow4 = delta_t_pow2 * delta_t_pow2;
-  float delta_t_pow5 = delta_t_pow4 * delta_t;
-  float delta_t_pow6 = delta_t_pow5 * delta_t;
+  // delta_t is now in milliseconds
+  float delta_t_ms = elapsedTime / 1000.0f;
+  float delta_t_ms_pow2 = delta_t_ms * delta_t_ms;
+  float delta_t_ms_pow3 = delta_t_ms_pow2 * delta_t_ms;
+  float delta_t_ms_pow4 = delta_t_ms_pow2 * delta_t_ms_pow2;
+  float delta_t_ms_pow5 = delta_t_ms_pow4 * delta_t_ms;
+  float delta_t_ms_pow6 = delta_t_ms_pow5 * delta_t_ms;
 
   // Update State Transition Matrix F
   // F = [1, dt, 0.5*dt^2; 0, 1, dt; 0, 0, 1]
-  _F[0][0] = 1.0f; _F[0][1] = delta_t; _F[0][2] = 0.5f * delta_t_pow2;
-  _F[1][0] = 0.0f; _F[1][1] = 1.0f; _F[1][2] = delta_t;
+  _F[0][0] = 1.0f; _F[0][1] = delta_t_ms; _F[0][2] = 0.5f * delta_t_ms_pow2;
+  _F[1][0] = 0.0f; _F[1][1] = 1.0f; _F[1][2] = delta_t_ms;
   _F[2][0] = 0.0f; _F[2][1] = 0.0f; _F[2][2] = 1.0f;
 	
   // Update Process Noise Covariance Matrix Q based on jerk model
@@ -60,15 +65,15 @@ float KalmanFilter_2nd_order::filteredValue(float observation, float command, ui
   //   =  1/12*delta_t^5, 1/4*delta_t^4, 1/2*delta_t^3;
   //   =  1/6*delta_t^4, 1/2*delta_t^3, delta_t^2]
   float a_var_jerk = modelNoiseScaling * KF_MODEL_NOISE_FORCE_JERK;
-  _Q[0][0] = a_var_jerk * delta_t_pow6 / 36.0f;
-  _Q[0][1] = a_var_jerk * delta_t_pow5 / 12.0f;
-  _Q[0][2] = a_var_jerk * delta_t_pow4 / 6.0f;
+  _Q[0][0] = a_var_jerk * delta_t_ms_pow6 / 36.0f;
+  _Q[0][1] = a_var_jerk * delta_t_ms_pow5 / 12.0f;
+  _Q[0][2] = a_var_jerk * delta_t_ms_pow4 / 6.0f;
   _Q[1][0] = _Q[0][1];
-  _Q[1][1] = a_var_jerk * delta_t_pow4 / 4.0f;
-  _Q[1][2] = a_var_jerk * delta_t_pow3 / 2.0f;
+  _Q[1][1] = a_var_jerk * delta_t_ms_pow4 / 4.0f;
+  _Q[1][2] = a_var_jerk * delta_t_ms_pow3 / 2.0f;
   _Q[2][0] = _Q[0][2];
   _Q[2][1] = _Q[1][2];
-  _Q[2][2] = a_var_jerk * delta_t_pow2;
+  _Q[2][2] = a_var_jerk * delta_t_ms_pow2;
 
   // Predict Step
   // Predicted state estimate: x_pred = F * x
@@ -124,7 +129,7 @@ float KalmanFilter_2nd_order::filteredValue(float observation, float command, ui
   // Update Step
   // Measurement residual: y = z - H * x_pred
   // Since only position is measured, measurement residual is of type position only
-  float y = observation -  x_pred[0];
+  float y = measurement_gram_fl32 -  x_pred[0];
   
   // S = H * P_pred * H' + R
   // H = [1; 0; 0]
@@ -225,13 +230,13 @@ float KalmanFilter_2nd_order::filteredValue(float observation, float command, ui
     }
   }
 
-  return _x[0];
+  return _x[0] / 1000.0f;
 }
 
 float KalmanFilter_2nd_order::changeVelocity() {
-  return _x[1];
+  return _x[1]; // conversion g/ms --> kg/s
 }
 
 float KalmanFilter_2nd_order::changeAccel() {
-  return _x[2];
+  return _x[2] * 1000.0f; // conversion g/ms^2 --> kg/s^2
 }

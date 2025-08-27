@@ -10,7 +10,7 @@ public:
   KalmanFilter_1st_order(float varianceEstimate);
 
   // Main filter function
-  float filteredValue(float observation, float command, uint8_t modelNoiseScaling_u8);
+  float filteredValue(float measurement, float command, uint8_t modelNoiseScaling_u8);
 
   // Getters for the state variables
   float changeVelocity();
