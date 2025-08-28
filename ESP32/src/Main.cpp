@@ -54,7 +54,8 @@ void updatePedalCalcParameters();
 void pedalUpdateTask( void * pvParameters );
 void loadcellReadingTask( void * pvParameters );
 void profilerTask( void * pvParameters );
-void serialCommunicationTask( void * pvParameters );
+void serialCommunicationTaskRx( void * pvParameters );
+void serialCommunicationTaskTx( void * pvParameters );
 void joystickOutputTask( void * pvParameters );
 void OTATask( void * pvParameters );
 void ESPNOW_SyncTask( void * pvParameters);
@@ -2492,43 +2493,44 @@ void IRAM_ATTR serialCommunicationTaskRx( void * pvParameters )
 
                 break;
               case sizeof(DAP_otaWifiInfo_st) : 
-              Serial.println("get basic wifi info");
-			  // Copy data from the received packet buffer into the struct
-              memcpy(&_dap_OtaWifiInfo_st, received_packet.data, sizeof(DAP_actions_st));
-				  
-              #ifdef OTA_update
-                if(_dap_OtaWifiInfo_st.device_ID == sct_dap_config_st.payLoadPedalConfig_.pedal_type)
-                {
-                  SSID=new char[_dap_OtaWifiInfo_st.SSID_Length+1];
-                  PASS=new char[_dap_OtaWifiInfo_st.PASS_Length+1];
-                  memcpy(SSID,_dap_OtaWifiInfo_st.WIFI_SSID,_dap_OtaWifiInfo_st.SSID_Length);
-                  memcpy(PASS,_dap_OtaWifiInfo_st.WIFI_PASS,_dap_OtaWifiInfo_st.PASS_Length);
-                  SSID[_dap_OtaWifiInfo_st.SSID_Length]=0;
-                  PASS[_dap_OtaWifiInfo_st.PASS_Length]=0;
+                Serial.println("get basic wifi info");
+                // Copy data from the received packet buffer into the struct
+                memcpy(&_dap_OtaWifiInfo_st, received_packet.data, sizeof(DAP_actions_st));
+            
+                #ifdef OTA_update
+                  if(_dap_OtaWifiInfo_st.device_ID == sct_dap_config_st.payLoadPedalConfig_.pedal_type)
+                  {
+                    SSID=new char[_dap_OtaWifiInfo_st.SSID_Length+1];
+                    PASS=new char[_dap_OtaWifiInfo_st.PASS_Length+1];
+                    memcpy(SSID,_dap_OtaWifiInfo_st.WIFI_SSID,_dap_OtaWifiInfo_st.SSID_Length);
+                    memcpy(PASS,_dap_OtaWifiInfo_st.WIFI_PASS,_dap_OtaWifiInfo_st.PASS_Length);
+                    SSID[_dap_OtaWifiInfo_st.SSID_Length]=0;
+                    PASS[_dap_OtaWifiInfo_st.PASS_Length]=0;
+                    OTA_enable_b=true;
+                  }
+                #endif
+                #ifdef OTA_update_ESP32
+                  Serial.println("Get OTA command");
                   OTA_enable_b=true;
-                }
-              #endif
-              #ifdef OTA_update_ESP32
-                Serial.println("Get OTA command");
-                OTA_enable_b=true;
-                //OTA_enable_start=true;
-                ESPNow_OTA_enable=false;
-                //Serial.println("get basic wifi info");
-                //Serial.readBytes((char*)&_basic_wifi_info, sizeof(Basic_WIfi_info));
-              #endif
-              
-              break;  
-			default:
-            Serial.printf("\nReceived packet of unexpected size: %d bytes\n", received_packet.len);
-            Serial.printf("Expected config size: %d, action size: %d\n", sizeof(DAP_config_st), sizeof(DAP_actions_st));
-            break; 
-        }
+                  //OTA_enable_start=true;
+                  ESPNow_OTA_enable=false;
+                  //Serial.println("get basic wifi info");
+                  //Serial.readBytes((char*)&_basic_wifi_info, sizeof(Basic_WIfi_info));
+                #endif
+                
+                break;  
+              default:
+                    Serial.printf("\nReceived packet of unexpected size: %d bytes\n", received_packet.len);
+                    Serial.printf("Expected config size: %d, action size: %d\n", sizeof(DAP_config_st), sizeof(DAP_actions_st));
+                    break; 
+            }
         
-        profiler_serialCommunicationTask.end(0);
-        profiler_serialCommunicationTask.report();
-        // --- END: Original processing logic ---
+            profiler_serialCommunicationTask.end(0);
+            profiler_serialCommunicationTask.report();
+            // --- END: Original processing logic ---
     }
-    // The task will automatically block here on the next loop iteration until a new packet arrives.
+        // The task will automatically block here on the next loop iteration until a new packet arrives.
+    }
   }
 }
 
@@ -2616,20 +2618,19 @@ void IRAM_ATTR serialCommunicationTaskTx( void * pvParameters )
 
 	  if(semaphore_updatePedalStates!=NULL)
 	  {
-		
-		if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)5)==pdTRUE) 
-		{
-		
-		  // UPDATE basic pedal state struct
-		  dap_state_basic_st_lcl = dap_state_basic_st;
+      if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)5)==pdTRUE) 
+      {
+      
+        // UPDATE basic pedal state struct
+        dap_state_basic_st_lcl = dap_state_basic_st;
 
-		  // UPDATE extended pedal state struct
-		  dap_state_extended_st_lcl = dap_state_extended_st;
-			
-		  // release semaphore
-		  xSemaphoreGive(semaphore_updatePedalStates);
+        // UPDATE extended pedal state struct
+        dap_state_extended_st_lcl = dap_state_extended_st;
+        
+        // release semaphore
+        xSemaphoreGive(semaphore_updatePedalStates);
 
-		}
+      }
 	  }
 
           
@@ -2644,53 +2645,52 @@ void IRAM_ATTR serialCommunicationTaskTx( void * pvParameters )
 	  // send basic pedal state struct
 	  if ( !(sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_BASIC_INFO_STRUCT) )
 	  {
-		if (printCycleCounter >= 2)
-		{
-		  printCycleCounter = 0;
+      if (printCycleCounter >= 2)
+      {
+        printCycleCounter = 0;
 
-		  // update CRC before transmission
-		  dap_state_basic_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl.payLoadHeader_)), sizeof(dap_state_basic_st_lcl.payLoadHeader_) + sizeof(dap_state_basic_st_lcl.payloadPedalState_Basic_));
-	  
-		  Serial.write((char*)&dap_state_basic_st_lcl, sizeof(DAP_state_basic_st));
-		  // Serial.flush();
-	  
-		  // Serial.print("\r\n");
-		}
+        // update CRC before transmission
+        dap_state_basic_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl.payLoadHeader_)), sizeof(dap_state_basic_st_lcl.payLoadHeader_) + sizeof(dap_state_basic_st_lcl.payloadPedalState_Basic_));
+      
+        Serial.write((char*)&dap_state_basic_st_lcl, sizeof(DAP_state_basic_st));
+        // Serial.flush();
+      
+        // Serial.print("\r\n");
+      }
 	  }
 
 	  if ( (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT) )
 	  {
-		// only send, when extended struct contains updated values
-		if( dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32 != previousTimeInUsFromExtendedStruct_u32)
-		{
-		  previousTimeInUsFromExtendedStruct_u32 = dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32;
+      // only send, when extended struct contains updated values
+      if( dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32 != previousTimeInUsFromExtendedStruct_u32)
+      {
+        previousTimeInUsFromExtendedStruct_u32 = dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32;
 
-		  //dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUsFromSerialTask_u32 = micros();
+        //dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUsFromSerialTask_u32 = micros();
 
-		  // update CRC before transmission
-		  dap_state_extended_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_extended_st_lcl.payLoadHeader_)), sizeof(dap_state_extended_st_lcl.payLoadHeader_) + sizeof(dap_state_extended_st_lcl.payloadPedalState_Extended_));
+        // update CRC before transmission
+        dap_state_extended_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_extended_st_lcl.payLoadHeader_)), sizeof(dap_state_extended_st_lcl.payLoadHeader_) + sizeof(dap_state_extended_st_lcl.payloadPedalState_Extended_));
 
-		  Serial.write((char*)&dap_state_extended_st_lcl, sizeof(DAP_state_extended_st));
-		  // Serial.print("\r\n");
-		  // Serial.flush();
-		}
+        Serial.write((char*)&dap_state_extended_st_lcl, sizeof(DAP_state_extended_st));
+        // Serial.print("\r\n");
+        // Serial.flush();
+      }
 	  }
 
-	// end profiler 3, serial send
-	profiler_serialCommunicationTask.end(2);
+    // end profiler 3, serial send
+    profiler_serialCommunicationTask.end(2);
 
-	profiler_serialCommunicationTask.end(0);
+    profiler_serialCommunicationTask.end(0);
 
-	// print profiler results
-	profiler_serialCommunicationTask.report();
+    // print profiler results
+    profiler_serialCommunicationTask.report();
     
 
     // force a context switch
-	taskYIELD();
+	  taskYIELD();
+    }
   }
 }
-
-
 
 //OTA multitask
 bool OTA_enable_start=false;
