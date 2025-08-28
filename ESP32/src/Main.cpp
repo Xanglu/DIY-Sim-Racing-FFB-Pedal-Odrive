@@ -45,24 +45,6 @@
 
 //#define ALLOW_SYSTEM_IDENTIFICATION
 
-
-/**********************************************************************************************/
-/*                                                                                            */
-/*                         serial communication setup                                         */
-/*                                                                                            */
-/**********************************************************************************************/
-// Structure to hold a complete UART packet
-
-#define UART_RX_BUF_SIZE sizeof(DAP_config_st)
-typedef struct {
-    uint8_t data[UART_RX_BUF_SIZE];
-    size_t len;
-} UartPacket_t;
-
-// Queue to pass packets from the UART event task to the processing task
-static QueueHandle_t serial_packet_queue;
-
-
 /**********************************************************************************************/
 /*                                                                                            */
 /*                         function declarations                                              */
@@ -486,71 +468,111 @@ static uint16_t timerTicks_espNowTask_u16 = REPETITION_INTERVAL_ESPNOW_TASK_IN_U
 /**********************************************************************************************/
 #include "driver/uart.h"
 
+// Structure to hold a complete UART packet
+#define UART_RX_BUF_SIZE sizeof(DAP_config_st)
+typedef struct {
+    uint8_t data[UART_RX_BUF_SIZE];
+    size_t len;
+} UartPacket_t;
+
+// Queue to pass packets from the UART event task to the processing task
+static QueueHandle_t serial_packet_queue;
 
 // Queue to handle UART events
 static QueueHandle_t uart_queue;
 
-#define UART_RX_BUF_SIZE   1024
-
+// --- ADD THIS LINE ---
+#define TEMP_BUFFER_SIZE (UART_RX_BUF_SIZE * 2)
 
 /**
- * @brief Task to handle UART events.
+ * @brief Task to handle UART events with persistent buffering.
  *
- * This task waits for a UART_PATTERN_DET event, which is triggered
- * by the hardware when the PACKET_EOF_CHAR is detected. It then places
- * the received packet into a queue for processing.
+ * This task accumulates data in a static buffer. After new data arrives,
+ * it scans the buffer for one or more complete packets ending in the
+ * {EOF_BYTE_0, EOF_BYTE_1} sequence. Valid packets are extracted, queued
+ * for processing, and removed from the buffer.
  */
 static void uart_event_task(void *pvParameters) {
-  uart_event_t event;
-  UartPacket_t packet_to_send; // Use our defined struct
+    uart_event_t event;
+    
+    // Persistent buffer to accumulate fragmented data
+    static uint8_t temp_buffer[TEMP_BUFFER_SIZE];
+    static size_t temp_buffer_len = 0;
 
-  for (;;) {
-    // Wait for the next event from the UART driver
-    if (xQueueReceive(uart_queue, (void *)&event, (TickType_t)portMAX_DELAY)) {
-      
-      switch (event.type) {
-        
-        case UART_PATTERN_DET:
-          {
-            // Get the size of the data available in the buffer
-            size_t buffered_size;
-            uart_get_buffered_data_len(UART_NUM_0, &buffered_size);
+    for (;;) {
+        // Wait for a UART event
+        if (xQueueReceive(uart_queue, (void *)&event, (TickType_t)portMAX_DELAY)) {
             
-            // Read the complete packet from the UART buffer into our struct's buffer
-            int pos = uart_read_bytes(UART_NUM_0, packet_to_send.data, buffered_size, pdMS_TO_TICKS(100));
-            
-            if (pos > 0) {
-              packet_to_send.len = pos;
-              // Send the complete packet to the processing task via the queue
-              xQueueSend(serial_packet_queue, &packet_to_send, (TickType_t)0);
+            switch (event.type) {
+                case UART_PATTERN_DET: {
+                    // Read all available new data from the hardware buffer
+                    uint8_t incoming_data[UART_RX_BUF_SIZE];
+                    size_t buffered_size;
+                    uart_get_buffered_data_len(UART_NUM_0, &buffered_size);
+                    int read_len = uart_read_bytes(UART_NUM_0, incoming_data, buffered_size, pdMS_TO_TICKS(100));
+
+                    if (read_len > 0) {
+                        // --- 1. Append new data, checking for overflow ---
+                        if (temp_buffer_len + read_len > TEMP_BUFFER_SIZE) {
+                            Serial.println("ERROR: UART temporary buffer overflow. Discarding all data.");
+                            temp_buffer_len = 0; // Reset the buffer
+                            break; 
+                        }
+                        memcpy(&temp_buffer[temp_buffer_len], incoming_data, read_len);
+                        temp_buffer_len += read_len;
+
+                        // --- 2. Scan buffer for complete packets and process them ---
+                        size_t search_offset = 0;
+                        while (search_offset < temp_buffer_len - 1) {
+                            // Find the next EOF sequence
+                            if (temp_buffer[search_offset] == EOF_BYTE_0 && temp_buffer[search_offset + 1] == EOF_BYTE_1) {
+                                
+                                size_t packet_len = search_offset + 2;
+
+                                // --- 3. Extract the packet and send it to the queue ---
+                                UartPacket_t packet_to_send;
+                                packet_to_send.len = packet_len;
+                                memcpy(packet_to_send.data, temp_buffer, packet_len);
+                                xQueueSend(serial_packet_queue, &packet_to_send, (TickType_t)0);
+
+                                // --- 4. Remove the processed packet by shifting the buffer ---
+                                size_t remaining_len = temp_buffer_len - packet_len;
+                                memmove(temp_buffer, &temp_buffer[packet_len], remaining_len);
+                                temp_buffer_len = remaining_len;
+
+                                // Reset search to the beginning of the now-modified buffer
+                                search_offset = 0;
+                                continue; // Restart scan
+                            }
+                            search_offset++;
+                        }
+                    }
+                    break;
+                }
+
+                // --- Error handling cases remain the same ---
+                case UART_FIFO_OVF:
+                    Serial.println("Hardware FIFO overflow");
+                    uart_flush_input(UART_NUM_0);
+                    xQueueReset(uart_queue);
+                    temp_buffer_len = 0; // Also clear our temp buffer
+                    break;
+
+                case UART_BUFFER_FULL:
+                    Serial.println("Ring buffer full");
+                    uart_flush_input(UART_NUM_0);
+                    xQueueReset(uart_queue);
+                    temp_buffer_len = 0; // Also clear our temp buffer
+                    break;
+                
+                default:
+                    uart_flush_input(UART_NUM_0);
+                    break;
             }
-          }
-          break;
-
-        // --- Error handling cases remain the same ---
-        case UART_FIFO_OVF:
-          Serial.println("Hardware FIFO overflow");
-          uart_flush_input(UART_NUM_0);
-          xQueueReset(uart_queue);
-          break;
-
-        case UART_BUFFER_FULL:
-          Serial.println("Ring buffer full");
-          uart_flush_input(UART_NUM_0);
-          xQueueReset(uart_queue);
-          break;
-        
-        default:
-          uart_flush_input(UART_NUM_0);
-          break;
-      }
+        }
     }
-  }
-  // This part of the code will likely never be reached
-  vTaskDelete(NULL);
+    vTaskDelete(NULL);
 }
-
-
 
 void setup()
 {
