@@ -536,6 +536,10 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadHeader_.PedalTag = (byte)pedalIdx;
             dap_config_st[pedalIdx].payloadHeader_.storeToEeprom = 1;
             dap_config_st[pedalIdx].payloadPedalConfig_.pedal_type = (byte)pedalIdx;
+            dap_config_st[pedalIdx].payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            dap_config_st[pedalIdx].payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            dap_config_st[pedalIdx].payloadHeader_.startOfFrame0_u8 = STARTOFFRAME_CONFIG[0];
+            dap_config_st[pedalIdx].payloadHeader_.startOfFrame1_u8 = STARTOFFRAME_CONFIG[1];
 
             DAP_config_st tmp = dap_config_st[pedalIdx];
             //prevent read default config from pedal without assignement

@@ -504,8 +504,13 @@ static void uart_event_task(void *pvParameters) {
         // Wait for a UART event
         if (xQueueReceive(uart_queue, (void *)&event, (TickType_t)portMAX_DELAY)) {
             
+            Serial.println("UART event triggered");
+
             switch (event.type) {
                 case UART_PATTERN_DET: {
+
+                    Serial.println("EOF1 detected");
+
                     // Read all available new data from the hardware buffer
                     uint8_t incoming_data[UART_RX_BUF_SIZE];
                     size_t buffered_size;
@@ -523,33 +528,23 @@ static void uart_event_task(void *pvParameters) {
                         temp_buffer_len += read_len;
 
                         // --- 2. Scan buffer for complete packets and process them ---
-                        size_t search_offset = 0;
-                        while (search_offset < temp_buffer_len - 1) {
-                            // Find the next EOF sequence
-                            if (temp_buffer[search_offset] == EOF_BYTE_0 && temp_buffer[search_offset + 1] == EOF_BYTE_1) {
-                                
-                                size_t packet_len = search_offset + 2;
+                        if (temp_buffer[temp_buffer_len-2] == EOF_BYTE_0 && temp_buffer[temp_buffer_len-1] == EOF_BYTE_1) {
+                            
 
-                                // --- 3. Extract the packet and send it to the queue ---
-                                UartPacket_t packet_to_send;
-                                packet_to_send.len = packet_len;
-                                memcpy(packet_to_send.data, temp_buffer, packet_len);
-                                xQueueSend(serial_packet_queue, &packet_to_send, (TickType_t)0);
+                            // --- 3. Extract the packet and send it to the queue ---
+                            UartPacket_t packet_to_send;
+                            packet_to_send.len = temp_buffer_len;
+                            memcpy(packet_to_send.data, temp_buffer, temp_buffer_len);
+                            xQueueSend(serial_packet_queue, &packet_to_send, (TickType_t)0);
 
-                                // --- 4. Remove the processed packet by shifting the buffer ---
-                                size_t remaining_len = temp_buffer_len - packet_len;
-                                memmove(temp_buffer, &temp_buffer[packet_len], remaining_len);
-                                temp_buffer_len = remaining_len;
-
-                                // Reset search to the beginning of the now-modified buffer
-                                search_offset = 0;
-                                continue; // Restart scan
-                            }
-                            search_offset++;
+                            // --- 4. Remove the processed packet by shifting the buffer ---
+                            size_t remaining_len = 0;//temp_buffer_len - packet_len;
+                            temp_buffer_len = remaining_len;
                         }
+                      }
                     }
                     break;
-                }
+                
 
                 // --- Error handling cases remain the same ---
                 case UART_FIFO_OVF:
@@ -876,7 +871,7 @@ xTaskCreatePinnedToCore(
 
 
                     
-  // #define SERIAL_PATTERN_DETECTOR
+  #define SERIAL_PATTERN_DETECTOR
   #ifdef SERIAL_PATTERN_DETECTOR
   // This prevents the "UART driver already installed" error.
   uart_driver_delete(UART_NUM_0);
