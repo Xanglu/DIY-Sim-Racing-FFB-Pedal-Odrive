@@ -2244,7 +2244,6 @@ void IRAM_ATTR serialCommunicationTaskRx( void * pvParameters )
         }
         
         profiler_serialCommunicationTask.start(0);
-        profiler_serialCommunicationTask.start(1);
 
         uint16_t crc;
         bool structChecker = true;
@@ -2525,8 +2524,6 @@ void IRAM_ATTR serialCommunicationTaskRx( void * pvParameters )
             break; 
         }
         
-        profiler_serialCommunicationTask.end(1);
-
         profiler_serialCommunicationTask.end(0);
         profiler_serialCommunicationTask.report();
         // --- END: Original processing logic ---
@@ -2603,7 +2600,7 @@ void IRAM_ATTR serialCommunicationTaskTx( void * pvParameters )
 
 
 	  // start profiler 2, serial send
-	  profiler_serialCommunicationTask.start(2);
+	  profiler_serialCommunicationTask.start(1);
 
 
 	  // send pedal state structs
@@ -2637,10 +2634,10 @@ void IRAM_ATTR serialCommunicationTaskTx( void * pvParameters )
 
           
 	  // end profiler 2, serial send
-	  profiler_serialCommunicationTask.end(2);
+	  profiler_serialCommunicationTask.end(1);
 
 	  // end profiler 2, serial send
-	  profiler_serialCommunicationTask.start(3);
+	  profiler_serialCommunicationTask.start(2);
 
 
 	  // send the pedal state structs
@@ -2680,7 +2677,7 @@ void IRAM_ATTR serialCommunicationTaskTx( void * pvParameters )
 	  }
 
 	// end profiler 3, serial send
-	profiler_serialCommunicationTask.end(3);
+	profiler_serialCommunicationTask.end(2);
 
 	profiler_serialCommunicationTask.end(0);
 
