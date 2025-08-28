@@ -30,7 +30,7 @@ private:
         
         // setup buzzer
         ledc_set_freq(mode, timer, frequency);
-        float duty = ((float)duty_50*(float)volume/255.0f);
+        float duty = ((float)duty_50*(float)volume/100.0f*0.3f);
         ledc_set_duty(mode, ch, (uint32_t)duty);
         ledc_update_duty(mode, ch);
         delay(duration);
@@ -125,7 +125,7 @@ public:
         float step_quantity=80.0f;
         float duration_steps = ((float)duration/step_quantity);
         float volume=0.0f;
-        float volume_max=50.0f;
+        float volume_max=30.0f;
         float volume_step=volume_max/step_quantity;
         for(int i=0;i<step_quantity;i++)
         {
