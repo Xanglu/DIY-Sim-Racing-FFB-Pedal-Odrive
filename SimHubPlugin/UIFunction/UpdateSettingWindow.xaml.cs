@@ -49,7 +49,8 @@ namespace User.PluginSdkDemo.UIFunction
                 }
                 if (_calculations.ForceUpdate_b == true && Checkbox_Force_flash != null) Checkbox_Force_flash.IsChecked = true;
                 if (_calculations.ForceUpdate_b == false && Checkbox_Force_flash != null) Checkbox_Force_flash.IsChecked = false;
-
+                if (_calculations.IsTestBuild == true && Checkbox_Force_flash != null) Checkbox_TestBuild.IsChecked = true;
+                if (_calculations.IsTestBuild == false && Checkbox_Force_flash != null) Checkbox_TestBuild.IsChecked = false ;
             }
             if (_settings != null)
             {
@@ -88,7 +89,7 @@ namespace User.PluginSdkDemo.UIFunction
 
         private void OTAChannel_Sel_Checked(object sender, RoutedEventArgs e)
         {
-            if (OTAChannel_Sel_1 != null && OTAChannel_Sel_2 != null)
+            if (OTAChannel_Sel_1 != null && OTAChannel_Sel_2 != null )
             {
                 Label_update_channel_notice.Content = "";
                 if ((bool)OTAChannel_Sel_1.IsChecked) _settings.updateChannel = 0;
@@ -97,6 +98,7 @@ namespace User.PluginSdkDemo.UIFunction
                     _settings.updateChannel = 1;
                     Label_update_channel_notice.Content = "Warning: This is a daily build intended for development and testing purposes only.\nIt may be unstable and is not recommended for production use.";
                 } 
+                 
                 textBox_changelog.Text = "Version:" + versions[_settings.updateChannel] + "\n" + changelogs[_settings.updateChannel];
 
             }
@@ -154,6 +156,16 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 MessageBox.Show($"Error:{ex.Message}");
             }
+        }
+
+        private void Checkbox_TestBuild_Checked(object sender, RoutedEventArgs e)
+        {
+            _calculations.IsTestBuild = true;
+        }
+
+        private void Checkbox_TestBuild_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _calculations.IsTestBuild = false;
         }
     }
 }
