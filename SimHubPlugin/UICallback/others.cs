@@ -536,10 +536,18 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadHeader_.PedalTag = (byte)pedalIdx;
             dap_config_st[pedalIdx].payloadHeader_.storeToEeprom = 1;
             dap_config_st[pedalIdx].payloadPedalConfig_.pedal_type = (byte)pedalIdx;
+            dap_config_st[pedalIdx].payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            dap_config_st[pedalIdx].payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            dap_config_st[pedalIdx].payloadHeader_.startOfFrame0_u8 = STARTOFFRAME_CONFIG[0];
+            dap_config_st[pedalIdx].payloadHeader_.startOfFrame1_u8 = STARTOFFRAME_CONFIG[1];
 
             DAP_config_st tmp = dap_config_st[pedalIdx];
             //prevent read default config from pedal without assignement
             DAP_config_st* v = &tmp;
+            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
 
             byte* p = (byte*)v;
             tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalConfig));
@@ -614,6 +622,10 @@ namespace User.PluginSdkDemo
             DAP_config_st tmp = dap_config_st_rudder;
 
             DAP_config_st* v = &tmp;
+            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             byte* p = (byte*)v;
             dap_config_st_rudder.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalConfig));
             Plugin.SendConfig(dap_config_st_rudder, (byte)pedalIdx);
@@ -642,6 +654,10 @@ namespace User.PluginSdkDemo
             tmp.payloadHeader_.payloadType = (byte)Constants.pedalActionPayload_type;
             tmp.payloadHeader_.PedalTag = (byte)i;
             DAP_action_st* v = &tmp;
+            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             byte* p = (byte*)v;
             tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
             int length = sizeof(DAP_action_st);

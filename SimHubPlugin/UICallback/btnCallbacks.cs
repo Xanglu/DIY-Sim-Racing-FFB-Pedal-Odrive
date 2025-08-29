@@ -320,6 +320,10 @@ namespace User.PluginSdkDemo
             tmp.payloadPedalAction_.system_action_u8 = (byte)PedalSystemAction.ESP_BOOT_INTO_DOWNLOAD_MODE;
             tmp.payloadHeader_.PedalTag = (byte)indexOfSelectedPedal_u;
             DAP_action_st* v = &tmp;
+            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             byte* p = (byte*)v;
             tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
             Plugin.SendPedalAction(tmp, (byte)indexOfSelectedPedal_u);
@@ -415,6 +419,10 @@ namespace User.PluginSdkDemo
                         tmp.payloadPedalAction_.system_action_u8 = 2; //1=reset pedal position, 2 =restart esp.
 
                         DAP_action_st* v = &tmp;
+                        tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                        tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                        tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                        tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
                         byte* p = (byte*)v;
                         tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
                         int length = sizeof(DAP_action_st);
@@ -444,6 +452,10 @@ namespace User.PluginSdkDemo
                     tmp.payloadPedalAction_.system_action_u8 = 2; //1=reset pedal position, 2 =restart esp.
 
                     DAP_action_st* v = &tmp;
+                    tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                    tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                    tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                    tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
                     byte* p = (byte*)v;
                     tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
                     Plugin.SendPedalAction(tmp , (byte)Plugin.Settings.table_selected);
@@ -1030,6 +1042,10 @@ namespace User.PluginSdkDemo
                             DAP_config_st tmp = dap_config_st[Plugin.Rudder_Pedal_idx[0]];
                             tmp.payloadHeader_.storeToEeprom = 0;
                             DAP_config_st* v = &tmp;
+                            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                            tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                            tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
                             byte* p = (byte*)v;
                             tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalConfig));
                             Plugin.SendConfig(tmp, Plugin.Rudder_Pedal_idx[0]);
@@ -1044,6 +1060,10 @@ namespace User.PluginSdkDemo
                             DAP_config_st tmp = dap_config_st[Plugin.Rudder_Pedal_idx[1]];
                             tmp.payloadHeader_.storeToEeprom = 0;
                             DAP_config_st* v = &tmp;
+                            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                            tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                            tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
                             byte* p = (byte*)v;
                             tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalConfig));
                             Plugin.SendConfig(tmp, Plugin.Rudder_Pedal_idx[1]);
@@ -1420,6 +1440,10 @@ namespace User.PluginSdkDemo
             tmp.payloadPedalAction_.system_action_u8 = (byte)PedalSystemAction.PRINT_PEDAL_INFO;
             tmp.payloadHeader_.PedalTag = (byte)indexOfSelectedPedal_u;
             DAP_action_st* v = &tmp;
+            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             byte* p = (byte*)v;
             tmp.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
             Plugin.SendPedalAction(tmp, (byte)indexOfSelectedPedal_u);
