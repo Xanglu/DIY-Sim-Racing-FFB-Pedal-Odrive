@@ -2212,460 +2212,327 @@ typedef struct {
     bool validFlag_b;
 } structChecker_st;
 
+// Helper function to determine expected packet size from payload type
+// Returns 0 if the payload type is unknown.
+static inline size_t getExpectedPacketSize(uint8_t payloadType) {
+    switch (payloadType) {
+        case DAP_PAYLOAD_TYPE_CONFIG:
+            return sizeof(DAP_config_st);
+        case DAP_PAYLOAD_TYPE_ACTION:
+            return sizeof(DAP_actions_st);
+        // Add other packet types here in the future
+        default:
+            return 0;
+    }
+}
 
-void IRAM_ATTR serialCommunicationTaskRx( void * pvParameters )
-{ 
-  FunctionProfiler profiler_serialCommunicationTask;
-  profiler_serialCommunicationTask.setName("SerialCommunicationRx");
-  profiler_serialCommunicationTask.setNumberOfCalls(500);
+// NOTE: The IRAM_ATTR attribute has been removed as it is not needed for a FreeRTOS task function.
+void serialCommunicationTaskRx(void *pvParameters) {
+    FunctionProfiler profiler_serialCommunicationTask;
+    profiler_serialCommunicationTask.setName("SerialCommunicationRx");
+    profiler_serialCommunicationTask.setNumberOfCalls(500);
 
-  unsigned long previousTimeInUsFromExtendedStruct_u32 = 0;
-  unsigned long printCycleCounter = 0;
+    static DAP_config_st sct_dap_config_st;
 
-  static DAP_config_st sct_dap_config_received_st;
-  static DAP_config_st sct_dap_config_st;
+    // Buffer to accumulate incoming serial data
+    const size_t RX_BUFFER_SIZE = 1028; // Should be at least 2x the largest possible packet
+    static uint8_t rx_buffer[RX_BUFFER_SIZE];
+    static size_t buffer_len = 0;
 
-  uint16_t crc;
-  bool structChecker = true;
-
-  // Structure to hold a complete UART packet
-  #define UART_RX_BUF_SIZE sizeof(DAP_config_st)
-  #define TEMP_BUFFER_SIZE 1028 //(UART_RX_BUF_SIZE * 4)
-
-  // Persistent buffer to accumulate fragmented data
-  static uint8_t temp_buffer[TEMP_BUFFER_SIZE];
-  static uint32_t temp_buffer_len = 0;
-
-  structChecker_st _structChecker_st;
-  
-  size_t minPayLoadSize_uint16 = min( sizeof(DAP_config_st), sizeof(DAP_actions_st) );
-
-  for(;;){
-
-    // Block and wait indefinitely for a packet to arrive in the queue
-    if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0) {
-
-
-
-      _structChecker_st.validFlag_b = false;
-
-      // --- START: This is the original processing logic, now using received_packet ---
-      sct_dap_config_st = global_dap_config_class.getConfig();
-
-      // activate profiler depending on pedal config
-      if (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) {
-        profiler_serialCommunicationTask.activate( true );
-      } else {
-        profiler_serialCommunicationTask.activate( false );
-      }
-      
-      profiler_serialCommunicationTask.start(0);
-
-      
-
-      // read serial input 
-      uint32_t n = Serial.available();
-
-      if (n > 0)
-      {
-
-
-        // Serial.print("Serialdata available. N bytes: ");
-        // Serial.println(n);
-
-        // append buffer as long as new data is available
-        while (Serial.available())
-        {
-          // read the incoming byte:
-          temp_buffer[temp_buffer_len] = Serial.read();
-          temp_buffer_len++;
-
-          temp_buffer_len %= TEMP_BUFFER_SIZE;
-        }
-
-        // Serial.print("Buffer offset");
-        // Serial.print(temp_buffer_len);
-
-
-        
-        
-        #define BLABLABLA
-        #ifdef BLABLABLA
-
-        
-
-        // check if packet is complete
-
-        // find pattern
-        //SOF_0, SOF_1, Payload type, ..., CRC, EOF_0, EOF_1
-        if (temp_buffer_len >= minPayLoadSize_uint16)
-        {
-
-          if ( ( temp_buffer[0] == SOF_BYTE_0) && ( temp_buffer[1] == SOF_BYTE_1) )
-          {
-            Serial.println("SOF detected");
-            _structChecker_st.startBytePos_u16 = 0;
-            _structChecker_st.endBytePos_u16 = 0;
-            _structChecker_st.payloadType_u16 = temp_buffer[2];
-
-            // check payload type
-            switch (_structChecker_st.payloadType_u16) {
-              // likely config structure 
-              case DAP_PAYLOAD_TYPE_CONFIG:
-                _structChecker_st.endBytePos_u16 = _structChecker_st.startBytePos_u16 + sizeof(DAP_config_st);
-                break;
-              case DAP_PAYLOAD_TYPE_ACTION:
-                _structChecker_st.endBytePos_u16 = _structChecker_st.startBytePos_u16 + sizeof(DAP_actions_st);
-                break;
-              default:
-                break;
-            }
-
-            // check EOB
-            if ( (temp_buffer_len >= _structChecker_st.endBytePos_u16) && (_structChecker_st.endBytePos_u16 > 2) )
-            {
-              if ( ( temp_buffer[_structChecker_st.endBytePos_u16-2] == EOF_BYTE_0) && ( temp_buffer[_structChecker_st.endBytePos_u16-1] == EOF_BYTE_1) )
-              {
-                _structChecker_st.validFlag_b = true;
-                Serial.println("EOF detected");
-              }
-            }
-          }
-          else
-          {
-            // discard buffer, look for SOF bytes
-            bool sofDetected_b = false;
-            for (uint16_t bufferIdx_u16 = 0; bufferIdx_u16 < (temp_buffer_len-1); bufferIdx_u16++)
-            {
-              if ((sofDetected_b == false) && ( temp_buffer[bufferIdx_u16] == SOF_BYTE_0) && ( temp_buffer[bufferIdx_u16+1] == SOF_BYTE_1))
-              {
-                // destination, source, size
-                size_t remaining_len = temp_buffer_len - bufferIdx_u16;
-                memmove(&temp_buffer[0], &temp_buffer[bufferIdx_u16], remaining_len);
-                temp_buffer_len = remaining_len; 
-
-                // Serial.println("New SOF detected");
-                sofDetected_b = true;
-                break;  
-              }
-            }
-
-            if (sofDetected_b == false)
-            {
-              // if no SOF0 and SOF1, set pointer on zero-th buffer element
-              temp_buffer_len = 0;
-            }
-
-          }
-        } // while (temp_buffer_len >= minPayLoadSize_uint16)
-
-
-
-        // --- Do the stuff ---
-        if (_structChecker_st.validFlag_b == true)
-        {
-          // Use the length from the received packet
-          switch (_structChecker_st.payloadType_u16) {
-
-            // likely config structure 
-            case DAP_PAYLOAD_TYPE_CONFIG:
-            {
-              // Copy data from the received packet buffer into the struct
-              memcpy(&sct_dap_config_received_st, &temp_buffer[_structChecker_st.startBytePos_u16], sizeof(DAP_config_st));
-
-              if ( sct_dap_config_received_st.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_CONFIG ){ 
-                structChecker = false;
-                Serial.printf("Payload type expected: %d, received: %d\n", DAP_PAYLOAD_TYPE_CONFIG, sct_dap_config_received_st.payLoadHeader_.payloadType);
-                break;
-              }
-
-              if ( sct_dap_config_received_st.payLoadHeader_.version != DAP_VERSION_CONFIG ){
-                structChecker = false;
-                Serial.printf("Config version expected: %d, received: %d\n", DAP_VERSION_CONFIG, sct_dap_config_received_st.payLoadHeader_.version);
-                break;
-              }
-              crc = checksumCalculator((uint8_t*)(&(sct_dap_config_received_st.payLoadHeader_)), sizeof(sct_dap_config_received_st.payLoadHeader_) + sizeof(sct_dap_config_received_st.payLoadPedalConfig_));
-              if (crc != sct_dap_config_received_st.payloadFooter_.checkSum){
-                structChecker = false;
-                Serial.printf("CRC expected: %u, received: %u\n", crc, sct_dap_config_received_st.payloadFooter_.checkSum);
-              }
-
-              if (structChecker == true) {
-                Serial.println("Updating pedal config from serial");
-                global_dap_config_class.setConfig(sct_dap_config_received_st);
-                sct_dap_config_st = global_dap_config_class.getConfig();
-                configUpdateAvailable = true; 
-                if(sct_dap_config_st.payLoadHeader_.storeToEeprom==1) {
-                  #ifdef USING_BUZZER
-                  Buzzer.single_beep_tone(700,100);
-                  #endif
-                }
-              }
+    for (;;) {
+        // Wait for a notification that data might be available
+        if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0) {
             
-              break;
-            } // case DAP_PAYLOAD_TYPE_CONFIG:
+            sct_dap_config_st = global_dap_config_class.getConfig();
+            // Activate profiler based on config
+            profiler_serialCommunicationTask.activate(sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER);
+            profiler_serialCommunicationTask.start(0);
 
-            // likely action structure 
-            case DAP_PAYLOAD_TYPE_ACTION:
-            {
-              DAP_actions_st dap_actions_st;
-              // Copy data from the received packet buffer into the struct
-              memcpy(&dap_actions_st, &temp_buffer[_structChecker_st.startBytePos_u16], sizeof(DAP_actions_st));
-
-              if ( dap_actions_st.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_ACTION ){ 
-                structChecker = false;
-                Serial.print("Payload type expected: ");
-                Serial.print(DAP_PAYLOAD_TYPE_ACTION);
-                Serial.print(",   Payload type received: ");
-                Serial.println(dap_actions_st.payLoadHeader_.payloadType);
-              }
-              if ( dap_actions_st.payLoadHeader_.version != DAP_VERSION_CONFIG ){ 
-                structChecker = false;
-                Serial.print("Config version expected: ");
-                Serial.print(DAP_VERSION_CONFIG);
-                Serial.print(",   Config version received: ");
-                Serial.println(dap_actions_st.payLoadHeader_.version);
-              }
-              crc = checksumCalculator((uint8_t*)(&(dap_actions_st.payLoadHeader_)), sizeof(dap_actions_st.payLoadHeader_) + sizeof(dap_actions_st.payloadPedalAction_));
-              if (crc != dap_actions_st.payloadFooter_.checkSum){ 
-                structChecker = false;
-                Serial.print("CRC expected: ");
-                Serial.print(crc);
-                Serial.print(",   CRC received: ");
-                Serial.println(dap_actions_st.payloadFooter_.checkSum);
-              }
-
-        
-
-              if (structChecker == true)
-              {
-
-                //2= restart pedal
-                if (dap_actions_st.payloadPedalAction_.system_action_u8==2)
-                {
-                  Serial.println("ESP restart by user request");
-                  ESP.restart();
+            // --- 1. Read all available data into our buffer ---
+            if (Serial.available()) {
+                // Prevent buffer overflow by only reading what fits
+                size_t bytesToRead = min((size_t)Serial.available(), RX_BUFFER_SIZE - buffer_len);
+                if (bytesToRead > 0) {
+                    Serial.readBytes(&rx_buffer[buffer_len], bytesToRead);
+                    buffer_len += bytesToRead;
                 }
-                //3= Wifi OTA
-                #ifdef ESPNOW_Enable
-                if (dap_actions_st.payloadPedalAction_.system_action_u8==3)
-                {
-                  Serial.println("Get OTA command");
-                  OTA_enable_b=true;
-                  //OTA_enable_start=true;
-                  ESPNow_OTA_enable=false;
+            }
+
+            // --- 2. Process all complete packets in the buffer ---
+            size_t buffer_idx = 0;
+            while (buffer_idx < buffer_len) {
+                // A. Find the next valid Start-of-Frame (SOF)
+                if (rx_buffer[buffer_idx] != SOF_BYTE_0 || (buffer_idx + 1 < buffer_len && rx_buffer[buffer_idx + 1] != SOF_BYTE_1)) {
+                    buffer_idx++;
+                    continue; // Keep scanning for a SOF
                 }
-                #endif
-                //4 Enable pairing
-                if (dap_actions_st.payloadPedalAction_.system_action_u8==4)
-                {
-                  #ifdef ESPNow_Pairing_function
-                    Serial.println("Get Pairing command");
-                    software_pairing_action_b=true;
-                  #endif
-                  #ifndef ESPNow_Pairing_function
-                    Serial.println("no supporting command");
-                  #endif
+
+                // SOF found at buffer_idx. Check if we have enough data for a header.
+                if (buffer_len < buffer_idx + 3) {
+                    // Not enough data for a full header, stop parsing for now
+                    break;
+                }
+
+                // B. Get expected packet size from payload type
+                uint8_t payloadType = rx_buffer[buffer_idx + 2];
+                size_t expectedSize = getExpectedPacketSize(payloadType);
+
+                if (expectedSize == 0) {
+                    // Unknown payload type, this SOF is corrupt. Skip it and continue scanning.
+                    buffer_idx++;
+                    continue;
+                }
+
+                // C. Check if the full packet has arrived
+                if (buffer_len < buffer_idx + expectedSize) {
+                    // Full packet is not yet in the buffer, wait for more data
+                    break;
+                }
+
+                // D. Check for valid End-of-Frame (EOF)
+                if (rx_buffer[buffer_idx + expectedSize - 2] != EOF_BYTE_0 || rx_buffer[buffer_idx + expectedSize - 1] != EOF_BYTE_1) {
+                    // EOF is wrong, this packet is corrupt. Skip the SOF and continue scanning.
+                    buffer_idx++;
+                    continue;
                 }
                 
-                if (dap_actions_st.payloadPedalAction_.system_action_u8==(uint8_t)PedalSystemAction::ESP_BOOT_INTO_DOWNLOAD_MODE)
-                {
-                  #ifdef ESPNow_S3
-                    Serial.println("Restart into Download mode");
-                    delay(1000);
-                    REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
-                    ESP.restart();
-                  #else
-                    Serial.println("Command not supported");
-                    delay(1000);
-                  #endif
-                  //ESPNOW_BootIntoDownloadMode = false;
-                }
-                if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::PRINT_PEDAL_INFO)
-                {
-                  char logString[200];
-                  snprintf(logString, sizeof(logString),
-                          "Pedal ID: %d\nBoard: %s\nLoadcell shift= %.3f kg\nLoadcell variance= %.3f kg\nPSU voltage:%.1f V\nMax endstop:%lu\nCurrentPos:%lu\n\0",
-                          sct_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage() / 10.0f), dap_calculationVariables_st.stepperPosMaxEndstop, dap_calculationVariables_st.current_pedal_position);
-                  Serial.println(logString);
-                }
+                // --- We have a candidate packet! Now validate and process it. ---
+                uint8_t* packet_start = &rx_buffer[buffer_idx];
+                bool structIsValid = true;
+                uint16_t received_crc = 0;
+                uint16_t calculated_crc = 0;
 
-                // trigger ABS effect
-                if (dap_actions_st.payloadPedalAction_.triggerAbs_u8>0)
-                {
-                  absOscillation.trigger();
-                  if(dap_actions_st.payloadPedalAction_.triggerAbs_u8>1)
-                  {
-                    dap_calculationVariables_st.TrackCondition=dap_actions_st.payloadPedalAction_.triggerAbs_u8-1;
-                  }
-                  else
-                  {
-                    dap_calculationVariables_st.TrackCondition=dap_actions_st.payloadPedalAction_.triggerAbs_u8=0;
-                  }
-                }
-                //RPM effect
-                _RPMOscillation.RPM_value=dap_actions_st.payloadPedalAction_.RPM_u8;
-                //G force effect
-                _G_force_effect.G_value=dap_actions_st.payloadPedalAction_.G_value-128;       
-                //wheel slip
-                if (dap_actions_st.payloadPedalAction_.WS_u8)
-                {
-                  _WSOscillation.trigger();
-                }     
-                //Road impact
-                if(dap_calculationVariables_st.Rudder_status==false)
-                {
-                  _Road_impact_effect.Road_Impact_value=dap_actions_st.payloadPedalAction_.impact_value_u8;
-                }
-                else
-                {
+                switch (payloadType) {
+                    case DAP_PAYLOAD_TYPE_CONFIG: {
+                        DAP_config_st received_config;
+                        memcpy(&received_config, packet_start, sizeof(DAP_config_st));
+                        
+                        calculated_crc = checksumCalculator((uint8_t*)(&(received_config.payLoadHeader_)), sizeof(received_config.payLoadHeader_) + sizeof(received_config.payLoadPedalConfig_));
+                        received_crc = received_config.payloadFooter_.checkSum;
 
-                }
-                
-                // trigger system identification
-                if (dap_actions_st.payloadPedalAction_.startSystemIdentification_u8)
-                {
-                  systemIdentificationMode_b = true;
-                }
-                // trigger Custom effect effect 1
-                if (dap_actions_st.payloadPedalAction_.Trigger_CV_1)
-                {
-                  CV1.trigger();
-                }
-                // trigger Custom effect effect 2
-                if (dap_actions_st.payloadPedalAction_.Trigger_CV_2)
-                {
-                  CV2.trigger();
-                }
-                // trigger return pedal position
-                if (dap_actions_st.payloadPedalAction_.returnPedalConfig_u8)
-                {
-                
-                  DAP_config_st * dap_config_st_local_ptr;
-                  dap_config_st_local_ptr = &sct_dap_config_st;
-                  dap_config_st_local_ptr->payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
-                  dap_config_st_local_ptr->payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
-                  dap_config_st_local_ptr->payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
-                  dap_config_st_local_ptr->payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
-                  crc = checksumCalculator((uint8_t*)(&(sct_dap_config_st.payLoadHeader_)), sizeof(sct_dap_config_st.payLoadHeader_) + sizeof(sct_dap_config_st.payLoadPedalConfig_));
-                  dap_config_st_local_ptr->payloadFooter_.checkSum = crc;
-                  Serial.write((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
-                  // Serial.print("\r\n");
-                }
-                #ifdef ESPNOW_Enable
-                  if(dap_actions_st.payloadPedalAction_.Rudder_action==1)//Enable Rudder
-                  {
-                    if(dap_calculationVariables_st.Rudder_status==false)
-                    {
-                      dap_calculationVariables_st.Rudder_status=true;
-                      Serial.println("Rudder on");
-                      Rudder_initializing=true;
-                      moveSlowlyToPosition_b=true;
-                      //Serial.print("status:");
-                      //Serial.println(dap_calculationVariables_st.Rudder_status);
+                        if (calculated_crc != received_crc || received_config.payLoadHeader_.version != DAP_VERSION_CONFIG) {
+                            structIsValid = false;
+                        } else {
+                            // --- VALID CONFIG PACKET ---
+                            Serial.println("Updating pedal config from serial");
+                            global_dap_config_class.setConfig(received_config);
+                            configUpdateAvailable = true;
+                            if (received_config.payLoadHeader_.storeToEeprom == 1) {
+                                #ifdef USING_BUZZER
+                                Buzzer.single_beep_tone(700, 100);
+                                #endif
+                            }
+                        }
+                        break;
                     }
-                    else
-                    {
-                      dap_calculationVariables_st.Rudder_status=false;
-                      Serial.println("Rudder off");
-                      Rudder_deinitializing=true;
-                      moveSlowlyToPosition_b=true; 
+                    case DAP_PAYLOAD_TYPE_ACTION: {
+                        DAP_actions_st received_action;
+                        memcpy(&received_action, packet_start, sizeof(DAP_actions_st));
 
-                      //Serial.print("status:");
-                      //Serial.println(dap_calculationVariables_st.Rudder_status);
-                    }
-                  }
-                  if(dap_actions_st.payloadPedalAction_.Rudder_brake_action==1)
-                  {
-                    if(dap_calculationVariables_st.rudder_brake_status==false&&dap_calculationVariables_st.Rudder_status==true)
-                    {
-                      dap_calculationVariables_st.rudder_brake_status=true;
-                      Serial.println("Rudder brake on");
-                      //Serial.print("status:");
-                      //Serial.println(dap_calculationVariables_st.Rudder_status);
-                    }
-                    else
-                    {
-                      dap_calculationVariables_st.rudder_brake_status=false;
-                      Serial.println("Rudder brake off");
-                      //Serial.print("status:");
-                      //Serial.println(dap_calculationVariables_st.Rudder_status);
-                    }
-                  }
-                  //clear rudder status
-                  if(dap_actions_st.payloadPedalAction_.Rudder_action==2)
-                  {
-                    dap_calculationVariables_st.Rudder_status=false;
-                    dap_calculationVariables_st.rudder_brake_status=false;
-                    Serial.println("Rudder Status Clear");
-                    Rudder_deinitializing=true;
-                    moveSlowlyToPosition_b=true;
+                        calculated_crc = checksumCalculator((uint8_t*)(&(received_action.payLoadHeader_)), sizeof(received_action.payLoadHeader_) + sizeof(received_action.payloadPedalAction_));
+                        received_crc = received_action.payloadFooter_.checkSum;
 
-                  }
-                #endif
+                        if (calculated_crc != received_crc || received_action.payLoadHeader_.version != DAP_VERSION_CONFIG) {
+                            structIsValid = false;
+                        } else {
+                            // --- VALID ACTION PACKET ---
+                            // Place your extensive action handling logic here
+                            // For clarity, this could be moved to its own function: handleActionPacket(received_action);
+                            if (received_action.payloadPedalAction_.system_action_u8 == 2) {
+                                Serial.println("ESP restart by user request");
+                                ESP.restart();
+                            }
+
+                            //3= Wifi OTA
+                            #ifdef ESPNOW_Enable
+                            if (received_action.payloadPedalAction_.system_action_u8==3)
+                            {
+                              Serial.println("Get OTA command");
+                              OTA_enable_b=true;
+                              //OTA_enable_start=true;
+                              ESPNow_OTA_enable=false;
+                            }
+                            #endif
+                            //4 Enable pairing
+                            if (received_action.payloadPedalAction_.system_action_u8==4)
+                            {
+                              #ifdef ESPNow_Pairing_function
+                                Serial.println("Get Pairing command");
+                                software_pairing_action_b=true;
+                              #endif
+                              #ifndef ESPNow_Pairing_function
+                                Serial.println("no supporting command");
+                              #endif
+                            }
+                            
+                            if (received_action.payloadPedalAction_.system_action_u8==(uint8_t)PedalSystemAction::ESP_BOOT_INTO_DOWNLOAD_MODE)
+                            {
+                              #ifdef ESPNow_S3
+                                Serial.println("Restart into Download mode");
+                                delay(1000);
+                                REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
+                                ESP.restart();
+                              #else
+                                Serial.println("Command not supported");
+                                delay(1000);
+                              #endif
+                              //ESPNOW_BootIntoDownloadMode = false;
+                            }
+                            if (received_action.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::PRINT_PEDAL_INFO)
+                            {
+                              char logString[200];
+                              snprintf(logString, sizeof(logString),
+                                      "Pedal ID: %d\nBoard: %s\nLoadcell shift= %.3f kg\nLoadcell variance= %.3f kg\nPSU voltage:%.1f V\nMax endstop:%lu\nCurrentPos:%lu\n\0",
+                                      sct_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage() / 10.0f), dap_calculationVariables_st.stepperPosMaxEndstop, dap_calculationVariables_st.current_pedal_position);
+                              Serial.println(logString);
+                            }
+
+                            // trigger ABS effect
+                            if (received_action.payloadPedalAction_.triggerAbs_u8>0)
+                            {
+                              absOscillation.trigger();
+                              if(received_action.payloadPedalAction_.triggerAbs_u8>1)
+                              {
+                                dap_calculationVariables_st.TrackCondition=received_action.payloadPedalAction_.triggerAbs_u8-1;
+                              }
+                              else
+                              {
+                                dap_calculationVariables_st.TrackCondition=received_action.payloadPedalAction_.triggerAbs_u8=0;
+                              }
+                            }
+                            //RPM effect
+                            _RPMOscillation.RPM_value=received_action.payloadPedalAction_.RPM_u8;
+                            //G force effect
+                            _G_force_effect.G_value=received_action.payloadPedalAction_.G_value-128;       
+                            //wheel slip
+                            if (received_action.payloadPedalAction_.WS_u8)
+                            {
+                              _WSOscillation.trigger();
+                            }     
+                            //Road impact
+                            if(dap_calculationVariables_st.Rudder_status==false)
+                            {
+                              _Road_impact_effect.Road_Impact_value=received_action.payloadPedalAction_.impact_value_u8;
+                            }
+                            else
+                            {
+
+                            }
+                            
+                            // trigger system identification
+                            if (received_action.payloadPedalAction_.startSystemIdentification_u8)
+                            {
+                              systemIdentificationMode_b = true;
+                            }
+                            // trigger Custom effect effect 1
+                            if (received_action.payloadPedalAction_.Trigger_CV_1)
+                            {
+                              CV1.trigger();
+                            }
+                            // trigger Custom effect effect 2
+                            if (received_action.payloadPedalAction_.Trigger_CV_2)
+                            {
+                              CV2.trigger();
+                            }
+                            // trigger return pedal position
+                            if (received_action.payloadPedalAction_.returnPedalConfig_u8)
+                            {
+                            
+                              DAP_config_st * dap_config_st_local_ptr;
+                              dap_config_st_local_ptr = &sct_dap_config_st;
+                              dap_config_st_local_ptr->payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
+                              dap_config_st_local_ptr->payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
+                              dap_config_st_local_ptr->payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
+                              dap_config_st_local_ptr->payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
+                              uint16_t crc = checksumCalculator((uint8_t*)(&(sct_dap_config_st.payLoadHeader_)), sizeof(sct_dap_config_st.payLoadHeader_) + sizeof(sct_dap_config_st.payLoadPedalConfig_));
+                              dap_config_st_local_ptr->payloadFooter_.checkSum = crc;
+                              Serial.write((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
+                              // Serial.print("\r\n");
+                            }
+                            #ifdef ESPNOW_Enable
+                              if(received_action.payloadPedalAction_.Rudder_action==1)//Enable Rudder
+                              {
+                                if(dap_calculationVariables_st.Rudder_status==false)
+                                {
+                                  dap_calculationVariables_st.Rudder_status=true;
+                                  Serial.println("Rudder on");
+                                  Rudder_initializing=true;
+                                  moveSlowlyToPosition_b=true;
+                                  //Serial.print("status:");
+                                  //Serial.println(dap_calculationVariables_st.Rudder_status);
+                                }
+                                else
+                                {
+                                  dap_calculationVariables_st.Rudder_status=false;
+                                  Serial.println("Rudder off");
+                                  Rudder_deinitializing=true;
+                                  moveSlowlyToPosition_b=true; 
+
+                                  //Serial.print("status:");
+                                  //Serial.println(dap_calculationVariables_st.Rudder_status);
+                                }
+                              }
+                              if(received_action.payloadPedalAction_.Rudder_brake_action==1)
+                              {
+                                if(dap_calculationVariables_st.rudder_brake_status==false&&dap_calculationVariables_st.Rudder_status==true)
+                                {
+                                  dap_calculationVariables_st.rudder_brake_status=true;
+                                  Serial.println("Rudder brake on");
+                                  //Serial.print("status:");
+                                  //Serial.println(dap_calculationVariables_st.Rudder_status);
+                                }
+                                else
+                                {
+                                  dap_calculationVariables_st.rudder_brake_status=false;
+                                  Serial.println("Rudder brake off");
+                                  //Serial.print("status:");
+                                  //Serial.println(dap_calculationVariables_st.Rudder_status);
+                                }
+                              }
+                              //clear rudder status
+                              if(received_action.payloadPedalAction_.Rudder_action==2)
+                              {
+                                dap_calculationVariables_st.Rudder_status=false;
+                                dap_calculationVariables_st.rudder_brake_status=false;
+                                Serial.println("Rudder Status Clear");
+                                Rudder_deinitializing=true;
+                                moveSlowlyToPosition_b=true;
+
+                              }
+                            #endif
+                            
+                            
+
+                            
+                        }
+                        break;
+                    }
+                } // end switch
+
+                if (!structIsValid) {
+                    Serial.printf("Invalid packet detected (Type: %d). Skipping SOF.\n", payloadType);
+                    buffer_idx++; // Skip the failed SOF and continue scanning
+                } else {
+                    // Packet was valid and processed, advance index past this packet
+                    buffer_idx += expectedSize;
                 }
+            } // end while
 
-              break;
-            }// case DAP_PAYLOAD_TYPE_ACTION:
-
-                // case sizeof(DAP_otaWifiInfo_st) : 
-                //   Serial.println("get basic wifi info");
-                //   // Copy data from the received packet buffer into the struct
-                //   memcpy(&_dap_OtaWifiInfo_st, received_packet.data, sizeof(DAP_otaWifiInfo_st));
-              
-                //   #ifdef OTA_update
-                //     if(_dap_OtaWifiInfo_st.device_ID == sct_dap_config_st.payLoadPedalConfig_.pedal_type)
-                //     {
-                //       SSID=new char[_dap_OtaWifiInfo_st.SSID_Length+1];
-                //       PASS=new char[_dap_OtaWifiInfo_st.PASS_Length+1];
-                //       memcpy(SSID,_dap_OtaWifiInfo_st.WIFI_SSID,_dap_OtaWifiInfo_st.SSID_Length);
-                //       memcpy(PASS,_dap_OtaWifiInfo_st.WIFI_PASS,_dap_OtaWifiInfo_st.PASS_Length);
-                //       SSID[_dap_OtaWifiInfo_st.SSID_Length]=0;
-                //       PASS[_dap_OtaWifiInfo_st.PASS_Length]=0;
-                //       OTA_enable_b=true;
-                //     }
-                //   #endif
-                //   #ifdef OTA_update_ESP32
-                //     Serial.println("Get OTA command");
-                //     OTA_enable_b=true;
-                //     //OTA_enable_start=true;
-                //     ESPNow_OTA_enable=false;
-                //     //Serial.println("get basic wifi info");
-                //     //Serial.readBytes((char*)&_basic_wifi_info, sizeof(Basic_WIfi_info));
-                //   #endif
-                  
-                //   break;  
-                default:
-                {
-                  // Serial.printf("\nReceived packet of unexpected size: %d bytes\n", received_packet.len);
-                  // Serial.printf("Expected config size: %d, action size: %d\n", sizeof(DAP_config_st), sizeof(DAP_actions_st));
-                  break; 
+            // --- 3. Clean up the buffer ---
+            if (buffer_idx > 0) {
+                size_t remaining_len = buffer_len - buffer_idx;
+                if (remaining_len > 0) {
+                    memmove(rx_buffer, &rx_buffer[buffer_idx], remaining_len);
                 }
-                      
-            } // switch (_structChecker_st.payloadType_u16) {
-          
-            
-          // --- 4. Remove the processed packet by shifting the buffer ---
-          size_t packet_len = _structChecker_st.endBytePos_u16;
-          if ( (packet_len > 0) && ( packet_len < TEMP_BUFFER_SIZE) )
-          {
-            size_t remaining_len = temp_buffer_len - packet_len;
-            memmove(temp_buffer, &temp_buffer[packet_len], remaining_len);
-            temp_buffer_len = remaining_len;
-          }
-          
+                buffer_len = remaining_len;
+            }
 
-        } // if (_structChecker_st.validFlag_b == true)
+            profiler_serialCommunicationTask.end(0);
+            profiler_serialCommunicationTask.report();
+        } // end if TaskNotifyTake
+    } // end for(;;)
+}
 
-        
-#endif
-      }
-      
-      profiler_serialCommunicationTask.end(0);
-      profiler_serialCommunicationTask.report();
-    } // if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0) {
-  } // for(;;){
-} // void IRAM_ATTR serialCommunicationTaskRx( void * pvParameters )
 
 
 uint32_t communicationTask_stackSizeIdx_u32 = 0;
