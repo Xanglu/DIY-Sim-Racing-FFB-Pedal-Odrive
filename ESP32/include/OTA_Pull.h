@@ -114,7 +114,7 @@ void OTAcallback(int offset, int totalLength)
 	float progressBeepTolerance= 0.1f;
     Serial.printf("Updating: %d of %d, (%0.0f %)\n",offset, totalLength, progressInPrecent);
 	//call beep callback
-	if(fmod(progressInPrecent,10.0f)<=progressBeepTolerance && beepForOtaProgress==false && progressInPrecent<1.0f)
+	if(fmod(progressInPrecent,10.0f)<=progressBeepTolerance && beepForOtaProgress==false && progressInPrecent>1.0f)
 	{
 		beepForOtaProgress=true;
 	}
