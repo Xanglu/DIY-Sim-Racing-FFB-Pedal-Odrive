@@ -256,7 +256,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define Pairing_GPIO 0
   //#define ESPNow_Pairing_function
   #define ESPNow_ESP32
-  #define OTA_update_ESP32
+  #define OTA_update
 #endif
 
 

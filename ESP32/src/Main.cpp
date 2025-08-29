@@ -383,6 +383,13 @@ void IRAM_ATTR loadcellReadingTask( void * pvParameters )
 // === Scheduler config ===
 #define BASE_TICK_US 100   // base tick in microseconds
 #define MAX_TASKS    10     // maximum tasks in scheduler
+//IRAM switch flag
+#ifdef RUN_IN_CACHE
+  #define IRAM_ATTR_FLAG
+#else
+  #define IRAM_ATTR_FLAG IRAM_ATTR
+#endif
+
 
 // Task entry struct
 typedef struct {
@@ -557,28 +564,23 @@ static void uart_event_task(void *pvParameters) {
 
 void setup()
 {
-
-  
-
-  
-
   DAP_config_st dap_config_st_local;
 
-// setup brake resistor pin
-#ifdef BRAKE_RESISTOR_PIN
-  pinMode(BRAKE_RESISTOR_PIN, OUTPUT);  // Set GPIO13 as an output
-  digitalWrite(BRAKE_RESISTOR_PIN, LOW);  // Turn the LED on
-#endif
+  // setup brake resistor pin
+  #ifdef BRAKE_RESISTOR_PIN
+    pinMode(BRAKE_RESISTOR_PIN, OUTPUT);  // Set GPIO13 as an output
+    digitalWrite(BRAKE_RESISTOR_PIN, LOW);  // Turn the LED on
+  #endif
 
-#ifdef EMERGENCY_PIN
-  pinMode(EMERGENCY_PIN,INPUT_PULLUP);
-#endif
+  #ifdef EMERGENCY_PIN
+    pinMode(EMERGENCY_PIN,INPUT_PULLUP);
+  #endif
 
-#ifdef ANGLE_SENSOR_GPIO
+  #ifdef ANGLE_SENSOR_GPIO
 
-  pinMode(ANGLE_SENSOR_GPIO, INPUT);
-  pinMode(ANGLE_SENSOR_GPIO_2, INPUT);
-#endif
+    pinMode(ANGLE_SENSOR_GPIO, INPUT);
+    pinMode(ANGLE_SENSOR_GPIO_2, INPUT);
+  #endif
 
 
 
@@ -1253,7 +1255,7 @@ void loop() {
 /*                         pedal update task                                                  */
 /*                                                                                            */
 /**********************************************************************************************/
-void IRAM_ATTR pedalUpdateTask( void * pvParameters )
+void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 {
 
   static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
@@ -2801,7 +2803,9 @@ void OTATask( void * pvParameters )
             char* version_tag;
             if(_dap_OtaWifiInfo_st.wifi_action==1)
             {
-              const char* str ="0.0.0";
+              const char* str;
+              if(PCB_VERSION==3||PCB_VERSION==5||PCB_VERSION==9) str ="0.90.16";// for those board which change the partition table
+              else str ="0.0.0";
               version_tag=new char[strlen(str) + 1];
               strcpy(version_tag, str);
               Serial.println("Force update");
