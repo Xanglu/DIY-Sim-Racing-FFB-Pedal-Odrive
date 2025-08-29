@@ -2329,6 +2329,8 @@ void serialCommunicationTaskRx(void *pvParameters) {
                         DAP_actions_st received_action;
                         memcpy(&received_action, packet_start, sizeof(DAP_actions_st));
 
+                        // Serial.println("Action received");
+
                         calculated_crc = checksumCalculator((uint8_t*)(&(received_action.payLoadHeader_)), sizeof(received_action.payLoadHeader_) + sizeof(received_action.payloadPedalAction_));
                         received_crc = received_action.payloadFooter_.checkSum;
 
@@ -2390,6 +2392,7 @@ void serialCommunicationTaskRx(void *pvParameters) {
                             // trigger ABS effect
                             if (received_action.payloadPedalAction_.triggerAbs_u8>0)
                             {
+                              // Serial.println("Trigger ABS");
                               absOscillation.trigger();
                               if(received_action.payloadPedalAction_.triggerAbs_u8>1)
                               {
@@ -2507,6 +2510,8 @@ void serialCommunicationTaskRx(void *pvParameters) {
                         }
                         break;
                     }
+
+                    
                 } // end switch
 
                 if (!structIsValid) {

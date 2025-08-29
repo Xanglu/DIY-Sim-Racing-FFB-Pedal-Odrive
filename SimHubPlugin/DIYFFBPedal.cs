@@ -26,7 +26,6 @@ using IPlugin = SimHub.Plugins.IPlugin;
 
 
 
-
 namespace User.PluginSdkDemo
 {
     [PluginDescription("The Plugin was for FFB pedal, To tune the pedal parameters and communicates with the pedal over USB.")]
@@ -125,7 +124,8 @@ namespace User.PluginSdkDemo
 
 
 
-
+        public byte[] STARTOFFRAMCHAR = { 0xAA, 0x55 };
+        public byte[] ENDOFFRAMCHAR = { 0xAA, 0x56 };
 
 
         public bool[] connectSerialPort = { false, false, false };
@@ -374,6 +374,10 @@ namespace User.PluginSdkDemo
             tmp.payloadHeader_.PedalTag=PedalIDX;
             DAP_config_st* v = &tmp;
             byte* p = (byte*)v;
+            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalConfig));
             SendConfig(tmp, PedalIDX);
         }
@@ -836,7 +840,12 @@ namespace User.PluginSdkDemo
                     {
 
                         DAP_action_st* v = &tmp;
-                            byte* p = (byte*)v;
+                        tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                        tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                        tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                        tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
+
+                        byte* p = (byte*)v;
                             tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
 
 
@@ -942,6 +951,11 @@ namespace User.PluginSdkDemo
                 for (uint PIDX = 1; PIDX < 3; PIDX++)
                 {
                     tmp.payloadHeader_.PedalTag = (byte)PIDX;
+                    tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                    tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                    tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                    tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
+
                     DAP_action_st* v = &tmp;
                     byte* p = (byte*)v;
                     tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
@@ -1032,6 +1046,10 @@ namespace User.PluginSdkDemo
                     uint PIDX = Rudder_Pedal_idx[i];
                     tmp.payloadHeader_.PedalTag = (byte)PIDX;
                     DAP_action_st* v = &tmp;
+                    tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                    tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                    tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                    tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
                     byte* p = (byte*)v;
                     tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
                     int length = sizeof(DAP_action_st);
@@ -1190,6 +1208,10 @@ namespace User.PluginSdkDemo
                                     uint PIDX = Rudder_Pedal_idx[i];
                                     tmp.payloadHeader_.PedalTag = (byte)PIDX;
                                     DAP_action_st* v = &tmp;
+                                    tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                                    tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                                    tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                                    tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
                                     byte* p = (byte*)v;
                                     tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
                                     int length = sizeof(DAP_action_st);
@@ -1244,6 +1266,10 @@ namespace User.PluginSdkDemo
                     uint PIDX = Rudder_Pedal_idx[i];
                     tmp.payloadHeader_.PedalTag = (byte)PIDX;
                     DAP_action_st* v = &tmp;
+                    tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                    tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                    tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                    tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
                     byte* p = (byte*)v;
                     tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
                     int length = sizeof(DAP_action_st);
@@ -1300,6 +1326,10 @@ namespace User.PluginSdkDemo
                 {
                     tmp.payloadHeader_.PedalTag = (byte)pedalIdx;
                     DAP_action_st* v = &tmp;
+                    tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                    tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                    tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                    tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
                     byte* p = (byte*)v;
                     tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
                     int length = sizeof(DAP_action_st);
