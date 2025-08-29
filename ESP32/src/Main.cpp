@@ -437,6 +437,7 @@ void addScheduledTask(TaskFunction_t fn, const char *name, uint16_t intervalUs,
 
   tasks[taskCount].intervalTicks = intervalTicks;
   tasks[taskCount].counter = 0;
+  tasks[taskCount].name = name;
   taskCount++;
 }
 
@@ -810,8 +811,8 @@ void setup()
 
   // Register tasks
   addScheduledTask(pedalUpdateTask, "pedalUpdateTask", REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US, 1, CORE_ID_PEDAL_UPDATE_TASK, 7000);
+  addScheduledTask(serialCommunicationTaskTx, "serComTx", REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US, 1, CORE_ID_SERIAL_COMMUNICATION_TASK, 5000); // leave it as second entry
   addScheduledTask(serialCommunicationTaskRx, "serComRx", REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US, 1, CORE_ID_SERIAL_COMMUNICATION_TASK, 5000);
-  addScheduledTask(serialCommunicationTaskTx, "serComTx", REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US, 1, CORE_ID_SERIAL_COMMUNICATION_TASK, 5000);
   addScheduledTask(joystickOutputTask, "joystickOutputTask", REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US, 1, CORE_ID_JOYSTICK_TASK, 5000);
 
   // === Replace hw_timer with esp_timer ===
@@ -2582,9 +2583,16 @@ void IRAM_ATTR serialCommunicationTaskTx( void * pvParameters )
       Serial.print(timerTicks_serialCommunicationTask_u16 * BASE_TICK_US);
       Serial.println("us");
 
+      for ( uint8_t taskIdx_u8 = 0; taskIdx_u8<taskCount; taskIdx_u8++)
+      {
+        if (tasks[taskIdx_u8].name != nullptr && strcmp(tasks[taskIdx_u8].name, "serComTx") == 0)
+        {
+          Serial.println("serComTx found");
+          tasks[taskIdx_u8].intervalTicks = timerTicks_serialCommunicationTask_u16; // hard coded serial Tx task handle
+          tasks[taskIdx_u8].counter = 0;  // reset counter
+        }
+      }
       
-      tasks[1].intervalTicks = timerTicks_serialCommunicationTask_u16;
-      tasks[1].counter = 0;  // reset counter
     }
 
 
