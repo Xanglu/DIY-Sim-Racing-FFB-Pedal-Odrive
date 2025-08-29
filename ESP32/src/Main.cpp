@@ -2813,20 +2813,20 @@ void OTATask( void * pvParameters )
             switch (_dap_OtaWifiInfo_st.mode_select)
             {
               case 1:
-                Serial.printf("Flashing to latest Main, checking %s to see if an update is available...\n", JSON_URL_main);
-                ret = ota.CheckForOTAUpdate(JSON_URL_main, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
+                Serial.printf("Flashing to latest release, checking %s to see if an update is available...\n", OTA_JSON_URL_MAIN);
+                ret = ota.CheckForOTAUpdate(OTA_JSON_URL_MAIN, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
                 Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
                 OTA_update_status=ret;
                 break;
               case 2:
-                Serial.printf("Flashing to latest Dev, checking %s to see if an update is available...\n", JSON_URL_dev);
-                ret = ota.CheckForOTAUpdate(JSON_URL_dev, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
+                Serial.printf("Flashing to latest dev build, checking %s to see if an update is available...\n", OTA_JSON_URL_DEV);
+                ret = ota.CheckForOTAUpdate(OTA_JSON_URL_DEV, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
                 Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
                 OTA_update_status=ret;
                 break;
               case 3:
-                Serial.printf("Flashing to Daily build, checking %s to see if an update is available...\n", JSON_URL_dev);
-                ret = ota.CheckForOTAUpdate(JSON_URL_daily, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
+                Serial.printf("Flashing to test build, checking %s to see if an update is available...\n", OTA_JSON_URL_TEST);
+                ret = ota.CheckForOTAUpdate(OTA_JSON_URL_TEST, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
                 Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
                 OTA_update_status=ret;
                 break;
