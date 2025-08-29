@@ -307,7 +307,7 @@ char* APhost;
 /*                                                                                            */
 /**********************************************************************************************/
 float loadcellReading_global_fl32 = 0.0f;
-void IRAM_ATTR loadcellReadingTask( void * pvParameters )
+void IRAM_ATTR_FLAG loadcellReadingTask( void * pvParameters )
 {
 
   static FunctionProfiler profiler_loadcellReading;
@@ -382,6 +382,7 @@ void IRAM_ATTR loadcellReadingTask( void * pvParameters )
 #define BASE_TICK_US 100   // base tick in microseconds
 #define MAX_TASKS    10     // maximum tasks in scheduler
 
+
 // Task entry struct
 typedef struct {
   TaskHandle_t handle;
@@ -402,7 +403,7 @@ uint8_t taskCount = 0;
 hw_timer_t *timer0 = NULL;
 
 // === Scheduler ISR ===
-void IRAM_ATTR onTimer(void* arg) {
+void IRAM_ATTR_FLAG onTimer(void* arg) {
   BaseType_t xHigherPriorityWoken = pdFALSE;
 
   for (int i = 0; i < taskCount; i++) {
@@ -578,28 +579,23 @@ static void uart_event_task(void *pvParameters) {
 
 void setup()
 {
-
-  
-
-  
-
   DAP_config_st dap_config_st_local;
 
-// setup brake resistor pin
-#ifdef BRAKE_RESISTOR_PIN
-  pinMode(BRAKE_RESISTOR_PIN, OUTPUT);  // Set GPIO13 as an output
-  digitalWrite(BRAKE_RESISTOR_PIN, LOW);  // Turn the LED on
-#endif
+  // setup brake resistor pin
+  #ifdef BRAKE_RESISTOR_PIN
+    pinMode(BRAKE_RESISTOR_PIN, OUTPUT);  // Set GPIO13 as an output
+    digitalWrite(BRAKE_RESISTOR_PIN, LOW);  // Turn the LED on
+  #endif
 
-#ifdef EMERGENCY_PIN
-  pinMode(EMERGENCY_PIN,INPUT_PULLUP);
-#endif
+  #ifdef EMERGENCY_PIN
+    pinMode(EMERGENCY_PIN,INPUT_PULLUP);
+  #endif
 
-#ifdef ANGLE_SENSOR_GPIO
+  #ifdef ANGLE_SENSOR_GPIO
 
-  pinMode(ANGLE_SENSOR_GPIO, INPUT);
-  pinMode(ANGLE_SENSOR_GPIO_2, INPUT);
-#endif
+    pinMode(ANGLE_SENSOR_GPIO, INPUT);
+    pinMode(ANGLE_SENSOR_GPIO_2, INPUT);
+  #endif
 
 
   #ifdef USING_LED
@@ -1276,7 +1272,7 @@ void loop() {
 /*                         pedal update task                                                  */
 /*                                                                                            */
 /**********************************************************************************************/
-void IRAM_ATTR pedalUpdateTask( void * pvParameters )
+void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 {
 
   static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
@@ -2112,7 +2108,7 @@ void IRAM_ATTR pedalUpdateTask( void * pvParameters )
 /*                         joystick output task                                               */
 /*                                                                                            */
 /**********************************************************************************************/
-void IRAM_ATTR joystickOutputTask( void * pvParameters )
+void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
 { 
   int32_t joystickNormalizedToInt32_local = 0;
 
@@ -2542,7 +2538,7 @@ void serialCommunicationTaskRx(void *pvParameters) {
 
 
 uint32_t communicationTask_stackSizeIdx_u32 = 0;
-void IRAM_ATTR serialCommunicationTaskTx( void * pvParameters )
+void IRAM_ATTR_FLAG serialCommunicationTaskTx( void * pvParameters )
 { 
   FunctionProfiler profiler_serialCommunicationTask;
   profiler_serialCommunicationTask.setName("SerialCommunicationTx");
@@ -2805,7 +2801,9 @@ void OTATask( void * pvParameters )
             char* version_tag;
             if(_dap_OtaWifiInfo_st.wifi_action==1)
             {
-              const char* str ="0.0.0";
+              const char* str;
+              if(PCB_VERSION==3||PCB_VERSION==5||PCB_VERSION==9) str ="0.90.16";// for those board which change the partition table
+              else str ="0.0.0";
               version_tag=new char[strlen(str) + 1];
               strcpy(version_tag, str);
               Serial.println("Force update");
@@ -2819,20 +2817,20 @@ void OTATask( void * pvParameters )
             switch (_dap_OtaWifiInfo_st.mode_select)
             {
               case 1:
-                Serial.printf("Flashing to latest Main, checking %s to see if an update is available...\n", JSON_URL_main);
-                ret = ota.CheckForOTAUpdate(JSON_URL_main, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
+                Serial.printf("Flashing to latest release, checking %s to see if an update is available...\n", OTA_JSON_URL_MAIN);
+                ret = ota.CheckForOTAUpdate(OTA_JSON_URL_MAIN, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
                 Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
                 OTA_update_status=ret;
                 break;
               case 2:
-                Serial.printf("Flashing to latest Dev, checking %s to see if an update is available...\n", JSON_URL_dev);
-                ret = ota.CheckForOTAUpdate(JSON_URL_dev, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
+                Serial.printf("Flashing to latest dev build, checking %s to see if an update is available...\n", OTA_JSON_URL_DEV);
+                ret = ota.CheckForOTAUpdate(OTA_JSON_URL_DEV, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
                 Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
                 OTA_update_status=ret;
                 break;
               case 3:
-                Serial.printf("Flashing to Daily build, checking %s to see if an update is available...\n", JSON_URL_dev);
-                ret = ota.CheckForOTAUpdate(JSON_URL_daily, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
+                Serial.printf("Flashing to test build, checking %s to see if an update is available...\n", OTA_JSON_URL_TEST);
+                ret = ota.CheckForOTAUpdate(OTA_JSON_URL_TEST, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
                 Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
                 OTA_update_status=ret;
                 break;
@@ -2858,7 +2856,7 @@ void OTATask( void * pvParameters )
 
 #ifdef ESPNOW_Enable
 
-void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
+void IRAM_ATTR_FLAG ESPNOW_SyncTask( void * pvParameters )
 {
   FunctionProfiler profiler_espNow;
   profiler_espNow.setName("EspNow");
@@ -3354,7 +3352,7 @@ void miscTask( void * pvParameters )
     #ifdef USING_BUZZER
       //make buzzer sound actions here
       #ifdef ESPNOW_Enable
-      if(Config_update_Buzzer_b)
+        if(Config_update_Buzzer_b)
         {
           Buzzer.single_beep_tone(700,50);
           Config_update_Buzzer_b=false;
@@ -3366,7 +3364,13 @@ void miscTask( void * pvParameters )
         buzzerBeepAction_b=false;
       }
     #endif
-
+    #if defined(OTA_update) && defined(USING_BUZZER)
+      if(beepForOtaProgress)
+      {
+        Buzzer.single_beep_tone(700,50);
+        beepForOtaProgress=false;
+      }
+    #endif
     delay(50);
   }
 }

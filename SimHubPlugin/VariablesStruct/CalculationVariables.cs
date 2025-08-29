@@ -59,6 +59,7 @@ namespace User.PluginSdkDemo
         public vJoyInterfaceWrap.vJoy _joystick;
         public bool IsJoystickInitialized = false;
         public uint rudderType;
+        public bool IsTestBuild = false;
         public uint RSSI_Value
         {
             get => _rssi_value;

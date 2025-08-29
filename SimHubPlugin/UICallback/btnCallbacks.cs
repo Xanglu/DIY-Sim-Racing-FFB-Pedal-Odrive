@@ -849,6 +849,10 @@ namespace User.PluginSdkDemo
                 {
                     tmp_2.mode_select = 2;
                 }
+                if (Plugin._calculations.IsTestBuild)
+                {
+                    tmp_2.mode_select = 3;
+                }
                 if (SSID.Length > 30 || PASS.Length > 30)
                 {
                     SSID_PASS_check = false;
