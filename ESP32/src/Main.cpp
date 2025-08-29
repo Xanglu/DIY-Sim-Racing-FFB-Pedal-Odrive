@@ -309,7 +309,7 @@ char* APhost;
 /*                                                                                            */
 /**********************************************************************************************/
 float loadcellReading_global_fl32 = 0.0f;
-void IRAM_ATTR loadcellReadingTask( void * pvParameters )
+void IRAM_ATTR_FLAG loadcellReadingTask( void * pvParameters )
 {
 
   static FunctionProfiler profiler_loadcellReading;
@@ -383,12 +383,6 @@ void IRAM_ATTR loadcellReadingTask( void * pvParameters )
 // === Scheduler config ===
 #define BASE_TICK_US 100   // base tick in microseconds
 #define MAX_TASKS    10     // maximum tasks in scheduler
-//IRAM switch flag
-#ifdef RUN_IN_CACHE
-  #define IRAM_ATTR_FLAG
-#else
-  #define IRAM_ATTR_FLAG IRAM_ATTR
-#endif
 
 
 // Task entry struct
@@ -411,7 +405,7 @@ uint8_t taskCount = 0;
 hw_timer_t *timer0 = NULL;
 
 // === Scheduler ISR ===
-void IRAM_ATTR onTimer(void* arg) {
+void IRAM_ATTR_FLAG onTimer(void* arg) {
   BaseType_t xHigherPriorityWoken = pdFALSE;
 
   for (int i = 0; i < taskCount; i++) {
@@ -2091,7 +2085,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 /*                         joystick output task                                               */
 /*                                                                                            */
 /**********************************************************************************************/
-void IRAM_ATTR joystickOutputTask( void * pvParameters )
+void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
 { 
   int32_t joystickNormalizedToInt32_local = 0;
 
@@ -2185,7 +2179,7 @@ void IRAM_ATTR joystickOutputTask( void * pvParameters )
 /*                                                                                            */
 /**********************************************************************************************/
 uint32_t communicationTask_stackSizeIdx_u32 = 0;
-void IRAM_ATTR serialCommunicationTask( void * pvParameters )
+void IRAM_ATTR_FLAG serialCommunicationTask( void * pvParameters )
 { 
   FunctionProfiler profiler_serialCommunicationTask;
   profiler_serialCommunicationTask.setName("SerialCommunication");
@@ -2858,7 +2852,7 @@ void OTATask( void * pvParameters )
 
 #ifdef ESPNOW_Enable
 
-void IRAM_ATTR ESPNOW_SyncTask( void * pvParameters )
+void IRAM_ATTR_FLAG ESPNOW_SyncTask( void * pvParameters )
 {
   FunctionProfiler profiler_espNow;
   profiler_espNow.setName("EspNow");

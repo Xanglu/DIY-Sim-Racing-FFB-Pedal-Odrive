@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <arduino.h>
 // #include <task.h>
 
 #define PI_FL32         3.1415926535897932384626433832795f
@@ -192,7 +193,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   //#define ESPNow_Pairing_function
   //#define Pairing_GPIO 13
   //#define ESPNow_debug_rudder
-  #define OTA_update_ESP32
+  #define OTA_update
   //#define BRAKE_RESISTOR_PIN 13
   //#define OTA_update_ESP32
   
@@ -539,4 +540,11 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 #ifdef ENABLE_ESP_NOW
   #define ESPNOW_Enable
   #define ESPNow_S3
+#endif
+
+//IRAM switch flag
+#ifdef RUN_IN_CACHE
+  #define IRAM_ATTR_FLAG
+#else
+  #define IRAM_ATTR_FLAG IRAM_ATTR
 #endif
