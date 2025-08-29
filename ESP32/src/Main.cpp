@@ -3348,7 +3348,7 @@ void miscTask( void * pvParameters )
     #ifdef USING_BUZZER
       //make buzzer sound actions here
       #ifdef ESPNOW_Enable
-      if(Config_update_Buzzer_b)
+        if(Config_update_Buzzer_b)
         {
           Buzzer.single_beep_tone(700,50);
           Config_update_Buzzer_b=false;
@@ -3360,7 +3360,13 @@ void miscTask( void * pvParameters )
         buzzerBeepAction_b=false;
       }
     #endif
-
+    #if defined(OTA_update) && defined(USING_BUZZER)
+      if(beepForOtaProgress)
+      {
+        Buzzer.single_beep_tone(700,50);
+        beepForOtaProgress=false;
+      }
+    #endif
     delay(50);
   }
 }
