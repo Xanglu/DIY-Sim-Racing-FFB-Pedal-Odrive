@@ -110,7 +110,7 @@ DAP_action_ota_st dap_action_ota_st;
 /*                                                                                            */
 /**********************************************************************************************/
 #ifndef CONFIG_IDF_TARGET_ESP32S3
-  #include "soc/rtc_wdt.h"
+  #include <rtc_wdt.h>
 #endif
 #ifdef USING_LED
   #include "soc/soc_caps.h"

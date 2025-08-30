@@ -25,10 +25,6 @@
                     <Label Content="Auto Connect to Bridge" Height="20" Width="130" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" FontSize="10" Margin="4,0,0,0"/>
                 </StackPanel>
                 <StackPanel Height="20" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,2,0,0">
-                    <styles:SHToggleButton x:Name="CheckBox_using_CDC_for_bridge" Content="" Checked="CheckBox_using_CDC_for_bridge_Checked" Unchecked="CheckBox_using_CDC_for_bridge_Unchecked" IsChecked="False" FontSize="10" Width="35" Height="15" HorizontalAlignment="Left" FontFamily="Arial" ToolTip="This function is for performance testing, leave it off if you dont know what the function doing" RenderTransformOrigin="0.5,0.5" Margin="-10,0,0,0" IsEnabled="False" />
-                    <Label Content="CDC Serial for Bridge" Height="20" Width="130" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" FontSize="10" Margin="4,0,0,0"/>
-                </StackPanel>
-                <StackPanel Height="20" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,2,0,0">
                     <styles:SHToggleButton x:Name="Debug_check" Content="" Checked="Debug_check_Checked" Unchecked="Debug_check_Unchecked" IsChecked="False" FontSize="10" Width="35" Height="15" HorizontalAlignment="Left" FontFamily="Arial" ToolTip="Some opttions were hidden..." RenderTransformOrigin="0.5,0.5" Margin="-10,0,0,0" />
                     <Label Content="Advanced Mode" Height="20" Width="130" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" FontSize="10" Margin="4,0,0,0"/>
                 </StackPanel>
