@@ -866,7 +866,7 @@ void setup()
     xTaskCreatePinnedToCore(
         serialCommunicationTaskTx,      /* Task function. */
         "serComTx",    /* name of task. */
-        5000,                           /* Stack size of task */
+        2000,                           /* Stack size of task */
         NULL,                           /* parameter of the task */
         1,                              /* priority of the task (e.g., 2, slightly higher than producer) */
         &handle_serialCommunicationTx,  /* Task handle */
