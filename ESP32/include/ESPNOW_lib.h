@@ -499,9 +499,9 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
             
               
       }
-      if(data_len==sizeof(DAP_otaWifiInfo_st))
+      if(data_len==sizeof(DAP_action_ota_st))
       {        
-        memcpy(&_dap_OtaWifiInfo_st, data, sizeof(DAP_otaWifiInfo_st));
+        memcpy(&dap_action_ota_st, data, sizeof(DAP_action_ota_st));
         OTA_update_action_b=true;
       }
       

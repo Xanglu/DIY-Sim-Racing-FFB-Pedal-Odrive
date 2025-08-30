@@ -88,6 +88,7 @@ DAP_ESPPairing_st dap_esppairing_st;//saving
 DAP_ESPPairing_st dap_esppairing_lcl;//sending
 //DAP_config_st dap_config_st_store[3];
 DAP_bridge_state_st dap_bridge_state_lcl;//
+DAP_action_ota_st dap_action_ota_st;
 
 #include "CycleTimer.h"
 
@@ -485,8 +486,8 @@ void setup()
   //initialize wifi 
   for(uint i=0;i<30;i++)
   {
-    _dap_OtaWifiInfo_st.WIFI_PASS[i]=0;
-    _dap_OtaWifiInfo_st.WIFI_SSID[i]=0;
+    dap_action_ota_st.payloadOtaInfo_.WIFI_PASS[i]=0;
+    dap_action_ota_st.payloadOtaInfo_.WIFI_SSID[i]=0;
   }
   
   
@@ -697,19 +698,19 @@ void ESPNOW_SyncTask( void * pvParameters )
     //forward the basic wifi info for pedals
     if(pedal_OTA_action_b)
     {
-      switch(_dap_OtaWifiInfo_st.device_ID)
+      switch(dap_action_ota_st.payloadOtaInfo_.device_ID)
       {
         case 0:
-          ESPNow.send_message(Clu_mac,(uint8_t *) &_dap_OtaWifiInfo_st,sizeof(DAP_otaWifiInfo_st));
-          Serial.println("[L]Forward to Clutch");
+          ESPNow.send_message(Clu_mac,(uint8_t *) &dap_action_ota_st,sizeof(DAP_action_ota_st));
+          Serial.println("[L]Forward OTA command to Clutch");
         break;
         case 1:
-          ESPNow.send_message(Brk_mac,(uint8_t *) &_dap_OtaWifiInfo_st,sizeof(DAP_otaWifiInfo_st));
-          Serial.println("[L]Forward to Brake");
+          ESPNow.send_message(Brk_mac,(uint8_t *) &dap_action_ota_st,sizeof(DAP_action_ota_st));
+          Serial.println("[L]Forward OTA command to Brake");
         break;
         case 2:
-          ESPNow.send_message(Gas_mac,(uint8_t *) &_dap_OtaWifiInfo_st,sizeof(DAP_otaWifiInfo_st));
-          Serial.println("[L]Forward to Throttle");
+          ESPNow.send_message(Gas_mac,(uint8_t *) &dap_action_ota_st,sizeof(DAP_action_ota_st));
+          Serial.println("[L]Forward OTA command to Throttle");
         break;
       }
       pedal_OTA_action_b=false;
@@ -933,49 +934,62 @@ void Serial_Task( void * pvParameters)
             }
           }
         break;
-      case sizeof(DAP_otaWifiInfo_st):
-        Serial.println("[L]get basic wifi info");
-        Serial.readBytes((char *)&_dap_OtaWifiInfo_st, sizeof(DAP_otaWifiInfo_st));
-        #ifdef OTA_Update
-        if (_dap_OtaWifiInfo_st.device_ID == deviceID)
+        case sizeof(DAP_action_ota_st):
         {
-          SSID = new char[_dap_OtaWifiInfo_st.SSID_Length + 1];
-          PASS = new char[_dap_OtaWifiInfo_st.PASS_Length + 1];
-          memcpy(SSID, _dap_OtaWifiInfo_st.WIFI_SSID, _dap_OtaWifiInfo_st.SSID_Length);
-          memcpy(PASS, _dap_OtaWifiInfo_st.WIFI_PASS, _dap_OtaWifiInfo_st.PASS_Length);
-          SSID[_dap_OtaWifiInfo_st.SSID_Length] = 0;
-          PASS[_dap_OtaWifiInfo_st.PASS_Length] = 0;
-          /*
-          Serial.print("[L]SSID(uint)=");
-          for(uint i=0; i<_basic_wifi_info.SSID_Length;i++)
-          {
-            Serial.print(_basic_wifi_info.WIFI_SSID[i]);
-            Serial.print(",");
-          }
-          Serial.println(" ");
-          Serial.print("[L]PASS(uint)=");
-          for(uint i=0; i<_basic_wifi_info.PASS_Length;i++)
-          {
-            Serial.print(_basic_wifi_info.WIFI_PASS[i]);
-            Serial.print(",");
-          }
-          Serial.println(" ");
+          Serial.println("[L]get OTA command and its info");
+          Serial.readBytes((char *)&dap_action_ota_st, sizeof(DAP_action_ota_st));
+          #ifdef OTA_Update
+            bool structChecker_b=true;
+            if(dap_action_ota_st.payLoadHeader_.payloadType!=DAP_PAYLOAD_TYPE_ACTION_OTA)
+            {
+              structChecker_b=false;
+            }
+            if(structChecker_b)
+            {
+              SSID = new char[dap_action_ota_st.payloadOtaInfo_.SSID_Length + 1];
+              PASS = new char[dap_action_ota_st.payloadOtaInfo_.PASS_Length + 1];
+              memcpy(SSID, dap_action_ota_st.payloadOtaInfo_.WIFI_SSID, dap_action_ota_st.payloadOtaInfo_.SSID_Length);
+              memcpy(PASS, dap_action_ota_st.payloadOtaInfo_.WIFI_PASS, dap_action_ota_st.payloadOtaInfo_.PASS_Length);
+              SSID[dap_action_ota_st.payloadOtaInfo_.SSID_Length] = 0;
+              PASS[dap_action_ota_st.payloadOtaInfo_.PASS_Length] = 0;
+              /*
+              Serial.printf("[L]Device ID:%d\n",dap_action_ota_st.payloadOtaInfo_.device_ID);
+              Serial.print("[L]SSID(uint)=");
+              for(uint i=0; i<dap_action_ota_st.payloadOtaInfo_.SSID_Length;i++)
+              {
+                Serial.print(dap_action_ota_st.payloadOtaInfo_.WIFI_SSID[i]);
+                Serial.print(",");
+              }
+              Serial.println(" ");
+              Serial.print("[L]PASS(uint)=");
+              for(uint i=0; i<dap_action_ota_st.payloadOtaInfo_.PASS_Length;i++)
+              {
+                Serial.print(dap_action_ota_st.payloadOtaInfo_.WIFI_PASS[i]);
+                Serial.print(",");
+              }
+              Serial.println(" ");
 
-          Serial.print("[L]SSID=");
-          Serial.println(SSID);
-          Serial.print("[L]PASS=");
-          Serial.println(PASS);
-          */
-          OTA_enable_b = true;
-        }
-        else
-        {
-          pedal_OTA_action_b = true;
-        }
-        #endif
-          
+              Serial.print("[L]SSID=");
+              Serial.println(SSID);
+              Serial.print("[L]PASS=");
+              Serial.println(PASS);
+              */
+            }
+
+            if (dap_action_ota_st.payloadOtaInfo_.device_ID == deviceID && structChecker_b==true)
+            {
+              OTA_enable_b = true;
+              Serial.println("[L] Bridge OTA begin.");
+            }
+            else if(structChecker_b)
+            {
+              pedal_OTA_action_b = true;
+            }
+          #endif
           break;
+        }
         default:
+        {
         // flush the input buffer
           while (Serial.available()) 
             Serial.read();
@@ -986,8 +1000,8 @@ void Serial_Task( void * pvParameters)
             Serial.print(sizeof(DAP_config_st) );
             Serial.print("    Exp action size: ");
             Serial.println(sizeof(DAP_actions_st) );
-
-          break;          
+          break;
+        }          
       }
     }
 
@@ -1350,12 +1364,12 @@ void OTATask( void * pvParameters )
             ota.SetCallback(OTAcallback);
             ota.OverrideBoard(BRIDGE_BOARD);
             Version_tag=BRIDGE_FIRMWARE_VERSION;
-            if(_dap_OtaWifiInfo_st.wifi_action==1)
+            if(dap_action_ota_st.payloadOtaInfo_.ota_action==1)
             {
               Version_tag="0.0.0";
               Serial.println("Force update");
             }
-            switch (_dap_OtaWifiInfo_st.mode_select)
+            switch (dap_action_ota_st.payloadOtaInfo_.mode_select)
             {
               case 1:
                 Serial.printf("[L]Flashing to latest Main, checking %s to see if an update is available...\n", JSON_URL_main);

@@ -36,10 +36,6 @@ namespace User.PluginSdkDemo
                 {
                     TextBox_serialMonitor.Clear();
                 }*/
-                if (_serial_monitor_window != null && _serial_monitor_window.TextBox_SerialMonitor.LineCount > 100)
-                {
-                    _serial_monitor_window.TextBox_SerialMonitor.Clear();
-                }
             }
             try
             {

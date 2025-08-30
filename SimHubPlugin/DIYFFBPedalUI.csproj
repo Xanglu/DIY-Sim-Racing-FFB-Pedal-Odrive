@@ -286,11 +286,13 @@
     <Compile Include="VariablesStruct\Basic_WIfi_info.cs" />
     <Compile Include="VariablesStruct\CalculationVariables.cs" />
     <Compile Include="VariablesStruct\constants.cs" />
+    <Compile Include="VariablesStruct\DAP_action_ota_st.cs" />
     <Compile Include="VariablesStruct\DAP_action_st.cs" />
     <Compile Include="VariablesStruct\DAP_bridge_state_st.cs" />
     <Compile Include="VariablesStruct\DAP_config_st.cs" />
     <Compile Include="VariablesStruct\DAP_state_basic_st.cs" />
     <Compile Include="VariablesStruct\DAP_state_extended_st.cs" />
+    <Compile Include="VariablesStruct\payloadOtaInfo.cs" />
     <Compile Include="VariablesStruct\payloadBridgeState.cs" />
     <Compile Include="VariablesStruct\payloadFooter.cs" />
     <Compile Include="VariablesStruct\payloadHeader.cs" />

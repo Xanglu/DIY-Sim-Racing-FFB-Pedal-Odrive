@@ -24,7 +24,7 @@
                 <StackPanel Height="20" Width="540" Orientation="Horizontal">
                     <Label Content="Noise Reduction Filter" Height="15" Width="150" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial Black" HorizontalAlignment="Left" Margin="70,0,0,0"/>
                 </StackPanel>
-                <StackPanel Height="40" Width="540" Orientation="Horizontal" HorizontalAlignment="Left">
+                <StackPanel Height="50" Width="540" Orientation="Horizontal" HorizontalAlignment="Left">
                     <Label Content="Filter Model:" Height="20" Width="60" FontSize="10" Padding="0,0,0,0" VerticalContentAlignment="Center" Margin="70,0,0,0"/>
                     <ComboBox x:Name="KF_filter_order"    Width="120" Height="10" FontSize="10" SelectedIndex="0" Margin="0,0,0,0" BorderThickness="0,0,0,0" SelectionChanged="KF_filter_order_SelectionChanged">
                         <ComboBoxItem Content="KF const. vel."/>
@@ -33,8 +33,8 @@
                         <ComboBoxItem Content="NONE"/>
                     </ComboBox>
                     <StackPanel Width="201" Height="50" Margin="20,0,0,0">
-                        <StackPanel Width="400" Height="10" Orientation="Horizontal">
-                            <Label  Width="250" Foreground="White" RenderTransformOrigin="0.5,0.5" Canvas.Top="3" FontSize="10" FontFamily="Arial" Canvas.Left="5" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Servo position smoothing factor" Height="10" Padding="0,0,0,0"/>
+                        <StackPanel Width="200" Height="10" Orientation="Horizontal">
+                            <Label  Width="200" Foreground="White" RenderTransformOrigin="0.5,0.5" Canvas.Top="3" FontSize="10" FontFamily="Arial" Canvas.Left="5" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Servo position smoothing factor" Height="10" Padding="0,0,0,0"/>
                         </StackPanel>
                         <localUI:SliderWithLabel x:Name="Slider_PositionFilter" SliderLength="200" SliderName="value" SliderValue="20" MinValue="0" MaxValue="50" SliderValueChanged="PosFilterValueChanged"/>
 

@@ -245,7 +245,7 @@ namespace User.PluginSdkDemo
             return myBuffer;
         }
 
-        public byte[] getBytes_Basic_Wifi_info(Basic_WIfi_info aux)
+        public byte[] getBytes_Action_Ota(DAP_action_ota_st aux)
         {
             int length = Marshal.SizeOf(aux);
             IntPtr ptr = Marshal.AllocHGlobal(length);
@@ -372,12 +372,12 @@ namespace User.PluginSdkDemo
         {
             tmp.payloadHeader_.storeToEeprom = 0;
             tmp.payloadHeader_.PedalTag=PedalIDX;
-            DAP_config_st* v = &tmp;
-            byte* p = (byte*)v;
             tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
             tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
             tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
             tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
+            DAP_config_st* v = &tmp;
+            byte* p = (byte*)v;
             tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalConfig));
             SendConfig(tmp, PedalIDX);
         }

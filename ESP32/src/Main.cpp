@@ -4,7 +4,7 @@
 
 
 #include "esp_timer.h" // Include the header for the high-resolution timer
-
+#include "esp_partition.h"
 
 
 #define ESTIMATE_LOADCELL_VARIANCE
@@ -119,7 +119,7 @@ DAP_state_basic_st dap_state_basic_st;
 DAP_state_extended_st dap_state_extended_st;
 DAP_ESPPairing_st dap_esppairing_st;//saving
 DAP_ESPPairing_st dap_esppairing_lcl;//sending
-
+DAP_action_ota_st dap_action_ota_st;//OTA command(do not check version)
 
 
 
@@ -596,7 +596,7 @@ void setup()
     pinMode(ANGLE_SENSOR_GPIO, INPUT);
     pinMode(ANGLE_SENSOR_GPIO_2, INPUT);
   #endif
-
+  
 
   #ifdef USING_LED
     pixels.begin();
@@ -636,7 +636,25 @@ void setup()
   Serial.print("Firmware Version:");
   Serial.println(DAP_FIRMWARE_VERSION);
   //#endif
-
+  #ifdef PRINT_PARTITION_TABLE
+    printf("========== Partition Table ==========\n");
+    printf("| %-10s | %-4s | %-7s | %-8s | %-8s | %-5s |\n", "Name", "Type", "SubType", "Offset", "Size", "Encrypted");
+    printf("--------------------------------------------------------------------------------\n");
+    esp_partition_iterator_t it = esp_partition_find(ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, NULL);
+    while (it != NULL) {
+        const esp_partition_t *part = esp_partition_get(it);
+        printf("| %-10s | 0x%02x | 0x%02x    | 0x%08x | 0x%08x | %-5s |\n",
+               part->label,      
+               part->type,       
+               part->subtype,    
+               part->address,    
+               part->size,       
+               part->encrypted ? "true" : "false");
+        it = esp_partition_next(it);
+    }
+    esp_partition_iterator_release(it);
+    printf("=====================================\n");
+  #endif
   
 	#ifdef Hardware_Pairing_button
     pinMode(Pairing_GPIO, INPUT_PULLUP);
@@ -2217,6 +2235,8 @@ static inline size_t getExpectedPacketSize(uint8_t payloadType) {
             return sizeof(DAP_config_st);
         case DAP_PAYLOAD_TYPE_ACTION:
             return sizeof(DAP_actions_st);
+        case DAP_PAYLOAD_TYPE_ACTION_OTA:
+            return sizeof(DAP_action_ota_st);
         // Add other packet types here in the future
         default:
             return 0;
@@ -2311,14 +2331,14 @@ void serialCommunicationTaskRx(void *pvParameters) {
                             structIsValid = false;
                         } else {
                             // --- VALID CONFIG PACKET ---
-                            Serial.println("Updating pedal config from serial");
-                            global_dap_config_class.setConfig(received_config);
-                            configUpdateAvailable = true;
-                            if (received_config.payLoadHeader_.storeToEeprom == 1) {
-                                #ifdef USING_BUZZER
-                                Buzzer.single_beep_tone(700, 100);
-                                #endif
-                            }
+                          Serial.println("Updating pedal config from serial");
+                          global_dap_config_class.setConfig(received_config);
+                          configUpdateAvailable = true;
+                          if (received_config.payLoadHeader_.storeToEeprom == 1) {
+                               #ifdef USING_BUZZER
+                              Buzzer.single_beep_tone(700, 100);
+                              #endif
+                          }
                         }
                         break;
                     }
@@ -2507,6 +2527,37 @@ void serialCommunicationTaskRx(void *pvParameters) {
                         }
                         break;
                     }
+                    case DAP_PAYLOAD_TYPE_ACTION_OTA:{
+                      memcpy(&dap_action_ota_st, packet_start, sizeof(DAP_action_ota_st));
+                      Serial.println("Get OTA command");
+                      #ifdef USING_BUZZER
+                        buzzerBeepAction_b=true;
+                      #endif
+
+                      //Serial.readBytes((char*)&dap_action_ota_st, sizeof(DAP_action_ota_st));
+                      #ifdef OTA_update
+                        if(dap_action_ota_st.payLoadHeader_.payloadType==DAP_PAYLOAD_TYPE_ACTION_OTA)
+                        {
+                          if(dap_action_ota_st.payloadOtaInfo_.device_ID == sct_dap_config_st.payLoadPedalConfig_.pedal_type)
+                          {
+                            SSID=new char[dap_action_ota_st.payloadOtaInfo_.SSID_Length+1];
+                            PASS=new char[dap_action_ota_st.payloadOtaInfo_.PASS_Length+1];
+                            memcpy(SSID,dap_action_ota_st.payloadOtaInfo_.WIFI_SSID,dap_action_ota_st.payloadOtaInfo_.SSID_Length);
+                            memcpy(PASS,dap_action_ota_st.payloadOtaInfo_.WIFI_PASS,dap_action_ota_st.payloadOtaInfo_.PASS_Length);
+                            SSID[dap_action_ota_st.payloadOtaInfo_.SSID_Length]=0;
+                            PASS[dap_action_ota_st.payloadOtaInfo_.PASS_Length]=0;
+                            OTA_enable_b=true;
+                            OTA_enable_start=true;
+                            #ifdef ESPNOW_Enable
+                              ESPNow_OTA_enable=false;
+                            #endif
+                          }
+                        }
+                      #else
+                        Serial.println("The command is not supported");
+                      #endif    
+                      break;
+                  }
 
                     
                 } // end switch
@@ -2702,7 +2753,7 @@ void IRAM_ATTR_FLAG serialCommunicationTaskTx( void * pvParameters )
 }
 
 //OTA multitask
-bool OTA_enable_start=false;
+
 void OTATask( void * pvParameters )
 {
   uint16_t OTA_count=0;
@@ -2799,7 +2850,7 @@ void OTATask( void * pvParameters )
             ota.SetCallback(OTAcallback);
             ota.OverrideBoard(CONTROL_BOARD);
             char* version_tag;
-            if(_dap_OtaWifiInfo_st.wifi_action==1)
+            if(dap_action_ota_st.payloadOtaInfo_.ota_action==1)
             {
               const char* str;
               if(PCB_VERSION==3||PCB_VERSION==5||PCB_VERSION==9) str ="0.90.16";// for those board which change the partition table
@@ -2814,7 +2865,7 @@ void OTATask( void * pvParameters )
               strcpy(version_tag, DAP_FIRMWARE_VERSION);
               //version_tag=DAP_FIRMWARE_VERSION;
             }
-            switch (_dap_OtaWifiInfo_st.mode_select)
+            switch (dap_action_ota_st.payloadOtaInfo_.mode_select)
             {
               case 1:
                 Serial.printf("Flashing to latest release, checking %s to see if an update is available...\n", OTA_JSON_URL_MAIN);
@@ -3168,19 +3219,24 @@ void IRAM_ATTR_FLAG ESPNOW_SyncTask( void * pvParameters )
             OTA_enable_b=true;
             OTA_enable_start=true;
             ESPNow_OTA_enable=false;
-            Serial.println("get basic wifi info");
-            Serial.readBytes((char*)&_dap_OtaWifiInfo_st, sizeof(DAP_otaWifiInfo_st));
+            //Serial.println("get basic wifi info");
+            //Serial.readBytes((char*)&dap_action_ota_st, sizeof(DAP_action_ota_st));
             #ifdef OTA_update
-              if(_dap_OtaWifiInfo_st.device_ID == espnow_dap_config_st.payLoadPedalConfig_.pedal_type)
+
+              if(dap_action_ota_st.payLoadHeader_.payloadType==DAP_PAYLOAD_TYPE_ACTION_OTA)
               {
-                SSID=new char[_dap_OtaWifiInfo_st.SSID_Length+1];
-                PASS=new char[_dap_OtaWifiInfo_st.PASS_Length+1];
-                memcpy(SSID,_dap_OtaWifiInfo_st.WIFI_SSID,_dap_OtaWifiInfo_st.SSID_Length);
-                memcpy(PASS,_dap_OtaWifiInfo_st.WIFI_PASS,_dap_OtaWifiInfo_st.PASS_Length);
-                SSID[_dap_OtaWifiInfo_st.SSID_Length]=0;
-                PASS[_dap_OtaWifiInfo_st.PASS_Length]=0;
-                OTA_enable_b=true;
+                if(dap_action_ota_st.payloadOtaInfo_.device_ID == espnow_dap_config_st.payLoadPedalConfig_.pedal_type)
+                {
+                  SSID=new char[dap_action_ota_st.payloadOtaInfo_.SSID_Length+1];
+                  PASS=new char[dap_action_ota_st.payloadOtaInfo_.PASS_Length+1];
+                  memcpy(SSID,dap_action_ota_st.payloadOtaInfo_.WIFI_SSID,dap_action_ota_st.payloadOtaInfo_.SSID_Length);
+                  memcpy(PASS,dap_action_ota_st.payloadOtaInfo_.WIFI_PASS,dap_action_ota_st.payloadOtaInfo_.PASS_Length);
+                  SSID[dap_action_ota_st.payloadOtaInfo_.SSID_Length]=0;
+                  PASS[dap_action_ota_st.payloadOtaInfo_.PASS_Length]=0;
+                  OTA_enable_b=true;
+                }
               }
+
             #endif
 
           }

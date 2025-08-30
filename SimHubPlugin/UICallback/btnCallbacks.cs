@@ -72,7 +72,7 @@ namespace User.PluginSdkDemo
             sideWindow.Top = screenHeight / 2 - sideWindow.Height / 2;
             if (sideWindow.ShowDialog() == true)
             {
-                Basic_WIfi_info tmp_2;
+                DAP_action_ota_st tmp_2;
                 int length;
                 string SSID = Plugin.Settings.SSID_string;
                 string PASS = Plugin.Settings.PASS_string;
@@ -80,15 +80,15 @@ namespace User.PluginSdkDemo
 
                 if (Plugin._calculations.ForceUpdate_b == true)
                 {
-                    tmp_2.wifi_action = 1;
+                    tmp_2.payloadOtaInfo_.ota_action = 1;
                 }
                 if (Plugin.Settings.updateChannel == 0)
                 {
-                    tmp_2.mode_select = 1;
+                    tmp_2.payloadOtaInfo_.mode_select = 1;
                 }
                 if (Plugin.Settings.updateChannel == 1)
                 {
-                    tmp_2.mode_select = 2;
+                    tmp_2.payloadOtaInfo_.mode_select = 2;
                 }
                 if (SSID.Length > 30 || PASS.Length > 30)
                 {
@@ -100,34 +100,37 @@ namespace User.PluginSdkDemo
 
                 if (SSID_PASS_check)
                 {
-                    tmp_2.SSID_Length = (byte)SSID.Length;
-                    tmp_2.PASS_Length = (byte)PASS.Length;
-                    tmp_2.device_ID = 99;
-                    tmp_2.payload_Type = (Byte)Constants.Basic_Wifi_info_type;
-
+                    tmp_2.payloadOtaInfo_.SSID_Length = (byte)SSID.Length;
+                    tmp_2.payloadOtaInfo_.PASS_Length = (byte)PASS.Length;
+                    tmp_2.payloadOtaInfo_.device_ID = 99;
+                    tmp_2.payloadHeader_.payloadType = (Byte)Constants.OtaPayloadType;
+                    tmp_2.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                    tmp_2.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                    tmp_2.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                    tmp_2.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
                     byte[] array_ssid = Encoding.ASCII.GetBytes(SSID);
                     //TextBox_serialMonitor_bridge.Text += "SSID:";
                     for (int i = 0; i < SSID.Length; i++)
                     {
-                        tmp_2.WIFI_SSID[i] = array_ssid[i];
+                        tmp_2.payloadOtaInfo_.WIFI_SSID[i] = array_ssid[i];
                         //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_SSID[i] + ",";
                     }
                     //TextBox_serialMonitor_bridge.Text += "\nPASS:";
                     byte[] array_pass = Encoding.ASCII.GetBytes(PASS);
                     for (int i = 0; i < PASS.Length; i++)
                     {
-                        tmp_2.WIFI_PASS[i] = array_pass[i];
+                        tmp_2.payloadOtaInfo_.WIFI_PASS[i] = array_pass[i];
                         //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_PASS[i] + ",";
                     }
 
-                    Basic_WIfi_info* v_2 = &tmp_2;
+                    DAP_action_ota_st* v_2 = &tmp_2;
                     byte* p_2 = (byte*)v_2;
-                    TextBox_serialMonitor_bridge.Text += "\nSending wifi info to Bridge for OTA.\n\r";
+                    TextBox_serialMonitor_bridge.Text += "\nSending OTA info to Bridge.\n\r";
 
-                    length = sizeof(Basic_WIfi_info);
+                    length = sizeof(DAP_action_ota_st);
                     //TextBox_serialMonitor_bridge.Text += "\nLength:" + length;
                     byte[] newBuffer_2 = new byte[length];
-                    newBuffer_2 = Plugin.getBytes_Basic_Wifi_info(tmp_2);
+                    newBuffer_2 = Plugin.getBytes_Action_Ota(tmp_2);
                     if (Plugin.ESPsync_serialPort.IsOpen)
                     {
                         try
@@ -831,7 +834,7 @@ namespace User.PluginSdkDemo
             sideWindow.Top = screenHeight / 2 - sideWindow.Height / 2;
             if (sideWindow.ShowDialog() == true)
             {
-                Basic_WIfi_info tmp_2;
+                DAP_action_ota_st tmp_2;
                 int length;
                 string SSID = Plugin.Settings.SSID_string;
                 string PASS = Plugin.Settings.PASS_string;
@@ -839,19 +842,19 @@ namespace User.PluginSdkDemo
                 bool SSID_PASS_check = true;
                 if (Plugin._calculations.ForceUpdate_b == true)
                 {
-                    tmp_2.wifi_action = 1;
+                    tmp_2.payloadOtaInfo_.ota_action = 1;
                 }
                 if (Plugin.Settings.updateChannel == 0)
                 {
-                    tmp_2.mode_select = 1;
+                    tmp_2.payloadOtaInfo_.mode_select = 1;
                 }
                 if (Plugin.Settings.updateChannel == 1)
                 {
-                    tmp_2.mode_select = 2;
+                    tmp_2.payloadOtaInfo_.mode_select = 2;
                 }
                 if (Plugin._calculations.IsTestBuild)
                 {
-                    tmp_2.mode_select = 3;
+                    tmp_2.payloadOtaInfo_.mode_select = 3;
                 }
                 if (SSID.Length > 30 || PASS.Length > 30)
                 {
@@ -882,34 +885,37 @@ namespace User.PluginSdkDemo
                 {
                     if (SSID_PASS_check)
                     {
-                        tmp_2.SSID_Length = (byte)SSID.Length;
-                        tmp_2.PASS_Length = (byte)PASS.Length;
-                        tmp_2.device_ID = (byte)indexOfSelectedPedal_u;
-                        tmp_2.payload_Type = (Byte)Constants.Basic_Wifi_info_type;
-
+                        tmp_2.payloadOtaInfo_.SSID_Length = (byte)SSID.Length;
+                        tmp_2.payloadOtaInfo_.PASS_Length = (byte)PASS.Length;
+                        tmp_2.payloadOtaInfo_.device_ID = (byte)indexOfSelectedPedal_u;
+                        tmp_2.payloadHeader_.payloadType = (Byte)Constants.OtaPayloadType;
+                        tmp_2.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+                        tmp_2.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+                        tmp_2.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+                        tmp_2.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
                         byte[] array_ssid = Encoding.ASCII.GetBytes(SSID);
                         //TextBox_serialMonitor_bridge.Text += "SSID:";
                         for (int i = 0; i < SSID.Length; i++)
                         {
-                            tmp_2.WIFI_SSID[i] = array_ssid[i];
+                            tmp_2.payloadOtaInfo_.WIFI_SSID[i] = array_ssid[i];
                             //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_SSID[i] + ",";
                         }
                         //TextBox_serialMonitor_bridge.Text += "\nPASS:";
                         byte[] array_pass = Encoding.ASCII.GetBytes(PASS);
                         for (int i = 0; i < PASS.Length; i++)
                         {
-                            tmp_2.WIFI_PASS[i] = array_pass[i];
+                            tmp_2.payloadOtaInfo_.WIFI_PASS[i] = array_pass[i];
                             //TextBox_serialMonitor_bridge.Text += tmp_2.WIFI_PASS[i] + ",";
                         }
 
-                        Basic_WIfi_info* v_2 = &tmp_2;
+                        DAP_action_ota_st* v_2 = &tmp_2;
                         byte* p_2 = (byte*)v_2;
-                        TextBox_serialMonitor_bridge.Text += "\nSending WIfi info for OTA to Pedal\n\r";
+                        TextBox_serialMonitor_bridge.Text += "\nSending OTA info to Pedal:"+indexOfSelectedPedal_u+"\n";
 
-                        length = sizeof(Basic_WIfi_info);
+                        length = sizeof(DAP_action_ota_st);
                         //TextBox_serialMonitor_bridge.Text += "\nLength:" + length;
                         byte[] newBuffer_2 = new byte[length];
-                        newBuffer_2 = Plugin.getBytes_Basic_Wifi_info(tmp_2);
+                        newBuffer_2 = Plugin.getBytes_Action_Ota(tmp_2);
                         if (Plugin.Settings.Pedal_ESPNow_Sync_flag[indexOfSelectedPedal_u])
                         {
                             if (Plugin.ESPsync_serialPort.IsOpen)

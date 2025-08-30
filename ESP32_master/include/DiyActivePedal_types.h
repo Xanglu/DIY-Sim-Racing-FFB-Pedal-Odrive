@@ -14,6 +14,7 @@
 #define DAP_PAYLOAD_TYPE_ESPNOW_RUDDER 150
 #define DAP_PAYLOAD_TYPE_ESPNOW_JOYSTICK 160
 #define DAP_PAYLOAD_TYPE_BRIDGE_STATE 210
+#define DAP_PAYLOAD_TYPE_ACTION_OTA 220
 #define DAP_PAYLOAD_TYPE_ESPNOW_LOG 225
 
 #define SOF_BYTE_0 0xAA
@@ -296,6 +297,17 @@ struct payloadESPNowInfo
   uint8_t occupy;
   uint8_t occupy2;
 };
+
+struct payloadOtaInfo{
+    uint8_t device_ID;
+    uint8_t ota_action;
+    uint8_t mode_select;
+    uint8_t SSID_Length;
+    uint8_t PASS_Length;
+    uint8_t WIFI_SSID[30];
+    uint8_t WIFI_PASS[30];
+};
+
 struct payloadFooter
 {
   // To check if structure is valid
@@ -332,6 +344,11 @@ struct DAP_bridge_state_st
   payloadFooter payloadFooter_;
 };
 
+struct DAP_action_ota_st {
+  payloadHeader payLoadHeader_;
+  payloadOtaInfo payloadOtaInfo_;
+  payloadFooter payloadFooter_; 
+};
 struct DAP_config_st
 {
 
