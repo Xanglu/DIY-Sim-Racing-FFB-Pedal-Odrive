@@ -577,9 +577,29 @@ static void uart_event_task(void *pvParameters) {
 
 #endif
 
+
+// ADD THIS: New data structure to send both states together in one package
+typedef struct {
+    DAP_state_basic_st    basic_st;
+    DAP_state_extended_st extended_st;
+    bool sendBasicFlag_b;
+    bool sendExtendedFlag_b;
+} PedalStatePackage_t;
+
+// ADD THIS: The handle for our new FreeRTOS queue
+static QueueHandle_t pedalStateQueue = NULL;
+
+
 void setup()
 {
   DAP_config_st dap_config_st_local;
+
+  // ADD THIS: Create the queue before creating the tasks that use it.
+  // The queue can hold up to 5 state packages.
+  pedalStateQueue = xQueueCreate(5, sizeof(PedalStatePackage_t));
+  if (pedalStateQueue == NULL) {
+      Serial.println("Error creating the pedal state queue!");
+  }
 
   // setup brake resistor pin
   #ifdef BRAKE_RESISTOR_PIN
@@ -824,8 +844,7 @@ void setup()
   Serial.println("Starting other tasks");
 
   // Register tasks
-  addScheduledTask(pedalUpdateTask, "pedalUpdateTask", REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US, 1, CORE_ID_PEDAL_UPDATE_TASK, 7000);
-  addScheduledTask(serialCommunicationTaskTx, "serComTx", REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US, 1, CORE_ID_SERIAL_COMMUNICATION_TASK, 5000); // leave it as second entry
+  addScheduledTask(pedalUpdateTask, "pedalUpdateTask", REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US, 2, CORE_ID_PEDAL_UPDATE_TASK, 7000);
   addScheduledTask(serialCommunicationTaskRx, "serComRx", REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US, 1, CORE_ID_SERIAL_COMMUNICATION_TASK, 5000);
   addScheduledTask(joystickOutputTask, "joystickOutputTask", REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US, 1, CORE_ID_JOYSTICK_TASK, 5000);
 
@@ -843,7 +862,16 @@ void setup()
   esp_timer_start_periodic(periodic_timer, BASE_TICK_US);
 
 
-	
+	// ADD THIS: Create the TX task as a standalone, event-driven task.
+    xTaskCreatePinnedToCore(
+        serialCommunicationTaskTx,      /* Task function. */
+        "serComTx",    /* name of task. */
+        5000,                           /* Stack size of task */
+        NULL,                           /* parameter of the task */
+        1,                              /* priority of the task (e.g., 2, slightly higher than producer) */
+        &handle_serialCommunicationTx,  /* Task handle */
+        CORE_ID_SERIAL_COMMUNICATION_TASK); /* pin task to core */
+
   // xTaskCreatePinnedToCore(
   //                   serialCommunicationTaskRx,   /* Task function. */
   //                   "serialCommunicationTaskRx",          /* name of task. */
@@ -859,7 +887,7 @@ void setup()
                     "loadcellReadingTask",     /* name of task. */
                     3000,       /* Stack size of task */
                     NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
+                    2,           /* priority of the task */
                     &handle_loadcellReadingTask,      /* Task handle to keep track of created task */
                     CORE_ID_LOADCELLREADING_TASK);          /* pin task to core 1 */  
 
@@ -1316,6 +1344,8 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
   float joystickfrac;
   float joystickNormalizedToInt32_eval;
   int32_t ABS_trigger_value;
+
+  uint8_t sendPedalStructsViaSerialCounter_u8 = 0;
  
   for(;;){
 
@@ -2075,22 +2105,40 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
         
 
         // update pedal states
-        if(semaphore_updatePedalStates!=NULL)
+        bool sendBasicFlag_b = false;
+        bool sendExtendedFlag_b = false;
+        // check if data needs to be send
+        if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT) )
         {
-          if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)0)==pdTRUE) 
-          {
-            
-            // move local structure values to global structures
-            dap_state_basic_st = dap_state_basic_st_lcl_pedalUpdateTask;
-            dap_state_extended_st = dap_state_extended_st_lcl_pedalUpdateTask;
-
-            // release semaphore
-            xSemaphoreGive(semaphore_updatePedalStates);
-          }
+          // send data every frame
+          sendPedalStructsViaSerialCounter_u8 = 0;
+          sendBasicFlag_b = true;
+          sendExtendedFlag_b = true;
         }
         else
         {
-          semaphore_updatePedalStates = xSemaphoreCreateMutex();
+          // send data every N-th frame
+          sendPedalStructsViaSerialCounter_u8++;
+          sendPedalStructsViaSerialCounter_u8 %= 30;
+          sendBasicFlag_b = true;
+          sendExtendedFlag_b = false;
+        }
+
+        if (pedalStateQueue != NULL) {
+          if (sendPedalStructsViaSerialCounter_u8 == 0)
+          {
+            // Package the new state data into a single struct
+            PedalStatePackage_t newStatePackage;
+            newStatePackage.basic_st = dap_state_basic_st_lcl_pedalUpdateTask;
+            newStatePackage.extended_st = dap_state_extended_st_lcl_pedalUpdateTask;
+            newStatePackage.sendBasicFlag_b = sendBasicFlag_b;
+            newStatePackage.sendExtendedFlag_b = sendExtendedFlag_b;
+
+            // Send the package to the queue. Use a timeout of 0 (non-blocking).
+            // If the queue is full, the data is simply dropped. This prevents this
+            // high-priority control task from ever blocking on a full serial buffer.
+            xQueueSend(pedalStateQueue, &newStatePackage, (TickType_t)0);
+          }
         }
 
         // start profiler 8, struct exchange
@@ -2591,160 +2639,84 @@ void serialCommunicationTaskRx(void *pvParameters) {
 uint32_t communicationTask_stackSizeIdx_u32 = 0;
 void IRAM_ATTR_FLAG serialCommunicationTaskTx( void * pvParameters )
 { 
-  FunctionProfiler profiler_serialCommunicationTask;
-  profiler_serialCommunicationTask.setName("SerialCommunicationTx");
-  profiler_serialCommunicationTask.setNumberOfCalls(500);
+  // FunctionProfiler profiler_serialCommunicationTask;
+  // profiler_serialCommunicationTask.setName("SerialCommunicationTx");
+  // profiler_serialCommunicationTask.setNumberOfCalls(500);
 
-  unsigned long previousTimeInUsFromExtendedStruct_u32 = 0;
-  unsigned long printCycleCounter = 0;
+  // static DAP_config_st sct_dap_config_st;
 
-  static uint16_t timerTicks_serialCommunicationTask_u16 = REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US / BASE_TICK_US;
-  static uint16_t timerTicks_serialCommunicationTask_prev_u16 = timerTicks_serialCommunicationTask_u16;
+  // This task now waits for a complete package of data from the queue.
+  PedalStatePackage_t receivedState;
 
-  static DAP_config_st sct_dap_config_received_st;
-  static DAP_config_st sct_dap_config_st;
   for(;;){
 
-    sct_dap_config_st = global_dap_config_class.getConfig();
+    // sct_dap_config_st = global_dap_config_class.getConfig();
 
-    // when debug flag == DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT is set --> change the serial communication task time
-    if ( (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT) )
-    {
-      // fast execution
-      timerTicks_serialCommunicationTask_u16 = REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST_IN_US / BASE_TICK_US;
-    }
-    else
-    {
-      // slow execution
-      timerTicks_serialCommunicationTask_u16 = REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US / BASE_TICK_US;   
-    }
-
-
-    // check if timer intervall needs to change
-    if (timerTicks_serialCommunicationTask_prev_u16 != timerTicks_serialCommunicationTask_u16)
-    {
-      // update previous value
-      timerTicks_serialCommunicationTask_prev_u16 = timerTicks_serialCommunicationTask_u16;
-
-      Serial.print("Setting serial communication task to: ");
-      Serial.print(timerTicks_serialCommunicationTask_u16 * BASE_TICK_US);
-      Serial.println("us");
-
-      for ( uint8_t taskIdx_u8 = 0; taskIdx_u8<taskCount; taskIdx_u8++)
-      {
-        if (tasks[taskIdx_u8].name != nullptr && strcmp(tasks[taskIdx_u8].name, "serComTx") == 0)
-        {
-          Serial.println("serComTx found");
-          tasks[taskIdx_u8].intervalTicks = timerTicks_serialCommunicationTask_u16; // hard coded serial Tx task handle
-          tasks[taskIdx_u8].counter = 0;  // reset counter
-        }
-      }
+    // Block indefinitely until a new state package arrives from pedalUpdateTask.
+    // This is now the ONLY trigger for this task.
+    if (xQueueReceive(pedalStateQueue, &receivedState, portMAX_DELAY) == pdPASS) {
       
-    }
+      // Copy to a local variable to calculate CRC
+      DAP_state_basic_st basic_to_send = receivedState.basic_st;
+      DAP_state_extended_st extended_to_send = receivedState.extended_st;
 
 
-	  if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0) {
-	
-      // activate profiler depending on pedal config
-      if (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+
+// Provide pedal states to ESPnow task
+#ifdef ESPNOW_Enable
+      // update pedal states
+      if(semaphore_updatePedalStates!=NULL)
       {
-        profiler_serialCommunicationTask.activate( true );
+        if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)0)==pdTRUE) 
+        {
+          // move local structure values to global structures
+          dap_state_basic_st = basic_to_send;
+          dap_state_extended_st = extended_to_send;
+
+          // release semaphore
+          xSemaphoreGive(semaphore_updatePedalStates);
+        }
       }
       else
       {
-        profiler_serialCommunicationTask.activate( false );
+        semaphore_updatePedalStates = xSemaphoreCreateMutex();
       }
-	
-	
-      // start profiler 0, overall function
-      profiler_serialCommunicationTask.start(0);
+#endif
 
 
 
-      // start profiler 2, serial send
-      profiler_serialCommunicationTask.start(1);
+      // activate profiler depending on pedal config
+      // if (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+      // {
+      //   profiler_serialCommunicationTask.activate( true );
+      // }
+      // else
+      // {
+      //   profiler_serialCommunicationTask.activate( false );
+      // }
+      // // start profiler 0, overall function
+      // profiler_serialCommunicationTask.start(0);
 
-
-      // send pedal state structs
-      // update pedal states
-      printCycleCounter++;
-      DAP_state_basic_st dap_state_basic_st_lcl;
-      DAP_state_extended_st dap_state_extended_st_lcl;
-      
-      // initialize with zeros in case semaphore couldn't be aquired
-      // memset(&dap_state_basic_st_lcl, 0, sizeof(dap_state_basic_st_lcl));
-      // memset(&dap_state_extended_st_lcl, 0, sizeof(dap_state_extended_st_lcl));
-
-
-      if(semaphore_updatePedalStates!=NULL)
-      {
-        if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)5)==pdTRUE) 
-        {
-        
-          // UPDATE basic pedal state struct
-          dap_state_basic_st_lcl = dap_state_basic_st;
-
-          // UPDATE extended pedal state struct
-          dap_state_extended_st_lcl = dap_state_extended_st;
-          
-          // release semaphore
-          xSemaphoreGive(semaphore_updatePedalStates);
-
-        }
-      }
-
-          
-      // end profiler 2, serial send
-      profiler_serialCommunicationTask.end(1);
-
-      // end profiler 2, serial send
-      profiler_serialCommunicationTask.start(2);
-
-
-      // send the pedal state structs
       // send basic pedal state struct
-      if ( !(sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_BASIC_INFO_STRUCT) )
+      if (receivedState.sendBasicFlag_b)
       {
-        if (printCycleCounter >= 2)
-        {
-          printCycleCounter = 0;
-
-          // update CRC before transmission
-          dap_state_basic_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl.payLoadHeader_)), sizeof(dap_state_basic_st_lcl.payLoadHeader_) + sizeof(dap_state_basic_st_lcl.payloadPedalState_Basic_));
-        
-          Serial.write((char*)&dap_state_basic_st_lcl, sizeof(DAP_state_basic_st));
-          // Serial.flush();
-        
-          // Serial.print("\r\n");
-        }
+        // update CRC before transmission
+        basic_to_send.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(basic_to_send.payLoadHeader_)), sizeof(basic_to_send.payLoadHeader_) + sizeof(basic_to_send.payloadPedalState_Basic_));
+        Serial.write((char*)&basic_to_send, sizeof(DAP_state_basic_st));
       }
 
-      if ( (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT) )
+      // send extended pedal state struct
+      if (receivedState.sendExtendedFlag_b)
       {
-        // only send, when extended struct contains updated values
-        if( dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32 != previousTimeInUsFromExtendedStruct_u32)
-        {
-          previousTimeInUsFromExtendedStruct_u32 = dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUs_u32;
-
-          //dap_state_extended_st_lcl.payloadPedalState_Extended_.timeInUsFromSerialTask_u32 = micros();
-
-          // update CRC before transmission
-          dap_state_extended_st_lcl.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_extended_st_lcl.payLoadHeader_)), sizeof(dap_state_extended_st_lcl.payLoadHeader_) + sizeof(dap_state_extended_st_lcl.payloadPedalState_Extended_));
-
-          Serial.write((char*)&dap_state_extended_st_lcl, sizeof(DAP_state_extended_st));
-          // Serial.print("\r\n");
-          // Serial.flush();
-        }
+        // update CRC before transmission
+        extended_to_send.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(extended_to_send.payLoadHeader_)), sizeof(extended_to_send.payLoadHeader_) + sizeof(extended_to_send.payloadPedalState_Extended_));
+        Serial.write((char*)&extended_to_send, sizeof(DAP_state_extended_st));
       }
 
-      // end profiler 3, serial send
-      profiler_serialCommunicationTask.end(2);
+      // profiler_serialCommunicationTask.end(0);
 
-      profiler_serialCommunicationTask.end(0);
-
-      // print profiler results
-      profiler_serialCommunicationTask.report();
-      
+      // // print profiler results
+      // profiler_serialCommunicationTask.report();
 
       // force a context switch
       taskYIELD();
