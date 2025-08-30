@@ -326,7 +326,7 @@ void IRAM_ATTR_FLAG loadcellReadingTask( void * pvParameters )
       if (updateConfigCounter_u16 == 0)
       {
         // copy global struct to local for faster and safe executiion
-        loadcellTask_dap_config_st = global_dap_config_class.getConfig();
+        global_dap_config_class.getConfig(&loadcellTask_dap_config_st, 0);
 
         // activate profiler depending on pedal config
         if (loadcellTask_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
@@ -690,7 +690,7 @@ void setup()
   // Load config from EEPROM, if valid, overwrite initial config
   EEPROM.begin(2048);
   global_dap_config_class.loadConfigFromEprom();
-  dap_config_st_local = global_dap_config_class.getConfig();
+  global_dap_config_class.getConfig(&dap_config_st_local, 500);
 
 
   // check validity of data from EEPROM  
@@ -753,7 +753,7 @@ void setup()
     //if the config check all failed, reinitialzie _config_st
     Serial.println("initialized config");
     global_dap_config_class.initializedConfig();
-    dap_config_st_local=global_dap_config_class.getConfig();
+    global_dap_config_class.getConfig(&dap_config_st_local, 500);
   }
 
 
@@ -820,7 +820,7 @@ void setup()
   configUpdateAvailable = true;
 
   // equalize pedal config for both tasks
-  dap_config_st_local = global_dap_config_class.getConfig();
+  global_dap_config_class.getConfig(&dap_config_st_local, 500);
 
 
   // setup multi tasking
@@ -1089,7 +1089,8 @@ xTaskCreatePinnedToCore(
           {
             Serial.println("Overriding Pedal as Throttle.");
           }
-          DAP_config_st tmp = global_dap_config_class.getConfig();
+          DAP_config_st tmp;
+          global_dap_config_class.getConfig(&tmp, 500);
           tmp.payLoadPedalConfig_.pedal_type = Pedal_assignment;
           dap_config_st_local.payLoadPedalConfig_.pedal_type = Pedal_assignment;
           global_dap_config_class.setConfig(tmp);
@@ -1192,8 +1193,8 @@ xTaskCreatePinnedToCore(
 /**********************************************************************************************/
 void updatePedalCalcParameters()
 {
-
-  DAP_config_st dap_config_st_local = global_dap_config_class.getConfig();
+  DAP_config_st dap_config_st_local;  
+  global_dap_config_class.getConfig(&dap_config_st_local, 500);
 
   dap_calculationVariables_st.updateFromConfig(dap_config_st_local);
   dap_calculationVariables_st.updateEndstops(stepper->getLimitMin(), stepper->getLimitMax());
@@ -1288,7 +1289,8 @@ void profilerTask( void * pvParameters )
 {
   for(;;){
     // copy global struct to local for faster and safe executiion
-    DAP_config_st dap_config_profilerTask_st = global_dap_config_class.getConfig();
+    DAP_config_st dap_config_profilerTask_st;
+    global_dap_config_class.getConfig(&dap_config_profilerTask_st, 500);
 
     // activate profiler depending on pedal config
     if (dap_config_profilerTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_NET_RUNTIME) 
@@ -1346,7 +1348,9 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
   int32_t ABS_trigger_value;
 
   uint8_t sendPedalStructsViaSerialCounter_u8 = 0;
- 
+  static DAP_config_st dap_config_pedalUpdateTask_st;
+  global_dap_config_class.getConfig(&dap_config_pedalUpdateTask_st, 500);
+
   for(;;){
 
     // wait for the timer to fire
@@ -1356,7 +1360,8 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0) {
 
         // copy global struct to local for faster and safe executiion
-        DAP_config_st dap_config_pedalUpdateTask_st = global_dap_config_class.getConfig();
+        
+        global_dap_config_class.getConfig(&dap_config_pedalUpdateTask_st, 0);
 
         // activate profiler depending on pedal config
         if (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
@@ -1876,16 +1881,17 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           stepper->clearAllServoAlarms();
           delay(1000); // makes sure the routine has finished
 
-          DAP_config_st tmp = global_dap_config_class.getConfig();
+          DAP_config_st tmp;
+          global_dap_config_class.getConfig(&tmp, 500);
           tmp.payLoadPedalConfig_.debug_flags_0 &= ( ~(uint8_t)DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS); // clear the debug bit
           global_dap_config_class.setConfig(tmp);
-
         }
 
         // print all servo parameters for debug purposes
         if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS) )
         {
-          DAP_config_st tmp = global_dap_config_class.getConfig();
+          DAP_config_st tmp;
+          global_dap_config_class.getConfig(&tmp, 500);
           tmp.payLoadPedalConfig_.debug_flags_0 &= ( ~(uint8_t)DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS); // clear the debug bit
           global_dap_config_class.setConfig(tmp);
 
@@ -2181,7 +2187,8 @@ void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
   FunctionProfiler profiler_joystickOutputTask;
   profiler_joystickOutputTask.setName("JoystickOutput");
   profiler_joystickOutputTask.setNumberOfCalls(500);
-
+  static DAP_config_st jut_dap_config_st;
+  global_dap_config_class.getConfig(&jut_dap_config_st, 500);
 
   for(;;){
 
@@ -2192,7 +2199,7 @@ void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
       if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0) {
 
         // copy global struct to local for faster and safe executiion
-        DAP_config_st jut_dap_config_st = global_dap_config_class.getConfig();
+        global_dap_config_class.getConfig(&jut_dap_config_st, 0);
 
         // activate profiler depending on pedal config
         if (jut_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
@@ -2304,11 +2311,14 @@ void serialCommunicationTaskRx(void *pvParameters) {
     static uint8_t rx_buffer[RX_BUFFER_SIZE];
     static size_t buffer_len = 0;
 
+    global_dap_config_class.getConfig(&sct_dap_config_st, 500);
+
     for (;;) {
         // Wait for a notification that data might be available
         if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0) {
             
-            sct_dap_config_st = global_dap_config_class.getConfig();
+            global_dap_config_class.getConfig(&sct_dap_config_st, 0);
+
             // Activate profiler based on config
             profiler_serialCommunicationTask.activate(sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER);
             profiler_serialCommunicationTask.start(0);
@@ -2650,7 +2660,7 @@ void IRAM_ATTR_FLAG serialCommunicationTaskTx( void * pvParameters )
 
   for(;;){
 
-    // sct_dap_config_st = global_dap_config_class.getConfig();
+    // global_dap_config_class.getConfig(&sct_dap_config_st, 0);
 
     // Block indefinitely until a new state package arrives from pedalUpdateTask.
     // This is now the ONLY trigger for this task.
@@ -2934,8 +2944,8 @@ void IRAM_ATTR_FLAG ESPNOW_SyncTask( void * pvParameters )
           basic_state_update_last=millis();
           
         }
-
-        DAP_config_st espnow_dap_config_st = global_dap_config_class.getConfig();
+        DAP_config_st espnow_dap_config_st;
+        global_dap_config_class.getConfig(&espnow_dap_config_st, 500);
 
         //entend state send out interval
         if((millis()-extend_state_update_last>extendStateUpdateInterval) && espnow_dap_config_st.payLoadPedalConfig_.debug_flags_0 == DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT)
@@ -3361,10 +3371,11 @@ void IRAM_ATTR_FLAG ESPNOW_SyncTask( void * pvParameters )
 #define CONFIG_PREVIEW_DURATION 180000// wait 3 mins then save config into eeprom
 void miscTask( void * pvParameters )
 {
+  static DAP_config_st misc_dap_config_st;
   // for the task no need complete asap, ex buzzer, led 
   for(;;)
   {
-    DAP_config_st misc_dap_config_st = global_dap_config_class.getConfig();
+    global_dap_config_class.getConfig(&misc_dap_config_st, 500);
     if(previewConfigGet_b && ((millis()-saveToEEPRomDuration)>CONFIG_PREVIEW_DURATION))
     {
       

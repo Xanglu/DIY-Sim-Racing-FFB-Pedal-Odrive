@@ -467,7 +467,7 @@ public:
   DAP_config_class();
 
   // Methode zum sicheren Abrufen der Konfiguration
-  DAP_config_st getConfig();
+  bool getConfig(DAP_config_st * dapConfigIn_pst, uint16_t timeoutInMs_u16);
 
   // Methode zum sicheren Setzen der Konfiguration
   void setConfig(DAP_config_st tmp);

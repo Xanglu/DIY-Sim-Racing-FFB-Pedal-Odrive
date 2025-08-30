@@ -172,8 +172,10 @@ void ESPNow_Pairing_callback(const uint8_t *mac_addr, const uint8_t *data, int d
 void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len) 
 {
   //uint8_t mac_addr[6]={0};
+  DAP_config_st dap_config_espnow_recv_st;
   
-  DAP_config_st dap_config_espnow_recv_st = global_dap_config_class.getConfig();
+  global_dap_config_class.getConfig(&dap_config_espnow_recv_st, 1u);
+
   /*
   if(ESPNOW_status)
   {
@@ -558,7 +560,8 @@ void promiscuous_rx_cb(void *buf, wifi_promiscuous_pkt_type_t type) {
 }
 void ESPNow_initialize()
 {
-  DAP_config_st dap_config_espnow_init_st = global_dap_config_class.getConfig();
+  DAP_config_st dap_config_espnow_init_st;
+  global_dap_config_class.getConfig(&dap_config_espnow_init_st, 1);
   
   WiFi.mode(WIFI_MODE_STA);
   Serial.println("Initializing ESPNow, please wait");

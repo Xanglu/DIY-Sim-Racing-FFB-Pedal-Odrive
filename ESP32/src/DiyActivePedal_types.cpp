@@ -441,16 +441,18 @@ DAP_config_class::DAP_config_class() {
 
 
 // method to safely get the config variable
-DAP_config_st DAP_config_class::getConfig() {
-  DAP_config_st tmp;
+bool DAP_config_class::getConfig(DAP_config_st * dapConfigIn_pst, uint16_t timeoutInMs_u16) {
+  bool configUpdated_b = false;
   // requests the mutex, waits N milliseconds if not available immediately
-  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT)) == pdTRUE) {
-    tmp = _config_st;
+  // if (xSemaphoreTake(mutex, pdMS_TO_TICKS(WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT)) == pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(timeoutInMs_u16)) == pdTRUE) {
+    *dapConfigIn_pst = _config_st;
     // gives back the mutex
     xSemaphoreGive(mutex);
+    configUpdated_b = true;
   }
 
-  return tmp;
+  return configUpdated_b;
 }
 
 // method to safely set the config variable
