@@ -595,8 +595,8 @@ void setup()
   DAP_config_st dap_config_st_local;
 
   // ADD THIS: Create the queue before creating the tasks that use it.
-  // The queue can hold up to 5 state packages.
-  pedalStateQueue = xQueueCreate(5, sizeof(PedalStatePackage_t));
+  // The queue can hold up to N state packages.
+  pedalStateQueue = xQueueCreate(10, sizeof(PedalStatePackage_t));
   if (pedalStateQueue == NULL) {
       Serial.println("Error creating the pedal state queue!");
   }
@@ -844,7 +844,7 @@ void setup()
   Serial.println("Starting other tasks");
 
   // Register tasks
-  addScheduledTask(pedalUpdateTask, "pedalUpdateTask", REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US, 2, CORE_ID_PEDAL_UPDATE_TASK, 7000);
+  addScheduledTask(pedalUpdateTask, "pedalUpdateTask", REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US, 3, CORE_ID_PEDAL_UPDATE_TASK, 7000);
   addScheduledTask(serialCommunicationTaskRx, "serComRx", REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US, 1, CORE_ID_SERIAL_COMMUNICATION_TASK, 5000);
   addScheduledTask(joystickOutputTask, "joystickOutputTask", REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US, 1, CORE_ID_JOYSTICK_TASK, 5000);
 
@@ -897,7 +897,7 @@ xTaskCreatePinnedToCore(
                     "profilerTask",     /* name of task. */
                     3000,       /* Stack size of task */
                     NULL,        /* parameter of the task */
-                    10,           /* priority of the task */
+                    1,           /* priority of the task */
                     &handle_profilerTask,      /* Task handle to keep track of created task */
                     CORE_ID_PROFILER_TASK);          /* pin task to core 1 */
 
@@ -2656,70 +2656,78 @@ void IRAM_ATTR_FLAG serialCommunicationTaskTx( void * pvParameters )
     // This is now the ONLY trigger for this task.
     if (xQueueReceive(pedalStateQueue, &receivedState, portMAX_DELAY) == pdPASS) {
       
-      // Copy to a local variable to calculate CRC
-      DAP_state_basic_st basic_to_send = receivedState.basic_st;
-      DAP_state_extended_st extended_to_send = receivedState.extended_st;
+      // Now, process the first item, and then enter a loop to
+      // empty the rest of the queue.
+      do {
+                
+        // Copy to a local variable to calculate CRC
+        DAP_state_basic_st basic_to_send = receivedState.basic_st;
+        DAP_state_extended_st extended_to_send = receivedState.extended_st;
 
 
 
-// Provide pedal states to ESPnow task
-#ifdef ESPNOW_Enable
-      // update pedal states
-      if(semaphore_updatePedalStates!=NULL)
-      {
-        if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)0)==pdTRUE) 
+  // Provide pedal states to ESPnow task
+  #ifdef ESPNOW_Enable
+        // update pedal states
+        if(semaphore_updatePedalStates!=NULL)
         {
-          // move local structure values to global structures
-          dap_state_basic_st = basic_to_send;
-          dap_state_extended_st = extended_to_send;
+          if(xSemaphoreTake(semaphore_updatePedalStates, (TickType_t)0)==pdTRUE) 
+          {
+            // move local structure values to global structures
+            dap_state_basic_st = basic_to_send;
+            dap_state_extended_st = extended_to_send;
 
-          // release semaphore
-          xSemaphoreGive(semaphore_updatePedalStates);
+            // release semaphore
+            xSemaphoreGive(semaphore_updatePedalStates);
+          }
         }
-      }
-      else
-      {
-        semaphore_updatePedalStates = xSemaphoreCreateMutex();
-      }
-#endif
+        else
+        {
+          semaphore_updatePedalStates = xSemaphoreCreateMutex();
+        }
+  #endif
 
 
 
-      // activate profiler depending on pedal config
-      // if (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
-      // {
-      //   profiler_serialCommunicationTask.activate( true );
-      // }
-      // else
-      // {
-      //   profiler_serialCommunicationTask.activate( false );
-      // }
-      // // start profiler 0, overall function
-      // profiler_serialCommunicationTask.start(0);
+        // activate profiler depending on pedal config
+        // if (sct_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
+        // {
+        //   profiler_serialCommunicationTask.activate( true );
+        // }
+        // else
+        // {
+        //   profiler_serialCommunicationTask.activate( false );
+        // }
+        // // start profiler 0, overall function
+        // profiler_serialCommunicationTask.start(0);
 
-      // send basic pedal state struct
-      if (receivedState.sendBasicFlag_b)
-      {
-        // update CRC before transmission
-        basic_to_send.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(basic_to_send.payLoadHeader_)), sizeof(basic_to_send.payLoadHeader_) + sizeof(basic_to_send.payloadPedalState_Basic_));
-        Serial.write((char*)&basic_to_send, sizeof(DAP_state_basic_st));
-      }
+        // send basic pedal state struct
+        if (receivedState.sendBasicFlag_b)
+        {
+          // update CRC before transmission
+          basic_to_send.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(basic_to_send.payLoadHeader_)), sizeof(basic_to_send.payLoadHeader_) + sizeof(basic_to_send.payloadPedalState_Basic_));
+          Serial.write((char*)&basic_to_send, sizeof(DAP_state_basic_st));
+        }
 
-      // send extended pedal state struct
-      if (receivedState.sendExtendedFlag_b)
-      {
-        // update CRC before transmission
-        extended_to_send.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(extended_to_send.payLoadHeader_)), sizeof(extended_to_send.payLoadHeader_) + sizeof(extended_to_send.payloadPedalState_Extended_));
-        Serial.write((char*)&extended_to_send, sizeof(DAP_state_extended_st));
-      }
+        // send extended pedal state struct
+        if (receivedState.sendExtendedFlag_b)
+        {
+          // update CRC before transmission
+          extended_to_send.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(extended_to_send.payLoadHeader_)), sizeof(extended_to_send.payLoadHeader_) + sizeof(extended_to_send.payloadPedalState_Extended_));
+          Serial.write((char*)&extended_to_send, sizeof(DAP_state_extended_st));
+        }
 
-      // profiler_serialCommunicationTask.end(0);
+        // profiler_serialCommunicationTask.end(0);
 
-      // // print profiler results
-      // profiler_serialCommunicationTask.report();
+        // // print profiler results
+        // profiler_serialCommunicationTask.report();
+      // Continue looping with a zero timeout to process any other items that are
+      // already in the queue. The loop will exit when the queue is empty.
+      } while (xQueueReceive(pedalStateQueue, &receivedState, (TickType_t)0) == pdPASS);
+
 
       // force a context switch
-      taskYIELD();
+      // taskYIELD();
     }
   }
 }
