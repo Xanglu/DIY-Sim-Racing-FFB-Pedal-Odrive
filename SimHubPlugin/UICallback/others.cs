@@ -619,13 +619,14 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadHeader_.PedalTag = (byte)pedalIdx;
             dap_config_st_rudder.payloadHeader_.storeToEeprom = 0;
             dap_config_st_rudder.payloadPedalConfig_.pedal_type = (byte)pedalIdx;
+            dap_config_st_rudder.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            dap_config_st_rudder.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            dap_config_st_rudder.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            dap_config_st_rudder.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             DAP_config_st tmp = dap_config_st_rudder;
 
             DAP_config_st* v = &tmp;
-            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
-            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
-            tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
-            tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
+
             byte* p = (byte*)v;
             dap_config_st_rudder.payloadFooter_.checkSum = Plugin.checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalConfig));
             Plugin.SendConfig(dap_config_st_rudder, (byte)pedalIdx);
