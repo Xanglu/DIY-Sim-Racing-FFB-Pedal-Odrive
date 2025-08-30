@@ -124,6 +124,7 @@ float LoadCell_ADS1256::getReadingKg() const {
   ADS1256& adc = ADC();
 
   float weight_kg = 0.0f;
+  static float voltage_mV;
   
   // Check if the semaphore is valid before trying to take it.
   if (drdySemaphore != NULL) {
@@ -132,18 +133,20 @@ float LoadCell_ADS1256::getReadingKg() const {
       if (xSemaphoreTake(drdySemaphore, portMAX_DELAY) == pdTRUE) {  
 
           // additional DRDY check for better smoothness
-          adc.waitDRDY();
+          // adc.waitDRDY();
 
-          // Read the value and apply corrections
-          // NOTE: The ADC channel is set in the constructor and doesn't need to be set again here
-          // unless you are switching between multiple channels in your application.
-          weight_kg = adc.readCurrentChannel() * updatedConversionFactor_f64 - (_zeroPoint + 3.0f * _standardDeviationEstimate);
+          // final check if DRDY is low. If nor, just discard the measurement.
+          if (digitalRead(PIN_DRDY) == LOW)
+          {
+            voltage_mV = adc.readCurrentChannel();
+          }
       }
   }
 
-  // adc.waitDRDY();
-  // weight_kg = adc.readCurrentChannel()*updatedConversionFactor_f64 - ( _zeroPoint + 3.0f * _standardDeviationEstimate );
-
+  // Read the value and apply corrections
+  // NOTE: The ADC channel is set in the constructor and doesn't need to be set again here
+  // unless you are switching between multiple channels in your application.
+  weight_kg = voltage_mV * updatedConversionFactor_f64 - (_zeroPoint + 3.0f * _standardDeviationEstimate);
 
   return weight_kg;
 }
