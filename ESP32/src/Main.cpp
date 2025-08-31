@@ -1538,7 +1538,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           
           Serial.println("Updating pedal config");
           configUpdateAvailable = false;
-
+          global_dap_config_class.setConfig(dap_config_pedalUpdateTask_st);
           // update the calc params
           Serial.println("Updating the calc params");
           //Serial.print("save to eeprom tag:");
@@ -1559,6 +1559,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
             uint16_t crc = checksumCalculator((uint8_t*)(&(dap_config_pedalUpdateTask_st.payLoadHeader_)), sizeof(dap_config_pedalUpdateTask_st.payLoadHeader_) + sizeof(dap_config_pedalUpdateTask_st.payLoadPedalConfig_));
             dap_config_pedalUpdateTask_st.payloadFooter_.checkSum = crc;
             global_dap_config_class.setConfig(dap_config_pedalUpdateTask_st);
+            Serial.println("Saving into EEPROM");
             global_dap_config_class.storeConfigToEprom();
             previewConfigGet_b = false;
             saveToEEPRomDuration = 0;
