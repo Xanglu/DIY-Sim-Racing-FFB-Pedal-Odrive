@@ -269,7 +269,10 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
           if (structChecker == true)
           {
             // Serial.println("Updating pedal config");
-            global_dap_config_class.setConfig(dap_config_espnow_recv_st);
+            configDataPackage_t configPackage_st;
+            configPackage_st.config_st = dap_config_espnow_recv_st;
+            xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
+            //global_dap_config_class.setConfig(dap_config_espnow_recv_st);
             if(dap_config_espnow_recv_st.payLoadHeader_.storeToEeprom==1)
             {
               Config_update_Buzzer_b = true;

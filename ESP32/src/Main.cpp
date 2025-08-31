@@ -1558,7 +1558,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
             dap_config_pedalUpdateTask_st.payLoadHeader_.storeToEeprom = false; // set to false, thus at restart existing EEPROM config isn't restored to EEPROM
             uint16_t crc = checksumCalculator((uint8_t*)(&(dap_config_pedalUpdateTask_st.payLoadHeader_)), sizeof(dap_config_pedalUpdateTask_st.payLoadHeader_) + sizeof(dap_config_pedalUpdateTask_st.payLoadPedalConfig_));
             dap_config_pedalUpdateTask_st.payloadFooter_.checkSum = crc;
-
+            global_dap_config_class.setConfig(dap_config_pedalUpdateTask_st);
             global_dap_config_class.storeConfigToEprom();
             previewConfigGet_b = false;
             saveToEEPRomDuration = 0;
