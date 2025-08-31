@@ -439,6 +439,15 @@ void StepperWithLimits::forceStop() {
 }
 
 int8_t StepperWithLimits::moveTo(int32_t position, bool blocking) {
+
+  long curPos = _stepper->getCurrentPosition();
+  int32_t absPosChange = abs(position - curPos);
+  float absPosChangeNormalized_fl32 = (float)absPosChange / 10000.0f;
+  absPosChangeNormalized_fl32 = constrain(absPosChangeNormalized_fl32, 0.01f, 1.0f);
+
+//   _stepper->setSpeedInHz(MAXIMUM_STEPPER_SPEED * absPosChangeNormalized_fl32);
+//   _stepper->setAcceleration(MAXIMUM_STEPPER_ACCELERATION * absPosChangeNormalized_fl32);
+
   _stepper->moveTo(position, blocking);
 
   return 1;

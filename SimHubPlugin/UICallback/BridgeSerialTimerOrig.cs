@@ -348,6 +348,7 @@ namespace User.PluginSdkDemo
                                                     // Write the content to the file
                                                     writer.Write("cycleCtr");
                                                     writer.Write(", time_InUs");
+                                                    writer.Write(", cycleCount_u32");
                                                     writer.Write(", forceRaw_InKg");
                                                     writer.Write(", forceFiltered_InKg");
                                                     writer.Write(", forceVelocity_InKgPerSec");
@@ -372,6 +373,8 @@ namespace User.PluginSdkDemo
                                                 writer.Write(writeCntr);
                                                 writer.Write(", ");
                                                 writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.timeInUs_u32);
+                                                writer.Write(", ");
+                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.cycleCount_u32);
                                                 writer.Write(", ");
                                                 writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.pedalForce_raw_fl32);
                                                 writer.Write(", ");
