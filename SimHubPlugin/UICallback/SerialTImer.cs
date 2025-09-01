@@ -209,8 +209,8 @@ namespace User.PluginSdkDemo
                         }
 
                         bool inBufferDicarded = false;
-                        int currentBufferLength = 0;
-                        if (bufferSize > currentBufferLength)
+                        int currentBufferLength = appendedBufferOffset[pedalSelected];
+                        if (bufferSize > (currentBufferLength+currentBufferLength) )
                         {
                             sp.Read(buffer_appended[pedalSelected], appendedBufferOffset[pedalSelected], receivedLength);
 
@@ -218,7 +218,7 @@ namespace User.PluginSdkDemo
                             appendedBufferOffset[pedalSelected] += receivedLength;
                             currentBufferLength = appendedBufferOffset[pedalSelected];
 
-                            Array.Clear(buffer_appended[pedalSelected], currentBufferLength, bufferSize - currentBufferLength);
+                            //Array.Clear(buffer_appended[pedalSelected], currentBufferLength, bufferSize - currentBufferLength);
                         }
                         else
                         {

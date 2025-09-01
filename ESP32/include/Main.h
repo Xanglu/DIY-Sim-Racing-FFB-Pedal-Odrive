@@ -125,7 +125,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   // level shifter not present on this PCB design
   #define SENSORLESS_HOMING false
 
-  #define BLUETOOTH_GAMEPAD
   //#define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 1
 #endif
@@ -149,7 +148,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   // level shifter not present on this PCB design
   #define SENSORLESS_HOMING false
 
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 1
 #endif
@@ -188,7 +186,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ESPNOW_Enable
   #define ESPNow_ESP32
   //#define I2C_slave_address 0x15
-  #define BLUETOOTH_GAMEPAD
   //#define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 1
   //#define ESPNow_Pairing_function
@@ -221,7 +218,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ISV57_TXPIN 27 //17
   #define ISV57_RXPIN 26 // 16
 
-  #define BLUETOOTH_GAMEPAD
   //#define USB_JOYSTICK
 
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 3
@@ -252,7 +248,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ISV57_TXPIN 26 //17
   #define ISV57_RXPIN 27 // 16
   #define ESPNOW_Enable
-  #define BLUETOOTH_GAMEPAD
   //#define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 3
   #define Pairing_GPIO 0
@@ -294,7 +289,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 
   //#define Using_analog_output_ESP32_S3
 
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
   #define ESPNOW_Enable
   #define ESPNow_S3
@@ -340,7 +334,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ISV57_TXPIN 10//27 //17
   #define ISV57_RXPIN 9//26 // 16
 
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
 
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
@@ -440,7 +433,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   //#define Using_analog_output_ESP32_S3
   #define ESPNOW_Enable
   #define ESPNow_S3
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
 
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
@@ -483,7 +475,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 
   #define BRAKE_RESISTOR_PIN 35
 
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
   //#define ESPNOW_Enable
   //#define ESPNow_S3
@@ -523,8 +514,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 
   #define BRAKE_RESISTOR_PIN 35
   
-
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
   //#define ESPNOW_Enable
   //#define ESPNow_S3

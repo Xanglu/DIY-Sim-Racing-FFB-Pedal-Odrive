@@ -58,11 +58,16 @@ void loadcellReadingTask( void * pvParameters );
 void profilerTask( void * pvParameters );
 void serialCommunicationTaskRx( void * pvParameters );
 void serialCommunicationTaskTx( void * pvParameters );
-void joystickOutputTask( void * pvParameters );
 void OTATask( void * pvParameters );
 void ESPNOW_SyncTask( void * pvParameters);
 void miscTask( void * pvParameters);
 void configUpdateTask( void * pvParameters );
+
+#ifdef USB_JOYSTICK
+  void joystickOutputTask( void * pvParameters );
+#endif
+
+
 #define INCLUDE_vTaskDelete 1
 // https://www.tutorialspoint.com/cyclic-redundancy-check-crc-in-arduino
 inline uint16_t checksumCalculator(uint8_t * data, uint16_t length)
@@ -983,6 +988,7 @@ void setup()
       CORE_ID_SERIAL_COMMUNICATION_TASK); /* pin task to core */
 
   // the joystickOutputTask does not need a dedicated timer, since it triggered by queue 
+#ifdef USB_JOYSTICK
   xTaskCreatePinnedToCore(
       joystickOutputTask,      /* Task function. */
       "joystickOutputTask",    /* name of task. */
@@ -991,7 +997,7 @@ void setup()
       1,                              /* priority of the task (e.g., 2, slightly higher than producer) */
       &handle_joystickOutput,  /* Task handle */
       CORE_ID_JOYSTICK_TASK); /* pin task to core */
-
+#endif
   // the loadcell task does not need a dedicated timer, since it blocks by DRDY ready ISR
   xTaskCreatePinnedToCore(
                     loadcellReadingTask,   /* Task function. */
@@ -1264,8 +1270,8 @@ xTaskCreatePinnedToCore(
   #endif  
   #ifndef CONTROLLER_SPECIFIC_VIDPID
   // init controller
-  #if defined(BLUETOOTH_GAMEPAD) || defined(USB_JOYSTICK)
-  SetupController();
+  #ifdef USB_JOYSTICK
+    SetupController();
   #endif
   //delay(3000);
   #endif
@@ -2329,6 +2335,8 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 /*                         joystick output task                                               */
 /*                                                                                            */
 /**********************************************************************************************/
+
+#ifdef USB_JOYSTICK
 void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
 { 
 
@@ -2378,7 +2386,7 @@ void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
       {
 
         // send joystick output
-        #if defined(USB_JOYSTICK) || defined(BLUETOOTH_GAMEPAD)
+        
           if (IsControllerReady()) 
           {
             if(dap_calculationVariables_st.Rudder_status==false)
@@ -2386,20 +2394,18 @@ void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
               //general output
               SetControllerOutputValue(joystickData_i32);
               
-              #ifdef USB_JOYSTICK
-                // Restart HID output if faulty behavior was detected
-                JoystickSendState();
-                if(!GetJoystickStatus())
-                {
-                  RestartJoystick();
-                  Serial.println("HID Error, Restart Joystick...");
-                  //last_serial_joy_out=millis();
-                }
-              #endif
+              // Restart HID output if faulty behavior was detected
+              JoystickSendState();
+              if(!GetJoystickStatus())
+              {
+                RestartJoystick();
+                Serial.println("HID Error, Restart Joystick...");
+                //last_serial_joy_out=millis();
+              }
 
             }
           }
-        #endif
+        
       }
 
       // profiler_joystickOutputTask.end(1);
@@ -2411,7 +2417,7 @@ void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
     }
   }
 }
-
+#endif
 /**********************************************************************************************/
 /*                                                                                            */
 /*                         communication task                                                 */
