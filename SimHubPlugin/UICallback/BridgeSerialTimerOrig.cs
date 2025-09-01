@@ -365,42 +365,17 @@ namespace User.PluginSdkDemo
                                                 }
 
                                             }
-                                            // Use StreamWriter to write to the file
+
                                             using (StreamWriter writer = new StreamWriter(filePath, true))
                                             {
-                                                // Write the content to the file
+                                                var state = pedalState_ext_read_st.payloadPedalExtendedState_;
                                                 writeCntr++;
-                                                writer.Write(writeCntr);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.timeInUs_u32);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.cycleCount_u32);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.pedalForce_raw_fl32);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.pedalForce_filtered_fl32);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.forceVel_est_fl32);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servoPosition_i16);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servoPositionTarget_i16);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servo_position_error_i16);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servo_current_percent_i16);
-                                                writer.Write(", ");
-                                                writer.Write(((float)pedalState_ext_read_st.payloadPedalExtendedState_.servo_voltage_0p1V_i16) / 10.0);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.angleSensorOutput_ui16);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.brakeResistorState_b);
-                                                writer.Write(", ");
-                                                writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servoPositionEstimated_i16);
-                                                //writer.Write(", ");
-                                                //writer.Write(pedalState_ext_read_st.payloadPedalExtendedState_.servoPositionEstimated_stepperPos_i16);
-                                                writer.Write("\n");
+
+                                                // Build the entire string in one line using interpolation
+                                                writer.WriteLine($"{writeCntr},{state.timeInUs_u32},{state.cycleCount_u32},{state.pedalForce_raw_fl32},{state.pedalForce_filtered_fl32},{state.forceVel_est_fl32},{state.servoPosition_i16},{state.servoPositionTarget_i16},{state.servo_position_error_i16},{state.servo_current_percent_i16},{state.servo_voltage_0p1V_i16 / 10.0f},{state.angleSensorOutput_ui16},{state.brakeResistorState_b},{state.servoPositionEstimated_i16}");
                                             }
+
+
                                         }
                                     }
                                     continue;
