@@ -4,7 +4,6 @@
 Modbus::Modbus()
 {
     this->s = NULL;
-    this->mode_ = -1;
 }
 Modbus::Modbus(HardwareSerial &st)
 {
@@ -12,13 +11,9 @@ Modbus::Modbus(HardwareSerial &st)
 }
 
 
-bool Modbus::init(int mode, bool en_log)
+bool Modbus::init(bool en_log)
 {
-     this->mode_ =  mode;
      this->log   =  en_log;
-     //pinMode(mode_,OUTPUT);
-     //digitalWrite(mode_, 0);  
-     
      return true;
 }
 
@@ -242,18 +237,6 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
     txout[6] = crc ;
     txout[7] = crc >> 8;
  
-     
-    // if(log){
-    //   Serial.print("TX: ");
-    //    for(int i =0; i < 8; i++)
-    //         {
-    //             Serial.printf("%02X ",txout[i] );
-    //         }
-    //         Serial.print("\t");
-    //  }
-
-    //digitalWrite(mode_,1);
-    //delay(1);
     size_t bufferCapacity = this->s->availableForWrite();
     this->s->write(txout,8);
     delay(1);
@@ -263,9 +246,7 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
       delay(1);
       timeOutInMs_u8--;
     }
-    // this->s->flush();
-    //digitalWrite(mode_,0);
-    //delay(1);
+
     unsigned long t = millis();
     lenRx   = 0;
     datalen = 0;
@@ -549,7 +530,6 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
 	
 	// send signal
   size_t bufferCapacity = this->s->availableForWrite();
-	digitalWrite(mode_,1);
   delay(1);
   this->s->write(txout,8);
   delay(1);
@@ -560,9 +540,6 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
     timeOutInMs_u8--;
   }
 
-  // this->s->write(txout,8);
-  // this->s->flush();
-  digitalWrite(mode_,0);
   delay(1);
 
   // verify return signal
