@@ -19,7 +19,7 @@ namespace User.PluginSdkDemo
     public partial class DIYFFBPedalControlUI : System.Windows.Controls.UserControl
     {
         int[] appendedBufferOffset = { 0, 0, 0, 0 };
-        static int bufferSize = 10000;
+        static int bufferSize = 20000;
         static int destBufferSize = 1000;
         byte[][] buffer_appended = { new byte[bufferSize], new byte[bufferSize], new byte[bufferSize], new byte[bufferSize] };
         byte[][] buffer_appended_clone = { new byte[bufferSize], new byte[bufferSize], new byte[bufferSize], new byte[bufferSize] };

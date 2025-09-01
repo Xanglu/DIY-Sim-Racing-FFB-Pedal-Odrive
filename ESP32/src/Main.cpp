@@ -2497,6 +2497,8 @@ void serialCommunicationTaskRx(void *pvParameters) {
                   Serial.readBytes(&rx_buffer[buffer_len], bytesToRead);
                   buffer_len += bytesToRead;
               }
+
+              Serial.println("Serial data available");
           }
 
           // --- 2. Process all complete packets in the buffer ---
@@ -2507,6 +2509,8 @@ void serialCommunicationTaskRx(void *pvParameters) {
                   buffer_idx++;
                   continue; // Keep scanning for a SOF
               }
+
+              // Serial.println("1st check passed");
 
               // SOF found at buffer_idx. Check if we have enough data for a header.
               if (buffer_len < buffer_idx + 3) {
@@ -2523,6 +2527,8 @@ void serialCommunicationTaskRx(void *pvParameters) {
                   buffer_idx++;
                   continue;
               }
+
+              // Serial.println("2nd check passed");
 
               // C. Check if the full packet has arrived
               if (buffer_len < buffer_idx + expectedSize) {
@@ -2695,8 +2701,15 @@ void serialCommunicationTaskRx(void *pvParameters) {
                             dap_config_st_local_ptr->payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
                             uint16_t crc = checksumCalculator((uint8_t*)(&(sct_dap_config_st.payLoadHeader_)), sizeof(sct_dap_config_st.payLoadHeader_) + sizeof(sct_dap_config_st.payLoadPedalConfig_));
                             dap_config_st_local_ptr->payloadFooter_.checkSum = crc;
+
+                            // suspend the serial Tx task so that data can properly be send
+                            vTaskSuspend(handle_serialCommunicationTx);
+                            delay(50);
                             Serial.write((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
-                            // Serial.print("\r\n");
+                            Serial.print("Return pedal config");
+                            delay(50);
+                            vTaskResume(handle_serialCommunicationTx);
+
                           }
                           #ifdef ESPNOW_Enable
                             if(received_action.payloadPedalAction_.Rudder_action==1)//Enable Rudder
