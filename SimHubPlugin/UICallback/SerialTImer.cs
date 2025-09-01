@@ -210,7 +210,7 @@ namespace User.PluginSdkDemo
 
                         bool inBufferDicarded = false;
                         int currentBufferLength = appendedBufferOffset[pedalSelected];
-                        if (bufferSize > (currentBufferLength+currentBufferLength) )
+                        if (bufferSize > (currentBufferLength + receivedLength) )
                         {
                             sp.Read(buffer_appended[pedalSelected], appendedBufferOffset[pedalSelected], receivedLength);
 
@@ -763,7 +763,7 @@ namespace User.PluginSdkDemo
                                     appendedBufferOffset[pedalSelected] = remainingMessageLength;
 
                                     Buffer.BlockCopy(buffer_appended[pedalSelected], lastTrueIndex + 1, buffer_appended[pedalSelected], 0, remainingMessageLength);
-                                    Array.Clear(buffer_appended[pedalSelected], appendedBufferOffset[pedalSelected], bufferSize - appendedBufferOffset[pedalSelected]); // 120 - 20 + 1 = 101 elements
+                                    //Array.Clear(buffer_appended[pedalSelected], appendedBufferOffset[pedalSelected], bufferSize - appendedBufferOffset[pedalSelected]); // 120 - 20 + 1 = 101 elements
 
 
 
