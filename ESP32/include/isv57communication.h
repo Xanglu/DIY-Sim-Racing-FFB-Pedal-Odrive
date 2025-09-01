@@ -5,12 +5,6 @@
 #include "Modbus.h"
 
 
-// define modbus stuff
-#define MODE  5
-
-
-
-
 
 // servo states register addresses
 #define reg_add_position_given_p 0x0001 // checked
