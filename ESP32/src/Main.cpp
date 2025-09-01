@@ -2498,7 +2498,7 @@ void serialCommunicationTaskRx(void *pvParameters) {
                   buffer_len += bytesToRead;
               }
 
-              Serial.println("Serial data available");
+              // Serial.println("Serial data available");
           }
 
           // --- 2. Process all complete packets in the buffer ---
