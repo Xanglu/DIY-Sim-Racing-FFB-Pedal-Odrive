@@ -91,7 +91,7 @@ isv57communication::isv57communication()
   #endif
 
 
-  modbus.init(MODE);
+  modbus.init(false);
 }
 
 
