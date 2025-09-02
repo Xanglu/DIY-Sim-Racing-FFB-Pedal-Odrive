@@ -90,10 +90,6 @@ DAP_ESPPairing_st dap_esppairing_lcl;//sending
 DAP_bridge_state_st dap_bridge_state_lcl;//
 DAP_action_ota_st dap_action_ota_st;
 
-#include "CycleTimer.h"
-
-
-#include "RTDebugOutput.h"
 #include "Wire.h"
 #include "SPI.h"
 #include <EEPROM.h>
@@ -101,15 +97,6 @@ DAP_action_ota_st dap_action_ota_st;
 
 bool isSerialConfigGet[3]={false, false, false};
 
-
-
-
-
-/**********************************************************************************************/
-/*                                                                                            */
-/*                         multitasking  definitions                                          */
-/*                                                                                            */
-/**********************************************************************************************/
 #ifndef CONFIG_IDF_TARGET_ESP32S3
   #include <rtc_wdt.h>
 #endif
@@ -165,20 +152,6 @@ bool resetPedalPosition = false;
 
 #include "Controller.h"
 
-
-/**********************************************************************************************/
-/*                                                                                            */
-/*                         pedal mechanics definitions                                        */
-/*                                                                                            */
-/**********************************************************************************************/
-
-#include "PedalGeometry.h"
-
-/**********************************************************************************************/
-/*                                                                                            */
-/*                         OTA                                                                */
-/*                                                                                            */
-/**********************************************************************************************/
 //OTA update
 #ifdef OTA_update
 #include "ota.h"
@@ -471,18 +444,7 @@ void setup()
   
 }
 
-
-
-
-
-
-
-
-/**********************************************************************************************/
-/*                                                                                            */
-/*                         Main function                                                      */
-/*                                                                                            */
-/**********************************************************************************************/
+//espnow communication task
 uint32_t loop_count=0;
 bool basic_rssi_update=false;
 unsigned long bridge_state_last_update=millis();
@@ -691,6 +653,8 @@ void espNowCommunicationTxTask( void * pvParameters )
   }
 }
 
+
+//serial communication recieve task
 bool PedalUpdateIntervalPrint_b=false;
 unsigned long PedalUpdateLast=0;
 unsigned long UARTJoystickUpdateLast=0;
@@ -698,7 +662,367 @@ bool PedalUpdateIntervalPrint_trigger=false;
 bool UARTJoystickUpdate_b=false;
 int joystick_fake_value=0;
 
+typedef struct {
+    uint16_t startBytePos_u16;
+    uint16_t endBytePos_u16;
+    uint16_t payloadType_u16;
+    bool validFlag_b;
+} structChecker_st;
+
+// Helper function to determine expected packet size from payload type
+// Returns 0 if the payload type is unknown.
+static inline size_t getExpectedPacketSize(uint8_t payloadType) {
+    switch (payloadType) {
+        case DAP_PAYLOAD_TYPE_CONFIG:
+            return sizeof(DAP_config_st);
+        case DAP_PAYLOAD_TYPE_ACTION:
+            return sizeof(DAP_actions_st);
+        case DAP_PAYLOAD_TYPE_ACTION_OTA:
+            return sizeof(DAP_action_ota_st);
+        case DAP_PAYLOAD_TYPE_BRIDGE_STATE:
+            return sizeof(DAP_bridge_state_st);
+        // Add other packet types here in the future
+        default:
+            return 0;
+    }
+}
 void serialCommunicationRxTask( void * pvParameters)
+{
+  // Buffer to accumulate incoming serial data
+  const size_t RX_BUFFER_SIZE = 1028; // Should be at least 2x the largest possible packet
+  static uint8_t rx_buffer[RX_BUFFER_SIZE];
+  static size_t buffer_len = 0;
+  //configDataPackage_t configPackage_st;
+  for(;;)
+  {
+    // --- 1. Read all available data into our buffer ---
+    if (Serial.available())
+    {
+      // Prevent buffer overflow by only reading what fits
+      size_t bytesToRead = min((size_t)Serial.available(), RX_BUFFER_SIZE - buffer_len);
+      if (bytesToRead > 0)
+      {
+        Serial.readBytes(&rx_buffer[buffer_len], bytesToRead);
+        buffer_len += bytesToRead;
+      }
+
+      // Serial.println("Serial data available");
+    }
+
+    // --- 2. Process all complete packets in the buffer ---
+    size_t buffer_idx = 0;
+    while (buffer_idx < buffer_len)
+    {
+      // A. Find the next valid Start-of-Frame (SOF)
+      if (rx_buffer[buffer_idx] != SOF_BYTE_0 || (buffer_idx + 1 < buffer_len && rx_buffer[buffer_idx + 1] != SOF_BYTE_1))
+      {
+        buffer_idx++;
+        continue; // Keep scanning for a SOF
+      }
+
+      // Serial.println("1st check passed");
+
+      // SOF found at buffer_idx. Check if we have enough data for a header.
+      if (buffer_len < buffer_idx + 3)
+      {
+        // Not enough data for a full header, stop parsing for now
+        break;
+      }
+
+      // B. Get expected packet size from payload type
+      uint8_t payloadType = rx_buffer[buffer_idx + 2];
+      size_t expectedSize = getExpectedPacketSize(payloadType);
+
+      if (expectedSize == 0)
+      {
+        // Unknown payload type, this SOF is corrupt. Skip it and continue scanning.
+        buffer_idx++;
+        continue;
+      }
+
+      // Serial.println("2nd check passed");
+
+      // C. Check if the full packet has arrived
+      if (buffer_len < buffer_idx + expectedSize)
+      {
+        // Full packet is not yet in the buffer, wait for more data
+        break;
+      }
+
+      // D. Check for valid End-of-Frame (EOF)
+      if (rx_buffer[buffer_idx + expectedSize - 2] != EOF_BYTE_0 || rx_buffer[buffer_idx + expectedSize - 1] != EOF_BYTE_1)
+      {
+        // EOF is wrong, this packet is corrupt. Skip the SOF and continue scanning.
+        buffer_idx++;
+        continue;
+      }
+
+      // --- We have a candidate packet! Now validate and process it. ---
+      uint8_t *packet_start = &rx_buffer[buffer_idx];
+      bool structIsValid = true;
+      uint16_t received_crc = 0;
+      uint16_t calculated_crc = 0;
+
+      switch (payloadType)
+      {
+        //case config
+        case DAP_PAYLOAD_TYPE_CONFIG:
+        {
+          bool structChecker = true;
+          DAP_config_st dap_config_st_local;
+          memcpy(&dap_config_st_local, packet_start, sizeof(DAP_config_st));
+          //Serial.readBytes((char *)&dap_config_st_local, sizeof(DAP_config_st));
+          if (dap_config_st_local.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_CONFIG)
+          {
+            structChecker = false;
+            Serial.print("[L]Payload type expected: ");
+            Serial.print(DAP_PAYLOAD_TYPE_CONFIG);
+            Serial.print(",   Payload type received: ");
+            Serial.println(dap_config_st_local.payLoadHeader_.payloadType);
+          }
+          if (dap_config_st_local.payLoadHeader_.version != DAP_VERSION_CONFIG)
+          {
+            structChecker = false;
+            Serial.print("[L]Config version expected: ");
+            Serial.print(DAP_VERSION_CONFIG);
+            Serial.print(",   Config version received: ");
+            Serial.println(dap_config_st_local.payLoadHeader_.version);
+          }
+          // checksum validation
+          uint16_t crc = checksumCalculator((uint8_t *)(&(dap_config_st_local.payLoadHeader_)), sizeof(dap_config_st_local.payLoadHeader_) + sizeof(dap_config_st_local.payLoadPedalConfig_));
+          if (crc != dap_config_st_local.payloadFooter_.checkSum)
+          {
+            structChecker = false;
+            Serial.print("[L]CRC expected: ");
+            Serial.print(crc);
+            Serial.print(",   CRC received: ");
+            Serial.println(dap_config_st_local.payloadFooter_.checkSum);
+          }
+          // if checks are successfull, overwrite global configuration struct
+          if (structChecker == true)
+          {
+            int pedalIdx = dap_config_st_local.payLoadHeader_.PedalTag;
+            // Serial.println("[L]Updating pedal config");
+            memcpy(&dap_config_st[pedalIdx], &dap_config_st_local, sizeof(DAP_config_st));
+            configUpdateAvailable[pedalIdx] = true;
+          }
+          break;
+        }
+        //case action to pedal
+        case DAP_PAYLOAD_TYPE_ACTION:
+        {
+          bool structChecker = true;
+          DAP_actions_st dap_actions_st_local;
+          memcpy(&dap_actions_st_local, packet_start, sizeof(DAP_actions_st));
+          //memcpy(&dap_actions_st_local, packet_start, sizeof(DAP_config_st));
+          //Serial.readBytes((char *)&dap_actions_st_local, sizeof(DAP_actions_st));
+          if (dap_actions_st_local.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_ACTION)
+          {
+            structChecker = false;
+            Serial.print("[L]Payload type expected: ");
+            Serial.print(DAP_PAYLOAD_TYPE_ACTION);
+            Serial.print(",   Payload type received: ");
+            Serial.println(dap_actions_st_local.payLoadHeader_.payloadType);
+          }
+          if (dap_actions_st_local.payLoadHeader_.version != DAP_VERSION_CONFIG)
+          {
+            structChecker = false;
+            Serial.print("[L]Config version expected: ");
+            Serial.print(DAP_VERSION_CONFIG);
+            Serial.print(",   Config version received: ");
+            Serial.println(dap_actions_st_local.payLoadHeader_.version);
+          }
+
+          uint16_t crc = checksumCalculator((uint8_t *)(&(dap_actions_st_local.payLoadHeader_)), sizeof(dap_actions_st_local.payLoadHeader_) + sizeof(dap_actions_st_local.payloadPedalAction_));
+          if (crc != dap_actions_st_local.payloadFooter_.checkSum)
+          {
+            structChecker = false;
+            Serial.print("[L]CRC expected: ");
+            Serial.print(crc);
+            Serial.print(",   CRC received: ");
+            Serial.println(dap_actions_st_local.payloadFooter_.checkSum);
+          }
+          if (structChecker == true)
+          {
+            int pedalIdx = dap_actions_st_local.payLoadHeader_.PedalTag;
+            memcpy(&dap_actions_st[pedalIdx], &dap_actions_st_local, sizeof(DAP_actions_st));
+            dap_action_update[pedalIdx] = true;
+          }
+          break;
+        }
+
+        //case action for ota
+        case DAP_PAYLOAD_TYPE_ACTION_OTA:
+        {
+          Serial.println("[L]get OTA command and its info");
+          memcpy(&dap_action_ota_st, packet_start, sizeof(DAP_action_ota_st));
+          //Serial.readBytes((char *)&dap_action_ota_st, sizeof(DAP_action_ota_st));
+          #ifdef OTA_Update
+            bool structChecker_b = true;
+            if (dap_action_ota_st.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_ACTION_OTA)
+            {
+              structChecker_b = false;
+            }
+            if (structChecker_b)
+            {
+              SSID = new char[dap_action_ota_st.payloadOtaInfo_.SSID_Length + 1];
+              PASS = new char[dap_action_ota_st.payloadOtaInfo_.PASS_Length + 1];
+              memcpy(SSID, dap_action_ota_st.payloadOtaInfo_.WIFI_SSID, dap_action_ota_st.payloadOtaInfo_.SSID_Length);
+              memcpy(PASS, dap_action_ota_st.payloadOtaInfo_.WIFI_PASS, dap_action_ota_st.payloadOtaInfo_.PASS_Length);
+              SSID[dap_action_ota_st.payloadOtaInfo_.SSID_Length] = 0;
+              PASS[dap_action_ota_st.payloadOtaInfo_.PASS_Length] = 0;
+              /*
+              Serial.printf("[L]Device ID:%d\n",dap_action_ota_st.payloadOtaInfo_.device_ID);
+              Serial.print("[L]SSID(uint)=");
+              for(uint i=0; i<dap_action_ota_st.payloadOtaInfo_.SSID_Length;i++)
+              {
+                Serial.print(dap_action_ota_st.payloadOtaInfo_.WIFI_SSID[i]);
+                Serial.print(",");
+              }
+              Serial.println(" ");
+              Serial.print("[L]PASS(uint)=");
+              for(uint i=0; i<dap_action_ota_st.payloadOtaInfo_.PASS_Length;i++)
+              {
+                Serial.print(dap_action_ota_st.payloadOtaInfo_.WIFI_PASS[i]);
+                Serial.print(",");
+              }
+              Serial.println(" ");
+
+              Serial.print("[L]SSID=");
+              Serial.println(SSID);
+              Serial.print("[L]PASS=");
+              Serial.println(PASS);
+              */
+            }
+
+            if (dap_action_ota_st.payloadOtaInfo_.device_ID == deviceID && structChecker_b == true)
+            {
+              OTA_enable_b = true;
+              Serial.println("[L] Bridge OTA begin.");
+            }
+            else if (structChecker_b)
+            {
+              pedal_OTA_action_b = true;
+            }
+          #endif
+          break;
+        }
+        case DAP_PAYLOAD_TYPE_BRIDGE_STATE:
+        {
+          bool structChecker = true;
+          DAP_bridge_state_st dap_bridge_state_local;
+          //dap_bridge_state_local_ptr = &dap_bridge_state_lcl;
+          memcpy(&dap_bridge_state_local, packet_start, sizeof(DAP_bridge_state_st));
+          //Serial.readBytes((char *)dap_bridge_state_local_ptr, sizeof(DAP_bridge_state_st));
+          // check if data is plausible
+          if (dap_bridge_state_local.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_BRIDGE_STATE)
+          {
+            structChecker = false;
+            Serial.print("[L]Payload type expected: ");
+            Serial.print(DAP_PAYLOAD_TYPE_BRIDGE_STATE);
+            Serial.print(",   Payload type received: ");
+            Serial.println(dap_bridge_state_local.payLoadHeader_.payloadType);
+          }
+          if (dap_bridge_state_local.payLoadHeader_.version != DAP_VERSION_CONFIG)
+          {
+            structChecker = false;
+            Serial.print("[L]Config version expected: ");
+            Serial.print(DAP_VERSION_CONFIG);
+            Serial.print(",   Config version received: ");
+            Serial.println(dap_bridge_state_lcl.payLoadHeader_.version);
+          }
+          // checksum validation
+          uint16_t crc = checksumCalculator((uint8_t *)(&(dap_bridge_state_local.payLoadHeader_)), sizeof(dap_bridge_state_local.payLoadHeader_) + sizeof(dap_bridge_state_local.payloadBridgeState_));
+          if (crc != dap_bridge_state_local.payloadFooter_.checkSum)
+          {
+            structChecker = false;
+            Serial.print("[L]CRC expected: ");
+            Serial.print(crc);
+            Serial.print(",   CRC received: ");
+            Serial.println(dap_bridge_state_local.payloadFooter_.checkSum);
+          }
+          // if checks are successfull, overwrite global configuration struct
+          if (structChecker == true)
+          {
+            memcpy(&dap_bridge_state_lcl, &dap_bridge_state_local, sizeof(DAP_bridge_state_st));
+            if (dap_bridge_state_lcl.payloadBridgeState_.Bridge_action == BRIDGE_ACTION_ENABLE_PAIRING)
+            {
+              #ifdef ESPNow_Pairing_function
+                Serial.println("[L]Bridge Pairing...");
+                software_pairing_action_b = true;
+              #endif
+              #ifndef ESPNow_Pairing_function
+                Serial.println("[L]Pairing command didn't supported");
+              #endif
+            }
+            // action=2, restart
+            if (dap_bridge_state_lcl.payloadBridgeState_.Bridge_action == BRIDGE_ACTION_RESTART)
+            {
+              Serial.println("[L]Bridge Restart");
+              delay(1000);
+              ESP.restart();
+            }
+            if (dap_bridge_state_lcl.payloadBridgeState_.Bridge_action == BRIDGE_ACTION_DOWNLOAD_MODE)
+            {
+              // aciton=3 restart into boot mode
+              #ifdef Using_Board_ESP32S3
+                Serial.println("[L]Bridge Restart into Download mode");
+                delay(1000);
+                REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
+                ESP.restart();
+              #endif
+              #ifdef Using_Board_ESP32
+                Serial.println("[L]Command not supported ");
+                delay(1000);
+              #endif
+            }
+            if (dap_bridge_state_lcl.payloadBridgeState_.Bridge_action == BRIDGE_ACTION_DEBUG)
+            {
+              if (PedalUpdateIntervalPrint_trigger)
+              {
+                // aciton=4 print pedal update interval
+                Serial.println("[L]Bridge debug mode off.");
+                PedalUpdateIntervalPrint_trigger = false;
+              }
+              else
+              {
+                // aciton=4 print pedal update interval
+                Serial.println("[L]Bridge debug mode on.");
+                PedalUpdateIntervalPrint_trigger = true;
+              }
+            }
+            if (dap_bridge_state_lcl.payloadBridgeState_.Bridge_action == BRIDGE_ACTION_JOYSTICK_FLASHING_MODE)
+            {
+              #ifdef External_RP2040
+                Serial.println("[L]JOYSTICK restart into flashing mode");
+                dap_joystickUART_state_lcl._payloadjoystick.JoystickAction = JOYSTICKACTION_RESET_INTO_BOOTLOADER;
+              #else
+                Serial.println("[L]The command is not supported");
+              #endif
+            }
+            if (dap_bridge_state_lcl.payloadBridgeState_.Bridge_action == BRIDGE_ACTION_JOYSTICK_DEBUG)
+            {
+              #ifdef External_RP2040
+                Serial.println("[L]JOYSTICK debug mode on");
+                dap_joystickUART_state_lcl._payloadjoystick.JoystickAction = JOYSTICKACTION_DEBUG_MODE;
+              #else
+                Serial.println("[L]The command is not supported");
+              #endif
+            }
+          }
+          break;
+        }
+        default:
+        {
+          Serial.println("[L]Unknown payload type");
+          break;
+        }
+      }
+    }
+  }
+}
+
+void serialCommunicationRxTask_orig( void * pvParameters)
 {
   for(;;)
   {  
@@ -708,8 +1032,6 @@ void serialCommunicationRxTask( void * pvParameters)
     bool structChecker = true;
     if (n > 0)
     {
-      //Serial.print("[L]get size:");
-      //Serial.println(n);
       switch (n) 
       {
         case sizeof(DAP_actions_st) :  
