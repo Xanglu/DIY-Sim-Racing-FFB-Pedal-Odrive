@@ -20,39 +20,6 @@
 #endif
 
 
-/********************************************************************/
-/*                      Task defines                                */
-/********************************************************************/
-#define CORE_ID_PEDAL_UPDATE_TASK (uint8_t)1
-#define CORE_ID_SERIAL_COMMUNICATION_TASK (uint8_t)0
-#define CORE_ID_JOYSTICK_TASK (uint8_t)1
-#define CORE_ID_MISC_TASK (uint8_t)0
-#define CORE_ID_OTA_TASK (uint8_t)0
-#define CORE_ID_SERVO_COMMUNICATION_TASK (uint8_t)0
-#define CORE_ID_ESPNOW_TASK (uint8_t)0
-#define CORE_ID_STEPPER_TASK (uint8_t)1
-#define CORE_ID_LOADCELLREADING_TASK (uint8_t)1
-#define CORE_ID_PROFILER_TASK (uint8_t)0
-#define CORE_ID_CONFIG_HANDLING_TASK (uint8_t)0
-
-// #define CORE_ID_PEDAL_UPDATE_TASK ( 0x7FFFFFFF )
-// #define CORE_ID_SERIAL_COMMUNICATION_TASK ( 0x7FFFFFFF )
-// #define CORE_ID_JOYSTICK_TASK ( 0x7FFFFFFF )
-// #define CORE_ID_MISC_TASK ( 0x7FFFFFFF )
-// #define CORE_ID_OTA_TASK ( 0x7FFFFFFF )
-// #define CORE_ID_SERVO_COMMUNICATION_TASK ( 0x7FFFFFFF )
-// #define CORE_ID_ESPNOW_TASK ( 0x7FFFFFFF )
-// #define CORE_ID_STEPPER_TASK ( 0x7FFFFFFF )
-// #define CORE_ID_LOADCELLREADING_TASK ( 0x7FFFFFFF )
-
-
-#define REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US (int64_t)300
-#define REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US (int64_t)10000
-#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US (int64_t)10000
-#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_FAST_IN_US (int64_t)200
-#define REPETITION_INTERVAL_ESPNOW_TASK_IN_US (int64_t)3000
-#define REPETITION_INTERVAL_OTA_TASK_IN_US (int64_t)10000
-#define REPETITION_INTERVAL_SERVO_COMMUNICATION_TASK_IN_US (int64_t)10000
 
 /********************************************************************/
 /*                      Other defines       */
@@ -537,4 +504,73 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define IRAM_ATTR_FLAG
 #else
   #define IRAM_ATTR_FLAG IRAM_ATTR
+#endif
+
+
+
+
+
+/********************************************************************/
+/*                      Task defines                                */
+/********************************************************************/
+#define CORE_ID_PEDAL_UPDATE_TASK (uint8_t)1
+#define CORE_ID_SERIAL_COMMUNICATION_TASK (uint8_t)0
+#define CORE_ID_JOYSTICK_TASK (uint8_t)1
+#define CORE_ID_MISC_TASK (uint8_t)0
+#define CORE_ID_OTA_TASK (uint8_t)0
+#define CORE_ID_SERVO_COMMUNICATION_TASK (uint8_t)0
+#define CORE_ID_ESPNOW_TASK (uint8_t)0
+#define CORE_ID_STEPPER_TASK (uint8_t)1
+#define CORE_ID_LOADCELLREADING_TASK (uint8_t)1
+#define CORE_ID_PROFILER_TASK (uint8_t)0
+#define CORE_ID_CONFIG_HANDLING_TASK (uint8_t)0
+
+// #define CORE_ID_PEDAL_UPDATE_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_SERIAL_COMMUNICATION_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_JOYSTICK_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_MISC_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_OTA_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_SERVO_COMMUNICATION_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_ESPNOW_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_STEPPER_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_LOADCELLREADING_TASK ( 0x7FFFFFFF )
+
+#ifdef RUN_IN_CACHE
+  #define REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US (int64_t)600
+#else
+  #define REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US (int64_t)300
+#endif
+
+#define REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_ESPNOW_TASK_IN_US (int64_t)3000
+#define REPETITION_INTERVAL_OTA_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERVO_COMMUNICATION_TASK_IN_US (int64_t)10000
+
+
+#ifdef RUN_IN_CACHE
+  // equal task priority --> round robin 
+  #define TASK_PRIORITY_PEDAL_UPDATE_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_JOYSTICKOUTPUT_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_LOADCELL_READING_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_SERIALCOMMUNICATION_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_SERIALCOMMUNICATION_TX_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_ESPNOW_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_OTA_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_SERVO_COMMUNICATION_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_CONFIG_HANDLING_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_PROFILER_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_MISC_TASK (UBaseType_t)1
+#else
+  #define TASK_PRIORITY_PEDAL_UPDATE_TASK (UBaseType_t)3
+  #define TASK_PRIORITY_JOYSTICKOUTPUT_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_LOADCELL_READING_TASK (UBaseType_t)2
+  #define TASK_PRIORITY_SERIALCOMMUNICATION_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_SERIALCOMMUNICATION_TX_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_ESPNOW_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_OTA_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_SERVO_COMMUNICATION_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_CONFIG_HANDLING_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_PROFILER_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_MISC_TASK (UBaseType_t)1
 #endif

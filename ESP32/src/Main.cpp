@@ -521,7 +521,8 @@ void IRAM_ATTR_FLAG onTimer(void* arg) {
   }
 
   // Yield if a higher-priority task was woken.
-  if (xHigherPriorityWoken) {
+  if (xHigherPriorityWoken) 
+  {
     portYIELD_FROM_ISR();
   }
 }
@@ -729,7 +730,7 @@ void setup()
                     "configHandlingTask",     /* name of task. */
                     3000,       /* Stack size of task */
                     NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
+                    TASK_PRIORITY_CONFIG_HANDLING_TASK,           /* priority of the task */
                     &handle_configHandlingTask,      /* Task handle to keep track of created task */
                     CORE_ID_CONFIG_HANDLING_TASK);          /* pin task to core 1 */  
 
@@ -980,8 +981,8 @@ void setup()
   Serial.println("Starting other tasks");
 
   // Register tasks
-  addScheduledTask(pedalUpdateTask, "pedalUpdateTask", REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US, 3, CORE_ID_PEDAL_UPDATE_TASK, 7000);
-  addScheduledTask(serialCommunicationTaskRx, "serComRx", REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US, 1, CORE_ID_SERIAL_COMMUNICATION_TASK, 6000);
+  addScheduledTask(pedalUpdateTask, "pedalUpdateTask", REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US, TASK_PRIORITY_PEDAL_UPDATE_TASK, CORE_ID_PEDAL_UPDATE_TASK, 7000);
+  addScheduledTask(serialCommunicationTaskRx, "serComRx", REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US, TASK_PRIORITY_SERIALCOMMUNICATION_TASK, CORE_ID_SERIAL_COMMUNICATION_TASK, 6000);
 
   // === Replace hw_timer with esp_timer ===
   const esp_timer_create_args_t periodic_timer_args = {
@@ -1003,7 +1004,7 @@ void setup()
       "serComTx",    /* name of task. */
       2000,                           /* Stack size of task */
       NULL,                           /* parameter of the task */
-      1,                              /* priority of the task (e.g., 2, slightly higher than producer) */
+      TASK_PRIORITY_SERIALCOMMUNICATION_TX_TASK,                              /* priority of the task (e.g., 2, slightly higher than producer) */
       &handle_serialCommunicationTx,  /* Task handle */
       CORE_ID_SERIAL_COMMUNICATION_TASK); /* pin task to core */
 
@@ -1014,7 +1015,7 @@ void setup()
       "joystickOutputTask",    /* name of task. */
       4000,                           /* Stack size of task */
       NULL,                           /* parameter of the task */
-      1,                              /* priority of the task (e.g., 2, slightly higher than producer) */
+      TASK_PRIORITY_JOYSTICKOUTPUT_TASK,                              /* priority of the task (e.g., 2, slightly higher than producer) */
       &handle_joystickOutput,  /* Task handle */
       CORE_ID_JOYSTICK_TASK); /* pin task to core */
 #endif
@@ -1024,7 +1025,7 @@ void setup()
                     "loadcellReadingTask",     /* name of task. */
                     1500,       /* Stack size of task */
                     NULL,        /* parameter of the task */
-                    2,           /* priority of the task */
+                    TASK_PRIORITY_LOADCELL_READING_TASK,           /* priority of the task */
                     &handle_loadcellReadingTask,      /* Task handle to keep track of created task */
                     CORE_ID_LOADCELLREADING_TASK);          /* pin task to core 1 */  
 
@@ -1045,7 +1046,7 @@ xTaskCreatePinnedToCore(
                     "profilerTask",     /* name of task. */
                     3000,       /* Stack size of task */
                     NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
+                    TASK_PRIORITY_PROFILER_TASK,           /* priority of the task */
                     &handle_profilerTask,      /* Task handle to keep track of created task */
                     CORE_ID_PROFILER_TASK);          /* pin task to core 1 */
 
@@ -1054,7 +1055,7 @@ xTaskCreatePinnedToCore(
                     "miscTask", 
                     2000,  
                     NULL,      
-                    1,         
+                    TASK_PRIORITY_MISC_TASK,         
                     &handle_miscTask,    
                     CORE_ID_MISC_TASK);     
 
@@ -1139,7 +1140,7 @@ xTaskCreatePinnedToCore(
 
     }   
                    
-    addScheduledTask(OTATask, "OTATask", REPETITION_INTERVAL_OTA_TASK_IN_US, 1, CORE_ID_OTA_TASK, 16000);
+    addScheduledTask(OTATask, "OTATask", REPETITION_INTERVAL_OTA_TASK_IN_US, TASK_PRIORITY_OTA_TASK, CORE_ID_OTA_TASK, 16000);
 
     delay(200);
   #endif
@@ -1274,7 +1275,7 @@ xTaskCreatePinnedToCore(
     //                     &handle_espnowTask,    
     //                     CORE_ID_ESPNOW_TASK);  
                         
-    addScheduledTask(ESPNOW_SyncTask, "ESPNOW_update_Task", REPETITION_INTERVAL_ESPNOW_TASK_IN_US, 1, CORE_ID_ESPNOW_TASK, 10000);
+    addScheduledTask(ESPNOW_SyncTask, "ESPNOW_update_Task", REPETITION_INTERVAL_ESPNOW_TASK_IN_US, TASK_PRIORITY_ESPNOW_TASK, CORE_ID_ESPNOW_TASK, 10000);
     Serial.println("ESPNOW task added");
     delay(500);
   }
@@ -2026,31 +2027,27 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       }
 
 
+      // stop movement, when OTA is in progres
+      bool doMovement_b = true;
+      #if defined(OTA_update_ESP32) || defined(OTA_update)
+        if(OTA_status==true)
+        {
+          doMovement_b = false;
+        } 
+      #endif
+
       // Move to new position
-      if (!moveSlowlyToPosition_b)
+      if (doMovement_b)
       {
-        #if defined(OTA_update_ESP32) || defined(OTA_update)
-          if(OTA_status==false)
-          {
-            stepper->moveTo(Position_Next, false);
-          }
-        #else
+        if (!moveSlowlyToPosition_b)
+        {
           stepper->moveTo(Position_Next, false);
-        #endif
-      }
-      else
-      {
-        #if defined(OTA_update_ESP32) || defined(OTA_update)
-          if(OTA_status==false)
-          {
-            moveSlowlyToPosition_b = false;
-            stepper->moveSlowlyToPos(Position_Next);
-          }
-        #else
+        }
+        else
+        {
           moveSlowlyToPosition_b = false;
           stepper->moveSlowlyToPos(Position_Next);
-        #endif
-
+        }
       }
     
       // compute controller output
