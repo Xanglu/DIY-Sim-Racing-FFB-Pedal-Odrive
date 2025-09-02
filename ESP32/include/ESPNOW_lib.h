@@ -276,9 +276,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
             if(dap_config_espnow_recv_st.payLoadHeader_.storeToEeprom==1)
             {
               Config_update_Buzzer_b = true;
-            }
-            configUpdateAvailable = true;
-            
+            }            
 
           }
         }
