@@ -152,22 +152,16 @@ TaskHandle_t Task2;
 TaskHandle_t Task3;
 TaskHandle_t Task4;
 TaskHandle_t Task5;
-
+TaskHandle_t taskHandleSerialRX;
+TaskHandle_t taskHandleSerialTx;
+TaskHandle_t taskHandleEepNowTX;
 bool configUpdateAvailable[3] = {false, false, false};                              
   //DAP_config_st dap_config_st_local;
 int32_t joystickNormalizedToInt32 = 0;                           
 
 bool resetPedalPosition = false;
 
-//static SemaphoreHandle_t semaphore_readServoValues=NULL;
 
-//static SemaphoreHandle_t semaphore_updatePedalStates=NULL;
-
-/**********************************************************************************************/
-/*                                                                                            */
-/*                         controller  definitions                                            */
-/*                                                                                            */
-/**********************************************************************************************/
 
 #include "Controller.h"
 
@@ -212,10 +206,11 @@ int32_t joystickNormalizedToInt32_local = 0;
 unsigned long pedal_last_update[3]={1,1,1};
 uint8_t pedal_avaliable[3]={0,0,0};
 uint8_t LED_Status=0; //0=normal 1= pairing
-void ESPNOW_SyncTask( void * pvParameters);
+void espNowCommunicationTxTask( void * pvParameters);
 void Joystick_Task( void * pvParameters);
 void LED_Task( void * pvParameters);
-void Serial_Task( void * pvParameters);
+void serialCommunicationRxTask( void * pvParameters);
+void serialCommunicationTxTask( void * pvParameters);
 void LED_Task_Dongle( void * pvParameters);
 void FanatecUpdate(void * pvParameters);
 
@@ -229,26 +224,6 @@ void FanatecUpdate(void * pvParameters);
   TaskHandle_t Task7;
 #endif
 
-/**********************************************************************************************/
-/*                                                                                            */
-/*                         setup function                                                     */
-/*                                                                                            */
-/**********************************************************************************************/
-//HardwareSerial SerialExt(2);
-/*
-void sendPacket(uint8_t* data, size_t len) 
-{
-  size_t avail = SerialExt.availableForWrite();
-  if (avail >= len) {
-    SerialExt.write(data, len);
-  } else {
-    Serial.println("TX buffer full, rp2040 off, restart Serial?");
-    SerialExt.end();
-    delay(10000);
-    SerialExt.begin(baud, SERIAL_8N1, 16, 15);  // RX=16, TX=15
-  }
-}
-*/
 
 #ifdef External_RP2040
   #include "RP2040PicoUART.h"
@@ -331,27 +306,33 @@ void setup()
   ESPNow_initialize();
   //ESPNow multi-tasking    
   xTaskCreatePinnedToCore(
-                        ESPNOW_SyncTask,   
+                        espNowCommunicationTxTask,   
                         "ESPNOW_update_Task", 
-                        10000,  
-                        //STACK_SIZE_FOR_TASK_2,    
+                        10000,      
                         NULL,      
                         1,         
-                        &Task1,    
+                        &taskHandleEepNowTX,    
                         0);     
   delay(500);
   //Serial multitasking
   xTaskCreatePinnedToCore(
-                        Serial_Task,   
-                        "Serial_update_Task", 
-                        5000,  
-                        //STACK_SIZE_FOR_TASK_2,    
+                        serialCommunicationRxTask,   
+                        "Serial_update_RX_Task", 
+                        5000,    
                         NULL,      
                         1,         
-                        &Task4,    
+                        &taskHandleSerialRX,    
                         1);     
   delay(500);
-
+  xTaskCreatePinnedToCore(
+                        serialCommunicationTxTask,   
+                        "Serial_update_TX_Task", 
+                        5000,     
+                        NULL,      
+                        1,         
+                        &taskHandleSerialTx,    
+                        1);     
+  delay(500);
   xTaskCreatePinnedToCore(
                         Joystick_Task,   
                         "Joystick_update_Task", 
@@ -517,7 +498,7 @@ void loop()
   delay(10000);
 }
 
-void ESPNOW_SyncTask( void * pvParameters )
+void espNowCommunicationTxTask( void * pvParameters )
 {
   for(;;)
   {
@@ -717,28 +698,13 @@ bool PedalUpdateIntervalPrint_trigger=false;
 bool UARTJoystickUpdate_b=false;
 int joystick_fake_value=0;
 
-void Serial_Task( void * pvParameters)
+void serialCommunicationRxTask( void * pvParameters)
 {
   for(;;)
   {  
     uint16_t crc;
     uint16_t n = Serial.available();
     unsigned long current_time=millis();
-    if(current_time-bridge_state_last_update>200)
-    {
-      basic_rssi_update=true;
-      bridge_state_last_update=millis();
-    }
-    if(current_time-PedalUpdateLast>500)
-    {
-      PedalUpdateIntervalPrint_b=true;
-      PedalUpdateLast=current_time;
-    }
-    if(current_time-UARTJoystickUpdateLast>7)
-    {
-      UARTJoystickUpdate_b=true;
-      UARTJoystickUpdateLast=current_time;
-    }
     bool structChecker = true;
     if (n > 0)
     {
@@ -1000,7 +966,32 @@ void Serial_Task( void * pvParameters)
         }          
       }
     }
+    delay(1);
+  }
+}
 
+void serialCommunicationTxTask( void * pvParameters)
+{
+  for(;;)
+  {  
+    uint16_t crc;
+    unsigned long current_time=millis();
+    if(current_time-bridge_state_last_update>200)
+    {
+      basic_rssi_update=true;
+      bridge_state_last_update=millis();
+    }
+    if(current_time-PedalUpdateLast>500)
+    {
+      PedalUpdateIntervalPrint_b=true;
+      PedalUpdateLast=current_time;
+    }
+    if(current_time-UARTJoystickUpdateLast>7)
+    {
+      UARTJoystickUpdate_b=true;
+      UARTJoystickUpdateLast=current_time;
+    }
+    bool structChecker = true;
 
     for(int i =0; i<3; i++)
     {
@@ -1188,7 +1179,7 @@ void Serial_Task( void * pvParameters)
       PedalUpdateIntervalPrint_b=false;
     }
     
-    delay(2);
+    delay(1);
   }
 }
 unsigned long last_serial_joy_out =millis();
