@@ -498,7 +498,7 @@ typedef struct {
 } SchedTask;
 
 // Task table
-SchedTask tasks[MAX_TASKS];
+DRAM_ATTR SchedTask tasks[MAX_TASKS];
 uint8_t taskCount = 0;
 
 // Timer handle
@@ -1478,11 +1478,18 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
   static DRAM_ATTR DAP_state_extended_st dap_state_extended_st_lcl_pedalUpdateTask;
   static DRAM_ATTR DAP_state_basic_st dap_state_basic_st_lcl_pedalUpdateTask;
+  static DRAM_ATTR DAP_config_st dap_config_pedalUpdateTask_st;
+
+  static loadcellDataPackage_t loadcellDataReceived_st;
+  static configDataPackage_t configPackage_st;
 
   FunctionProfiler profiler_pedalUpdateTask;
   profiler_pedalUpdateTask.setName("PedalUpdate");
-  float loadcellReading = 0.0f;
-  float filteredReading_exp_filter = 0;
+
+  static DRAM_ATTR float loadcellReading = 0.0f;
+  float filteredReading_exp_filter = 0.0f;
+  static DRAM_ATTR float filteredReading = 0.0f;
+
   unsigned long servoActionLast = millis();
   bool firstReadConfig=true;
 
@@ -1506,17 +1513,26 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
   uint8_t sendPedalStructsViaSerialCounter_u8 = 0;
   uint8_t sendJoystickDataCounter_u8 = 0;
 
-  static DAP_config_st dap_config_pedalUpdateTask_st;
+  
   global_dap_config_class.getConfig(&dap_config_pedalUpdateTask_st, 500);
 
   static const uint8_t joystickSendCounterMax_u8 = (REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US) / (REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US) ;
   static const uint8_t serialSendCounterMax_u8 = (REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US) / (REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US) ;
 
-  static loadcellDataPackage_t loadcellDataReceived_st;
-  static configDataPackage_t configPackage_st;
+  
   
 
-  uint32_t cycleCount_u32 = 0;
+  
+  static float changeVelocity = 0.0f;
+  static float normalizedPedalReading_fl32 = 0.0f;
+  static float stepperPosFraction = 0.0f;
+  static uint16_t angleReading_ui16 = 0;
+  static bool sendBasicFlag_b = false;
+  static bool sendExtendedFlag_b = false;
+  static float absForceOffset = 0.0f;
+  static float absPosOffset = 0.0f;
+
+  static uint32_t cycleCount_u32 = 0;
 
   for(;;){
 
@@ -1574,14 +1590,12 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       }
 
 
-      
-      cycleCount_u32++;
-      
-
       // start profiler 0, overall function
       profiler_pedalUpdateTask.start(0);
       
-      
+
+
+      cycleCount_u32++;
 
       // system identification mode
       #ifdef ALLOW_SYSTEM_IDENTIFICATION
@@ -1605,8 +1619,6 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
 
       // compute pedal oscillation, when ABS is active
-      float absForceOffset = 0.0f;
-      float absPosOffset = 0.0f;
       dap_calculationVariables_st.Default_pos();
       #ifdef ABS_OSCILLATION
         absOscillation.forceOffset(&dap_calculationVariables_st, dap_config_pedalUpdateTask_st.payLoadPedalConfig_.absPattern, dap_config_pedalUpdateTask_st.payLoadPedalConfig_.absForceOrTarvelBit, &absForceOffset, &absPosOffset);
@@ -1666,7 +1678,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
 
 
-      uint16_t angleReading_ui16 = 0;
+      
   #ifdef ANGLE_SENSOR_GPIO
         angleReading_ui16 = analogRead(ANGLE_SENSOR_GPIO);
   #endif
@@ -1697,8 +1709,6 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       profiler_pedalUpdateTask.start(4);
       
       // Do the loadcell signal filtering
-      float filteredReading = 0.0f;
-      float changeVelocity = 0.0f;
       float alpha_exp_filter = 1.0f - ( (float)dap_config_pedalUpdateTask_st.payLoadPedalConfig_.kf_modelNoise) / 5000.0f;
       // const velocity model denoising filter
       switch (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.kf_modelOrder) {
@@ -1805,7 +1815,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       profiler_pedalUpdateTask.start(5);
 
 
-      float stepperPosFraction = stepper->getCurrentPositionFraction();
+      stepperPosFraction = stepper->getCurrentPositionFraction();
       int32_t Position_Next = 0;
       
       // select control loop algo
@@ -2129,7 +2139,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       #endif
 
       
-      float normalizedPedalReading_fl32 = 0.0f;
+      
       if ( fabs(dap_calculationVariables_st.Force_Range) > 0.01f)
       {
           normalizedPedalReading_fl32 = constrain((filteredReading - dap_calculationVariables_st.Force_Min) / dap_calculationVariables_st.Force_Range, 0.0f, 1.0f);
@@ -2151,10 +2161,10 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       // start profiler 8, struct exchange
       profiler_pedalUpdateTask.start(7);
       
+
+  
       
       // update pedal states
-      bool sendBasicFlag_b = false;
-      bool sendExtendedFlag_b = false;
       // check if data needs to be send
       if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT) )
       {
@@ -2180,12 +2190,11 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalForce_u16 =  normalizedPedalReading_fl32 * 65535.0f;
           dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalPosition_u16 = constrain(stepperPosFraction, 0.0f, 1.0f) * 65535.0f;
           dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.joystickOutput_u16 = (float)joystickNormalizedToInt32 / 10000.0f * 32767.0f;//65535;
-          //parse_version_fast(DAP_FIRMWARE_VERSION, &dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[0], &dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[1], &dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[2]);
-          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[0]=versionMajor;
-          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[1]=versionMinor;
-          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[2]=versionPatch;
+          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[0] = versionMajor;
+          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[1] = versionMinor;
+          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[2] = versionPatch;
           //error code
-          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8=0;
+          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8 = 0;
           //pedal status update
           if(dap_calculationVariables_st.Rudder_status)
           {
@@ -2217,7 +2226,6 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
           dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.payloadType = DAP_PAYLOAD_TYPE_STATE_BASIC;
           dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.version = DAP_VERSION_CONFIG;
-          //dap_state_basic_st_lcl_pedalUpdateTask.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_)), sizeof(dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_) + sizeof(dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_));
           dap_state_basic_st_lcl_pedalUpdateTask.payLoadHeader_.PedalTag = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.pedal_type;        
           
         }
@@ -2232,32 +2240,25 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           dap_state_extended_st_lcl_pedalUpdateTask.payloadFooter_.enfOfFrame1_u8 =  EOF_BYTE_1; // 86
 
           // update extended struct 
-          //dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.timeInMs_u32 = millis();
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.timeInUs_u32 = micros();
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.cycleCount_u32 = cycleCount_u32;
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.pedalForce_raw_fl32 =  loadcellReading;
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.pedalForce_filtered_fl32 =  filteredReading;
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.forceVel_est_fl32 =  changeVelocity;
 
-          //dap_state_extended_st.payloadPedalState_Extended_.servoPosition_i16 = stepper->getServosInternalPosition();
           int32_t minPos = 0; //stepper->getMinPosition();
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPosition_i16 = stepper->getServosInternalPositionCorrected() - minPos;
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_voltage_0p1V =  stepper->getServosVoltage();
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_current_percent_i16 = stepper->getServosCurrent();
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_position_error_i16 = stepper->getServosPosError();
-          
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionEstimated_i16 = stepper->getEstimatedPosError();
 
-          
-          //dap_state_extended_st.payloadPedalState_Extended_.servoPositionTarget_i16 = stepper->getCurrentPositionFromMin();
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionTarget_i16 = stepper->getCurrentPosition() - minPos;
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.angleSensorOutput_ui16 = angleReading_ui16;
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.brakeResistorState_b = stepper->getBrakeResistorState();
           dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.PedalTag = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.pedal_type;
           dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.payloadType = DAP_PAYLOAD_TYPE_STATE_EXTENDED;
           dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.version = DAP_VERSION_CONFIG;
-          //dap_state_extended_st_lcl_pedalUpdateTask.payloadFooter_.checkSum = checksumCalculator((uint8_t*)(&(dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_)), sizeof(dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_) + sizeof(dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_));
-
         }
 
 
@@ -2278,23 +2279,9 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
         }
       }
 
-      // start profiler 8, struct exchange
       profiler_pedalUpdateTask.end(7);
-
-      
-
-      
-
-
-
       profiler_pedalUpdateTask.end(0);
-
-      // print profiler results
-      // profiler_pedalUpdateTask.report();
-    
     }
-
-    // taskYIELD();
   }
 }
 
