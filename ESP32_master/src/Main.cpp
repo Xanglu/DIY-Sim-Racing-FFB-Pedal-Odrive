@@ -1030,7 +1030,8 @@ void serialCommunicationRxTask( void * pvParameters)
       }//switch end
       if (!structIsValid)
       {
-        Serial.printf("Invalid packet detected (Type: %d). Skipping SOF.\n", payloadType);
+        Serial.printf("[L]Invalid packet detected (Type: %d). Skipping SOF.\n", payloadType);
+        Serial.println("");
         buffer_idx++; // Skip the failed SOF and continue scanning
       }
       else

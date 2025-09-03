@@ -89,6 +89,7 @@ inline uint16_t checksumCalculator(uint8_t * data, uint16_t length)
 
 bool systemIdentificationMode_b = false;
 bool previewConfigGet_b=false;
+bool firstReadConfig=true;
 unsigned long saveToEEPRomDuration=0;
 
 
@@ -1491,7 +1492,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
   static DRAM_ATTR float filteredReading = 0.0f;
 
   unsigned long servoActionLast = millis();
-  bool firstReadConfig=true;
+  
 
   uint32_t controlTask_stackSizeIdx_u32 = 0;
   float previousLoadcellReadingInKg_fl32 = 0.0f;
@@ -1562,15 +1563,12 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
         Serial.println("Updating the calc params");
         //Serial.print("save to eeprom tag:");
         //Serial.println(dap_config_pedalUpdateTask_st.payLoadHeader_.storeToEeprom);
-        if(firstReadConfig)
+        if(!firstReadConfig)
         {
-          firstReadConfig=false;
+
         }
-        else
-        {
-          previewConfigGet_b = true;
-          saveToEEPRomDuration = millis();
-        }
+        previewConfigGet_b = true;
+        saveToEEPRomDuration = millis();
         
         if (true == dap_config_pedalUpdateTask_st.payLoadHeader_.storeToEeprom)
         {
@@ -3392,13 +3390,12 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             sendESPNOWLog(logString, strnlen(logString, sizeof(logString)));
             */
             pedalInfoBuilder.BuildString(espnow_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage()/10.0f),dap_calculationVariables_st.stepperPosMaxEndstop,dap_calculationVariables_st.current_pedal_position);
-            Serial.println(pedalInfoBuilder.logString);
             sendESPNOWLog(pedalInfoBuilder.logString, strnlen(pedalInfoBuilder.logString, sizeof(pedalInfoBuilder.logString)));
+            Serial.println(pedalInfoBuilder.logString);
             delay(3);
             pedalInfoBuilder.BuildESPNOWInfo(espnow_dap_config_st.payLoadPedalConfig_.pedal_type,rssi);
-            Serial.println(pedalInfoBuilder.logESPNOWString);
-            delay(3);
             sendESPNOWLog(pedalInfoBuilder.logESPNOWString, strnlen(pedalInfoBuilder.logESPNOWString, sizeof(pedalInfoBuilder.logESPNOWString)));
+            Serial.println(pedalInfoBuilder.logESPNOWString);
 
           }
           if(Get_Rudder_action_b)
@@ -3524,8 +3521,27 @@ void miscTask( void * pvParameters )
     global_dap_config_class.getConfig(&misc_dap_config_st, 500);
     if(previewConfigGet_b && ((millis()-saveToEEPRomDuration)>CONFIG_PREVIEW_DURATION))
     {
-      
-      Serial.println("Auto save config in pedal");
+      //Serial.println("30s reached");
+      if(firstReadConfig)
+      {
+        Serial.println("Auto save: not save in first read config");
+        firstReadConfig=false;
+        saveToEEPRomDuration=millis();
+        previewConfigGet_b=false;
+        //return;
+      }
+      else
+      {
+        Serial.println("Auto save: save config in pedal");
+        global_dap_config_class.storeConfigToEprom();
+        previewConfigGet_b=false;
+        #ifdef USING_BUZZER
+          Buzzer.single_beep_tone(700,50);
+          delay(50);
+          Buzzer.single_beep_tone(700,50);
+        #endif 
+      }
+
       /*
       Serial.print(millis());
       Serial.print(" Duration:");
@@ -3534,13 +3550,7 @@ void miscTask( void * pvParameters )
       Serial.println(previewConfigGet_b);
       */
       //saveToEEPRomDuration=0;
-      global_dap_config_class.storeConfigToEprom();
-      previewConfigGet_b=false;
-      #ifdef USING_BUZZER
-        Buzzer.single_beep_tone(700,50);
-        delay(50);
-        Buzzer.single_beep_tone(700,50);
-      #endif 
+
     }
     #ifdef USING_BUZZER
       //make buzzer sound actions here
