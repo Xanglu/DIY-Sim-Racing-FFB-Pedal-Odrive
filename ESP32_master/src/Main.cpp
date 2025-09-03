@@ -775,6 +775,7 @@ void serialCommunicationRxTask( void * pvParameters)
           if (dap_config_st_local.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_CONFIG)
           {
             structChecker = false;
+            structIsValid=false;
             Serial.print("[L]Payload type expected: ");
             Serial.print(DAP_PAYLOAD_TYPE_CONFIG);
             Serial.print(",   Payload type received: ");
@@ -783,6 +784,7 @@ void serialCommunicationRxTask( void * pvParameters)
           if (dap_config_st_local.payLoadHeader_.version != DAP_VERSION_CONFIG)
           {
             structChecker = false;
+            structIsValid = false;
             Serial.print("[L]Config version expected: ");
             Serial.print(DAP_VERSION_CONFIG);
             Serial.print(",   Config version received: ");
@@ -793,6 +795,7 @@ void serialCommunicationRxTask( void * pvParameters)
           if (crc != dap_config_st_local.payloadFooter_.checkSum)
           {
             structChecker = false;
+            structIsValid = false;
             Serial.print("[L]CRC expected: ");
             Serial.print(crc);
             Serial.print(",   CRC received: ");
@@ -819,6 +822,7 @@ void serialCommunicationRxTask( void * pvParameters)
           if (dap_actions_st_local.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_ACTION)
           {
             structChecker = false;
+            structIsValid = false;
             Serial.print("[L]Payload type expected: ");
             Serial.print(DAP_PAYLOAD_TYPE_ACTION);
             Serial.print(",   Payload type received: ");
@@ -827,6 +831,7 @@ void serialCommunicationRxTask( void * pvParameters)
           if (dap_actions_st_local.payLoadHeader_.version != DAP_VERSION_CONFIG)
           {
             structChecker = false;
+            structIsValid = false;
             Serial.print("[L]Config version expected: ");
             Serial.print(DAP_VERSION_CONFIG);
             Serial.print(",   Config version received: ");
@@ -837,6 +842,7 @@ void serialCommunicationRxTask( void * pvParameters)
           if (crc != dap_actions_st_local.payloadFooter_.checkSum)
           {
             structChecker = false;
+            structIsValid = false;
             Serial.print("[L]CRC expected: ");
             Serial.print(crc);
             Serial.print(",   CRC received: ");
@@ -862,6 +868,7 @@ void serialCommunicationRxTask( void * pvParameters)
             if (dap_action_ota_st.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_ACTION_OTA)
             {
               structChecker_b = false;
+              structIsValid = false;
             }
             if (structChecker_b)
             {
@@ -918,6 +925,7 @@ void serialCommunicationRxTask( void * pvParameters)
           if (dap_bridge_state_local.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_BRIDGE_STATE)
           {
             structChecker = false;
+            structIsValid = false;
             Serial.print("[L]Payload type expected: ");
             Serial.print(DAP_PAYLOAD_TYPE_BRIDGE_STATE);
             Serial.print(",   Payload type received: ");
@@ -926,6 +934,7 @@ void serialCommunicationRxTask( void * pvParameters)
           if (dap_bridge_state_local.payLoadHeader_.version != DAP_VERSION_CONFIG)
           {
             structChecker = false;
+            structIsValid = false;
             Serial.print("[L]Config version expected: ");
             Serial.print(DAP_VERSION_CONFIG);
             Serial.print(",   Config version received: ");
@@ -936,6 +945,7 @@ void serialCommunicationRxTask( void * pvParameters)
           if (crc != dap_bridge_state_local.payloadFooter_.checkSum)
           {
             structChecker = false;
+            structIsValid = false;
             Serial.print("[L]CRC expected: ");
             Serial.print(crc);
             Serial.print(",   CRC received: ");
@@ -1017,7 +1027,27 @@ void serialCommunicationRxTask( void * pvParameters)
           Serial.println("[L]Unknown payload type");
           break;
         }
+      }//switch end
+      if (!structIsValid)
+      {
+        Serial.printf("Invalid packet detected (Type: %d). Skipping SOF.\n", payloadType);
+        buffer_idx++; // Skip the failed SOF and continue scanning
       }
+      else
+      {
+        // Packet was valid and processed, advance index past this packet
+        buffer_idx += expectedSize;
+      }
+    }//while end
+    // --- 3. Clean up the buffer ---
+    if (buffer_idx > 0)
+    {
+      size_t remaining_len = buffer_len - buffer_idx;
+      if (remaining_len > 0)
+      {
+        memmove(rx_buffer, &rx_buffer[buffer_idx], remaining_len);
+      }
+      buffer_len = remaining_len;
     }
   }
 }
@@ -1287,6 +1317,7 @@ void serialCommunicationRxTask_orig( void * pvParameters)
           break;
         }          
       }
+
     }
     delay(1);
   }
