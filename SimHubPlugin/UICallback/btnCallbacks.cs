@@ -33,6 +33,10 @@ namespace User.PluginSdkDemo
             tmp_2.payLoadHeader_.version = (byte)Constants.pedalConfigPayload_version;
             tmp_2.payLoadHeader_.payloadType = (byte)Constants.bridgeStatePayloadType;
             tmp_2.payLoadHeader_.PedalTag = (byte)indexOfSelectedPedal_u;
+            tmp_2.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp_2.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp_2.payLoadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp_2.payLoadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             tmp_2.payloadBridgeState_.Pedal_RSSI = 0;
             tmp_2.payloadBridgeState_.Pedal_availability_0 = 0;
             tmp_2.payloadBridgeState_.Pedal_availability_1 = 0;
@@ -988,6 +992,10 @@ namespace User.PluginSdkDemo
             tmp_2.payLoadHeader_.version = (byte)Constants.pedalConfigPayload_version;
             tmp_2.payLoadHeader_.payloadType = (byte)Constants.bridgeStatePayloadType;
             tmp_2.payLoadHeader_.PedalTag = (byte)indexOfSelectedPedal_u;
+            tmp_2.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp_2.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp_2.payLoadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp_2.payLoadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             tmp_2.payloadBridgeState_.Pedal_RSSI = 0;
             tmp_2.payloadBridgeState_.Pedal_availability_0 = 0;
             tmp_2.payloadBridgeState_.Pedal_availability_1 = 0;
@@ -1341,6 +1349,10 @@ namespace User.PluginSdkDemo
             tmp_2.payLoadHeader_.version = (byte)Constants.pedalConfigPayload_version;
             tmp_2.payLoadHeader_.payloadType = (byte)Constants.bridgeStatePayloadType;
             tmp_2.payLoadHeader_.PedalTag = (byte)indexOfSelectedPedal_u;
+            tmp_2.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp_2.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp_2.payLoadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp_2.payLoadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             tmp_2.payloadBridgeState_.Pedal_RSSI = 0;
             tmp_2.payloadBridgeState_.Pedal_availability_0 = 0;
             tmp_2.payloadBridgeState_.Pedal_availability_1 = 0;
@@ -1375,6 +1387,10 @@ namespace User.PluginSdkDemo
             tmp_2.payLoadHeader_.version = (byte)Constants.pedalConfigPayload_version;
             tmp_2.payLoadHeader_.payloadType = (byte)Constants.bridgeStatePayloadType;
             tmp_2.payLoadHeader_.PedalTag = (byte)indexOfSelectedPedal_u;
+            tmp_2.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp_2.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp_2.payLoadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp_2.payLoadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             tmp_2.payloadBridgeState_.Pedal_RSSI = 0;
             tmp_2.payloadBridgeState_.Pedal_availability_0 = 0;
             tmp_2.payloadBridgeState_.Pedal_availability_1 = 0;
@@ -1410,6 +1426,10 @@ namespace User.PluginSdkDemo
             tmp_2.payLoadHeader_.version = (byte)Constants.pedalConfigPayload_version;
             tmp_2.payLoadHeader_.payloadType = (byte)Constants.bridgeStatePayloadType;
             tmp_2.payLoadHeader_.PedalTag = (byte)indexOfSelectedPedal_u;
+            tmp_2.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            tmp_2.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            tmp_2.payLoadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            tmp_2.payLoadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
             tmp_2.payloadBridgeState_.Pedal_RSSI = 0;
             tmp_2.payloadBridgeState_.Pedal_availability_0 = 0;
             tmp_2.payloadBridgeState_.Pedal_availability_1 = 0;
