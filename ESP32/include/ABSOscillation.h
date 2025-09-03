@@ -185,7 +185,7 @@ public:
     : _timeLastTriggerMillis(0)
   {}
   //float RPM_value =0;
-  float BitePoint_Force_offset = 0;
+  float BitePoint_Force_offset = 0.0f;
 public:
   void trigger() {
     _timeLastTriggerMillis = millis();

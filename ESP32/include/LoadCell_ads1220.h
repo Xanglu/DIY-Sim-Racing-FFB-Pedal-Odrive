@@ -9,9 +9,9 @@
 /*  Uses ADS1256 */
 class LoadCell_ADS1220 {
 private:
-  float _zeroPoint = 0.0;
-  float _varianceEstimate = 0.0;
-  float _standardDeviationEstimate = 0.0;
+  float _zeroPoint = 0.0f;
+  float _varianceEstimate = 0.0f;
+  float _standardDeviationEstimate = 0.0f;
 
 public:
   LoadCell_ADS1220();

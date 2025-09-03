@@ -6,7 +6,7 @@
 
 #include <EEPROM.h>
 
-static const float ABS_SCALING = 50;
+static const float ABS_SCALING = 50.0f;
 
 #define WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT 500
 
@@ -312,7 +312,7 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st)
 
   if (startPosRel == endPosRel)
   {
-    endPosRel = startPosRel + 1 / 100;
+    endPosRel = startPosRel + 0.01f;
   }
 
   absFrequency = ((float)config_st.payLoadPedalConfig_.absFrequency);
@@ -338,8 +338,8 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st)
 
   // calculate steps per motor revolution
   float helper = MAXIMUM_STEPPER_SPEED / (MAXIMUM_STEPPER_RPM / SECONDS_PER_MINUTE);
-  helper = floor(helper / 10) * 10;
-  helper = constrain(helper, 2000, 10000);
+  helper = floor(helper / 10.0f) * 10.0f;
+  helper = constrain(helper, 2000.0f, 10000.0f);
   stepsPerMotorRevolution = helper;
 
     // // when spindle pitch is smaller than 8, choose coarse microstepping
@@ -380,13 +380,13 @@ void DAP_calculationVariables_st::updateEndstops(long newMinEndstop, long newMax
 
 void DAP_calculationVariables_st::updateStiffness() {
   springStiffnesss = Force_Range / stepperPosRange;
-  if ( fabs(springStiffnesss) > 0.0001 )
+  if ( fabsf(springStiffnesss) > 0.0001f )
   {
-      springStiffnesssInv = 1.0 / springStiffnesss;
+      springStiffnesssInv = 1.0f / springStiffnesss;
   }
   else
   {
-    springStiffnesssInv = 1000000;
+    springStiffnesssInv = 1000000.0f;
   }
   
   }
