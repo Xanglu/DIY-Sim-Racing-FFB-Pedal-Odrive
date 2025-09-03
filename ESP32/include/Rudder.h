@@ -159,7 +159,7 @@ class helicoptersRudder{
   float pedalPreload;
   float offsetLast;
   int debug_count=0;
-  float deadzoneTolerance=0.01;
+  float deadzoneTolerance=0.01f;
   float position_ratio_last;
   unsigned long debugPrintLast=0;
   KalmanFilter_1st_order* kalman_rudder = NULL;

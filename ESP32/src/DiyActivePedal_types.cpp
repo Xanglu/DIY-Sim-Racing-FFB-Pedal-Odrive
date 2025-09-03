@@ -6,7 +6,7 @@
 
 #include <EEPROM.h>
 
-static const float ABS_SCALING = 50;
+static const float ABS_SCALING = 50.0f;
 
 #define WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT 500
 

@@ -115,7 +115,7 @@ float ForceCurve_Interpolated::EvalForceGradientCubicSpline(const DAP_config_st*
   
   float numberOfSplineSegments = (config_st->payLoadPedalConfig_.quantityOfControl-1); // quantityOfControl is number of points
   uint32_t numberOfPoints_u32 = config_st->payLoadPedalConfig_.quantityOfControl;
-  float splineSegment_fl32 = 0; // initialize to 0, because (fractionalPos_float > calc_st->travel[i]) wont fin it otherwise
+  float splineSegment_fl32 = 0.0f; // initialize to 0, because (fractionalPos_float > calc_st->travel[i]) wont fin it otherwise
 
   for(int i=0; i < numberOfPoints_u32; i++)
   {
