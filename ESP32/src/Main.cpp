@@ -58,8 +58,8 @@ void loadcellReadingTask( void * pvParameters );
 void profilerTask( void * pvParameters );
 void serialCommunicationTaskRx( void * pvParameters );
 void serialCommunicationTaskTx( void * pvParameters );
-void OTATask( void * pvParameters );
-void ESPNOW_SyncTask( void * pvParameters);
+void otaUpdateTask( void * pvParameters );
+void espNowCommunicationTaskTx( void * pvParameters);
 void miscTask( void * pvParameters);
 void configUpdateTask( void * pvParameters );
 
@@ -1140,7 +1140,7 @@ xTaskCreatePinnedToCore(
 
     }   
                    
-    addScheduledTask(OTATask, "OTATask", REPETITION_INTERVAL_OTA_TASK_IN_US, TASK_PRIORITY_OTA_TASK, CORE_ID_OTA_TASK, 16000);
+    addScheduledTask(otaUpdateTask, "OTATask", REPETITION_INTERVAL_OTA_TASK_IN_US, TASK_PRIORITY_OTA_TASK, CORE_ID_OTA_TASK, 16000);
 
     delay(200);
   #endif
@@ -1275,7 +1275,7 @@ xTaskCreatePinnedToCore(
     //                     &handle_espnowTask,    
     //                     CORE_ID_ESPNOW_TASK);  
                         
-    addScheduledTask(ESPNOW_SyncTask, "ESPNOW_update_Task", REPETITION_INTERVAL_ESPNOW_TASK_IN_US, TASK_PRIORITY_ESPNOW_TASK, CORE_ID_ESPNOW_TASK, 10000);
+    addScheduledTask(espNowCommunicationTaskTx, "ESPNOW_update_Task", REPETITION_INTERVAL_ESPNOW_TASK_IN_US, TASK_PRIORITY_ESPNOW_TASK, CORE_ID_ESPNOW_TASK, 10000);
     Serial.println("ESPNOW task added");
     delay(500);
   }
@@ -2902,7 +2902,7 @@ void IRAM_ATTR_FLAG serialCommunicationTaskTx( void * pvParameters )
 
 //OTA multitask
 
-void OTATask( void * pvParameters )
+void otaUpdateTask( void * pvParameters )
 {
   uint16_t OTA_count=0;
   bool message_out_b=false;
@@ -3055,7 +3055,7 @@ void OTATask( void * pvParameters )
 
 #ifdef ESPNOW_Enable
 
-void IRAM_ATTR_FLAG ESPNOW_SyncTask( void * pvParameters )
+void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
 {
   FunctionProfiler profiler_espNow;
   profiler_espNow.setName("EspNow");
@@ -3407,6 +3407,7 @@ void IRAM_ATTR_FLAG ESPNOW_SyncTask( void * pvParameters )
             pedalInfoBuilder.BuildString(espnow_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage()/10.0f),dap_calculationVariables_st.stepperPosMaxEndstop,dap_calculationVariables_st.current_pedal_position);
             Serial.println(pedalInfoBuilder.logString);
             sendESPNOWLog(pedalInfoBuilder.logString, strnlen(pedalInfoBuilder.logString, sizeof(pedalInfoBuilder.logString)));
+            delay(3);
             pedalInfoBuilder.BuildESPNOWInfo(espnow_dap_config_st.payLoadPedalConfig_.pedal_type,rssi);
             Serial.println(pedalInfoBuilder.logESPNOWString);
             delay(3);
