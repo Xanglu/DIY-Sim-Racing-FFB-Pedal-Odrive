@@ -42,9 +42,7 @@ bool ESPNow_Pairing_status = false;
 bool UpdatePairingToEeprom = false;
 bool ESPNow_pairing_action_b = false;
 bool software_pairing_action_b = false;
-char espnowLog[240];
-bool getESPNOWLog_b=false;
-
+QueueHandle_t messageQueueHandle;
 
 bool MacCheck(uint8_t* Mac_A, uint8_t*  Mac_B)
 {
@@ -65,11 +63,7 @@ bool MacCheck(uint8_t* Mac_A, uint8_t*  Mac_B)
   }
   return false;   
 }
-struct ESPNow_Send_Struct
-{ 
-  uint16_t pedal_position;
-  float pedal_position_ratio;
-};
+
 
 typedef struct ESP_pairing_reg
 {
@@ -77,46 +71,13 @@ typedef struct ESP_pairing_reg
   uint8_t Pair_mac[4][6];
 } ESP_pairing_reg;
 
-typedef struct DAP_Joystick_Message {
-  uint8_t payloadtype;
-  uint64_t cycleCnt_u64;
-  int64_t timeSinceBoot_i64;
-	int32_t controllerValue_i32;
-  int8_t pedal_status; //0=default, 1=rudder, 2=rudder brake
-} DAP_Joystick_Message;
 
-// Create a struct_message called myData
-DAP_Joystick_Message Joystick_Data;
-DAP_Joystick_Message broadcast_incoming;
-ESPNow_Send_Struct _ESPNow_Recv;
-ESPNow_Send_Struct _ESPNow_Send;
+typedef struct ESPNOW_Message{
+  char text[240];
+} ESPNOW_Message;
+
 ESP_pairing_reg _ESP_pairing_reg;
 
-bool sendMessageToMaster(int32_t controllerValue)
-{
-  Joystick_Data.payloadtype=DAP_PAYLOAD_TYPE_ESPNOW_JOYSTICK;
-  Joystick_Data.cycleCnt_u64++;
-  Joystick_Data.timeSinceBoot_i64 = esp_timer_get_time() / 1000;
-  Joystick_Data.controllerValue_i32 = controllerValue;
-  if(dap_calculationVariables_st.Rudder_status)
-  {
-    if(dap_calculationVariables_st.rudder_brake_status)
-    {
-      Joystick_Data.pedal_status=2;
-    }
-    else
-    {
-      Joystick_Data.pedal_status=1;
-    }
-  }
-  else
-  {
-    Joystick_Data.pedal_status=0;
-  }
-  esp_now_send(broadcast_mac, (uint8_t *) &Joystick_Data, sizeof(Joystick_Data));
-  return true;
-  
-}
 void ESPNow_Pairing_callback(const uint8_t *mac_addr, const uint8_t *data, int data_len)
 {
 
@@ -141,8 +102,7 @@ void ESPNow_Pairing_callback(const uint8_t *mac_addr, const uint8_t *data, int d
 
 
 }
-//void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len)
-//void onRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) 
+
 void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len)
 {
   //only get mac in pairing
@@ -155,13 +115,22 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
   {
     if(data[0]==DAP_PAYLOAD_TYPE_ESPNOW_LOG && data[1]==ESPNOW_LOG_MAGIC_KEY && data[2]==ESPNOW_LOG_MAGIC_KEY_2)
     {
-      if(!getESPNOWLog_b)
-      {
-        getESPNOWLog_b = true;
-        memset(espnowLog, 0, sizeof(espnowLog));
-        memcpy(&espnowLog, &data[4], data[3]);
-      }
 
+      ESPNOW_Message receivedMsg;
+      //getESPNOWLog_b = true;
+      int copyLen = data[3];
+      if (copyLen > 0)
+      {
+        memset(receivedMsg.text, 0, sizeof(receivedMsg.text));
+        memcpy(receivedMsg.text, &data[4], data[3]);
+        receivedMsg.text[copyLen] = '\0';
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xQueueSendFromISR(messageQueueHandle, &receivedMsg, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken)
+        {
+          portYIELD_FROM_ISR();
+        }
+      }
     }
     if(data_len==sizeof(DAP_state_basic_st))
     {

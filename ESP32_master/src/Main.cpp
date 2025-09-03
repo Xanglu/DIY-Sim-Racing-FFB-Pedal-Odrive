@@ -253,6 +253,13 @@ void setup()
   semaphore_updatePedalStates = xSemaphoreCreateMutex();
   */
   delay(10);
+  //create message queue
+  messageQueueHandle = xQueueCreate(10, sizeof(ESPNOW_Message));
+  if (messageQueueHandle == NULL)
+  {
+    Serial.println("[L]Error during xqueue creation.");
+    ESP.restart();
+  }
   #ifdef ESPNow_Pairing_function
     //button read setup
     pinMode(Pairing_GPIO, INPUT_PULLUP);
@@ -1501,12 +1508,21 @@ void serialCommunicationTxTask( void * pvParameters)
       }  
     }
     //print log from espnow
+    ESPNOW_Message receivedMsg;
+    if (xQueueReceive(messageQueueHandle, &receivedMsg, (TickType_t)0) == pdTRUE)
+    {
+      Serial.print("[L]");
+      Serial.println(receivedMsg.text);
+      Serial.println("");
+    }
+    /*
     if(getESPNOWLog_b)
     {
       getESPNOWLog_b=false;
       Serial.print("[L]");
       Serial.println(espnowLog);
     }
+    */
 
     //debug message print
     if(PedalUpdateIntervalPrint_b)
