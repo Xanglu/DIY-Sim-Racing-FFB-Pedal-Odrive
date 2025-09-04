@@ -1,5 +1,4 @@
-#ifndef TASK_SCHEDULER_H
-#define TASK_SCHEDULER_H
+#pragma once
 
 #include <Arduino.h>
 #include "esp_timer.h"
@@ -40,6 +39,5 @@ private:
 
         void onTimer();
         static void IRAM_ATTR timerCallback(void *arg);
-    };
+};
 
-#endif 

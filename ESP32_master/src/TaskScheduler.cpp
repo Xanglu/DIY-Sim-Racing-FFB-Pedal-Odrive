@@ -25,7 +25,7 @@ void TaskScheduler::begin(uint8_t timer_id)
 }
 
 // === Scheduler API ===
-void TaskScheduler::addScheduledTask(TaskFunction_t fn, const char *name, uint16_t intervalUs, UBaseType_t priority, BaseType_t core, uint32_t stackSize=2048u)
+void TaskScheduler::addScheduledTask(TaskFunction_t fn, const char *name, uint16_t intervalUs, UBaseType_t priority, BaseType_t core, uint32_t stackSize)
 {
     if (taskCount >= MAX_TASKS)
         return; // limit reached
