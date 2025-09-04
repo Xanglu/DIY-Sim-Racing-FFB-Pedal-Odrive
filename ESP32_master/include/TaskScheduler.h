@@ -11,7 +11,7 @@ public:
 
     TaskScheduler();
     void begin(uint8_t timer_id = 0);
-    void addScheduledTask(TaskFunction_t fn, const char *name, uint16_t intervalUs, UBaseType_t priority, BaseType_t core, uint32_t stackSize);
+    void addScheduledTask(TaskFunction_t fn, const char *name, uint16_t intervalUs, UBaseType_t priority, BaseType_t core, uint32_t stackSize=2048u);
     
 
 private:
