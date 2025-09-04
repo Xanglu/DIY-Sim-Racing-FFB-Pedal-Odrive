@@ -11,6 +11,9 @@
 #if PCB_VERSION==8
 	#define BRIDGE_BOARD   "Bridge_with_external_Joystick"
 #endif
+#if PCB_VERSION==9
+	#define BRIDGE_BOARD   "ESP32-C6 devkit"
+#endif
 void parse_version(char *version, uint8_t *major, uint8_t *minor, uint8_t *patch) {
     int imajor, iminor, ipatch;
     sscanf(version, "%d.%d.%d", &imajor, &iminor, &ipatch);

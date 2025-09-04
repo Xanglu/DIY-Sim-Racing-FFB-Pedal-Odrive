@@ -23,7 +23,9 @@
 #include "Arduino.h"
 #include "Main.h"
 #include "esp_system.h"
-#include "soc/rtc_cntl_reg.h"
+#ifndef CONFIG_IDF_TARGET_ESP32C6
+  #include "soc/rtc_cntl_reg.h"
+#endif
 #include "FanatecInterface.h"
 #include "OTA_Pull.h"
 #include "Version_Board.h"
@@ -33,7 +35,6 @@
 #include "SPI.h"
 #include "Controller.h"
 #include "MovingAverageFilter.h"
-
 #include "TaskScheduler.h"
 
 // https://www.tutorialspoint.com/cyclic-redundancy-check-crc-in-arduino
@@ -176,7 +177,7 @@ void setup()
     _rp2040picoUART= new RP2040PicoUART(RP2040rxPin, RP2040txPin, handshakeGPIO, RP2040baudrate);
   #endif
 
-  #if PCB_VERSION == 5 || PCB_VERSION == 6 || PCB_VERSION == 7 || PCB_VERSION == 8
+  #if PCB_VERSION == 5 || PCB_VERSION == 6 || PCB_VERSION == 7 || PCB_VERSION == 8 ||PCB_VERSION == 9
     //Serial.setTxTimeoutMs(0);
     Serial.setRxBufferSize(1024);
     Serial.setTimeout(5);
@@ -240,7 +241,7 @@ void setup()
   }
   */
 
-  #ifndef CONFIG_IDF_TARGET_ESP32S3
+  #if !defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
     disableCore0WDT();
     disableCore1WDT();
   #endif
@@ -959,13 +960,12 @@ void serialCommunicationRxTask( void * pvParameters)
               if (dap_bridge_state_lcl.payloadBridgeState_.Bridge_action == BRIDGE_ACTION_DOWNLOAD_MODE)
               {
                 // aciton=3 restart into boot mode
-                #ifdef Using_Board_ESP32S3
+                #ifdef CONFIG_IDF_TARGET_ESP32S3
                   Serial.println("[L]Bridge Restart into Download mode");
                   delay(1000);
                   REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
                   ESP.restart();
-                #endif
-                #ifdef Using_Board_ESP32
+                #else
                   Serial.println("[L]Command not supported ");
                   delay(1000);
                 #endif
