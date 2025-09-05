@@ -108,7 +108,7 @@ bool isSerialConfigGet[3]={false, false, false};
 #endif
 
 #ifdef OTA_Update
-  void OTATask( void * pvParameters );
+  void otaUpdateTask(void *pvParameters);
   TaskHandle_t Task7;
 #endif
 
@@ -161,14 +161,12 @@ uint8_t LED_Status=0; //0=normal 1= pairing
 TaskScheduler taskScheduler;
 //task define here
 void espNowCommunicationTxTask( void * pvParameters);
-void Joystick_Task( void * pvParameters);
-void LED_Task( void * pvParameters);
+void joystickUpdateTask(void *pvParameters);
+void ledUpdateTask( void * pvParameters);
 void serialCommunicationRxTask( void * pvParameters);
 void serialCommunicationTxTask( void * pvParameters);
-void LED_Task_Dongle( void * pvParameters);
-void FanatecUpdate(void * pvParameters);
-
-
+void ledUpdateDongleTask( void * pvParameters);
+void fanatecUpdateTask(void *pvParameters);
 
 void setup()
 {
@@ -228,19 +226,6 @@ void setup()
     pinMode(Pairing_GPIO, INPUT_PULLUP);
     EEPROM.begin(256);
   #endif
-/*
-  if(semaphore_updateJoystick==NULL)
-  {
-    Serial.println("Could not create semaphore");
-    ESP.restart();
-  }
-  if(semaphore_updateConfig==NULL)
-  {
-    Serial.println("Could not create semaphore");
-    ESP.restart();
-  }
-  */
-
   #if !defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
     disableCore0WDT();
     disableCore1WDT();
@@ -277,17 +262,18 @@ void setup()
                         &taskHandleSerialTx,    
                         1);     
   delay(500);
-  */
+  
   xTaskCreatePinnedToCore(
-                        Joystick_Task,   
-                        "Joystick_update_Task", 
-                        10000,  
-                        //STACK_SIZE_FOR_TASK_2,    
-                        NULL,      
-                        1,         
-                        &Task2,    
-                        1);     
+      joystickUpdateTask,
+      "Joystick_update_Task",
+      10000,
+      // STACK_SIZE_FOR_TASK_2,
+      NULL,
+      1,
+      &Task2,
+      1);
   delay(500);
+  */
 
 
   #ifdef Using_MCP4728
@@ -341,8 +327,9 @@ void setup()
     pixels.setBrightness(20);
     pixels.setPixelColor(0,0xff,0xff,0xff);
     pixels.show();
+    /*
     xTaskCreatePinnedToCore(
-                          LED_Task,   
+                          ledUpdateTask,   
                           "LED_update_Task", 
                           3000,  
                           //STACK_SIZE_FOR_TASK_2,    
@@ -350,6 +337,8 @@ void setup()
                           1,         
                           &Task3,    
                           0);     
+                          */
+    taskScheduler.addScheduledTask(ledUpdateTask, "LED Update", 10000, 1, 1, 3000);
     delay(500);
   #endif
   #ifdef LED_ENABLE_DONGLE
@@ -357,6 +346,7 @@ void setup()
     pixels.setBrightness(20);
     pixels.setPixelColor(0,0xff,0xff,0xff);
     pixels.show();
+    /*
     xTaskCreatePinnedToCore(
                           LED_Task_Dongle,   
                           "LED_update_Task", 
@@ -365,7 +355,9 @@ void setup()
                           NULL,      
                           1,         
                           &Task3,    
-                          0);     
+                          0);
+    */
+    taskScheduler.addScheduledTask(ledUpdateDongleTask, "LED Update for Dongle", 10000, 1, 1, 3000);
     delay(500);
   #endif
   #ifdef Fanatec_comunication
@@ -381,29 +373,35 @@ void setup()
       }
     });
     delay(2000);
+    /*
     xTaskCreatePinnedToCore(
-                          FanatecUpdate,   
-                          "Fanatec_update_Task", 
-                          3000,  
-                          //STACK_SIZE_FOR_TASK_5,    
-                          NULL,      
-                          1,         
-                          &Task5,    
-                          1);     
+        fanatecUpdateTask,
+        "Fanatec_update_Task",
+        3000,
+        // STACK_SIZE_FOR_TASK_5,
+        NULL,
+        1,
+        &Task5,
+        1);
+    */
+    taskScheduler.addScheduledTask(fanatecUpdateTask, "OTA Update", 10000, 1, 1, 3000);
     delay(500);
   #endif
 
   #ifdef OTA_Update
+  /*
     xTaskCreatePinnedToCore(
-                          OTATask,   
-                          "OTA_update_Task", 
-                          16000,  
-                          //STACK_SIZE_FOR_TASK_5,    
-                          NULL,      
-                          1,         
-                          &Task7,    
-                          1);     
+        otaUpdateTask,
+        "OTA_update_Task",
+        16000,
+        // STACK_SIZE_FOR_TASK_5,
+        NULL,
+        1,
+        &Task7,
+        1);
     delay(500);
+    */
+    taskScheduler.addScheduledTask(otaUpdateTask, "OTA Update", 50000, 1, 1, 16000);
   #endif
   
   //initialize wifi 
@@ -416,7 +414,8 @@ void setup()
   Serial.println("[L]Initializing task scheduler...");
   taskScheduler.addScheduledTask(serialCommunicationRxTask, "Seria RX", 2000, 1, 1, 5000);
   taskScheduler.addScheduledTask(serialCommunicationTxTask, "Seria TX", 2000, 1, 1, 5000);
-  taskScheduler.addScheduledTask(espNowCommunicationTxTask, "Espnow tx", 2000, 1, 1, 10000);
+  taskScheduler.addScheduledTask(espNowCommunicationTxTask, "Espnow tx", 2000, 1, 0, 10000);
+  taskScheduler.addScheduledTask(joystickUpdateTask, "Joystick Update", 8000, 1, 0, 10000);
   delay(100);
   taskScheduler.begin();
 
@@ -1265,117 +1264,116 @@ void serialCommunicationTxTask( void * pvParameters)
     //delay(1);
   }
 }
-unsigned long last_serial_joy_out =millis();
-unsigned long now;
-uint16_t  pedalJoystick_last[3]={0,0,0};
-bool pedalJoystickUpdate_b=false;
-void Joystick_Task( void * pvParameters )
+
+void joystickUpdateTask( void * pvParameters )
 {
+  unsigned long last_serial_joy_out = millis();
+  unsigned long now;
+  uint16_t pedalJoystick_last[3] = {0, 0, 0};
+  bool pedalJoystickUpdate_b = false;
   for(;;)
   {
-    for(int i=0;i<3;i++)
+    if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0)
     {
-      if(pedalJoystick_last[i]!=Joystick_value_original[i])
+      for (int i = 0; i < 3; i++)
       {
-        pedalJoystick_last[i]=Joystick_value_original[i];
-        pedalJoystickUpdate_b=true;
-      }
-    }
-    #ifdef USB_JOYSTICK
-    if(IsControllerReady() && pedalJoystickUpdate_b)
-    {
-      if(pedal_status==0)
-      {
-        SetControllerOutputValueAccelerator(pedal_cluth_value);
-        SetControllerOutputValueBrake(pedal_brake_value);
-        SetControllerOutputValueThrottle(pedal_throttle_value);
-        SetControllerOutputValueRudder(0);
-        SetControllerOutputValueRudder_brake(0,0);
-      }
-      if (pedal_status==1)
-      {
-        SetControllerOutputValueAccelerator(0);
-        SetControllerOutputValueBrake(0);
-        SetControllerOutputValueThrottle(0);
-        //3% deadzone
-        if(pedal_throttle_value<((int16_t)(0.47*JOYSTICK_RANGE))||pedal_throttle_value>((int16_t)(0.53*JOYSTICK_RANGE)))
+        if (pedalJoystick_last[i] != Joystick_value_original[i])
         {
-          SetControllerOutputValueRudder(JOYSTICK_RANGE-pedal_throttle_value);
+          pedalJoystick_last[i] = Joystick_value_original[i];
+          pedalJoystickUpdate_b = true;
         }
-        else
-        {
-          SetControllerOutputValueRudder((int16_t)(0.5*JOYSTICK_RANGE));
-        }
-        SetControllerOutputValueRudder_brake(0,0);
-        
       }
-      if (pedal_status==2)
-      {
-        SetControllerOutputValueAccelerator(0);
-        SetControllerOutputValueBrake(0);
-        SetControllerOutputValueThrottle(0);
-        SetControllerOutputValueRudder((int16_t)(0.5*JOYSTICK_RANGE));
-        //int16_t filter_brake=0;
-        //int16_t filter_throttle=0;
-        if(dap_bridge_state_st.payloadBridgeState_.Pedal_availability[0]==1)
+      #ifdef USB_JOYSTICK
+        if (IsControllerReady() && pedalJoystickUpdate_b)
         {
-          SetControllerOutputValueRudder_brake(pedal_cluth_value,pedal_throttle_value);
-        }
-        else
-        {
-          SetControllerOutputValueRudder_brake(pedal_brake_value,pedal_throttle_value);
-        }
-        
-        
-      }
-      
-      if(pedalJoystickUpdate_b)
-      {
-        joystickSendState();
-        pedalJoystickUpdate_b=false;
-      }
-      
-      //bool joystatus=GetJoystickStatus();
+          if (pedal_status == 0)
+          {
+            SetControllerOutputValueAccelerator(pedal_cluth_value);
+            SetControllerOutputValueBrake(pedal_brake_value);
+            SetControllerOutputValueThrottle(pedal_throttle_value);
+            SetControllerOutputValueRudder(0);
+            SetControllerOutputValueRudder_brake(0, 0);
+          }
+          if (pedal_status == 1)
+          {
+            SetControllerOutputValueAccelerator(0);
+            SetControllerOutputValueBrake(0);
+            SetControllerOutputValueThrottle(0);
+            // 3% deadzone
+            if (pedal_throttle_value < ((int16_t)(0.47 * JOYSTICK_RANGE)) || pedal_throttle_value > ((int16_t)(0.53 * JOYSTICK_RANGE)))
+            {
+              SetControllerOutputValueRudder(JOYSTICK_RANGE - pedal_throttle_value);
+            }
+            else
+            {
+              SetControllerOutputValueRudder((int16_t)(0.5 * JOYSTICK_RANGE));
+            }
+            SetControllerOutputValueRudder_brake(0, 0);
+          }
+          if (pedal_status == 2)
+          {
+            SetControllerOutputValueAccelerator(0);
+            SetControllerOutputValueBrake(0);
+            SetControllerOutputValueThrottle(0);
+            SetControllerOutputValueRudder((int16_t)(0.5 * JOYSTICK_RANGE));
+            // int16_t filter_brake=0;
+            // int16_t filter_throttle=0;
+            if (dap_bridge_state_st.payloadBridgeState_.Pedal_availability[0] == 1)
+            {
+              SetControllerOutputValueRudder_brake(pedal_cluth_value, pedal_throttle_value);
+            }
+            else
+            {
+              SetControllerOutputValueRudder_brake(pedal_brake_value, pedal_throttle_value);
+            }
+          }
 
-    }
-    if(!GetJoystickStatus())
-    {
-      RestartJoystick();
-      Serial.println("[L]HID Error, Restart Joystick...");
-      //last_serial_joy_out=millis();
-    }
-    #endif
-    // set analog value
-    #ifdef Using_analog_output
+          if (pedalJoystickUpdate_b)
+          {
+            joystickSendState();
+            pedalJoystickUpdate_b = false;
+          }
 
-      dacWrite(Analog_brk,(uint16_t)((float)((Joystick_value[1])/(float)(JOYSTICK_RANGE))*255));
-      dacWrite(Analog_gas,(uint16_t)((float)((Joystick_value[2])/(float)(JOYSTICK_RANGE))*255));
-    #endif
-    //set MCP4728 analog value
-    #ifdef Using_MCP4728
-      //Serial.print("MCP/");
-      now=millis();
-      if(MCP_status)
-      {
-        /*
-        if(now-last_serial_joy_out>1000)
-        {
-          Serial.print("MCP/");
-          Serial.print(Joystick_value[0]);
-          Serial.print("/");
-          Serial.print(Joystick_value[1]);
-          Serial.print("/");
-          Serial.print(Joystick_value[2]); 
+          // bool joystatus=GetJoystickStatus();
         }
-        */
-      
-        mcp.setChannelValue(MCP4728_CHANNEL_A, (uint16_t)((float)Joystick_value[0]/(float)JOYSTICK_RANGE*0.8f*4096));
-        mcp.setChannelValue(MCP4728_CHANNEL_B, (uint16_t)((float)Joystick_value[1]/(float)JOYSTICK_RANGE*0.8f*4096));
-        mcp.setChannelValue(MCP4728_CHANNEL_C, (uint16_t)((float)Joystick_value[2]/(float)JOYSTICK_RANGE*0.8f*4096));
-      }
+        if (!GetJoystickStatus())
+        {
+          RestartJoystick();
+          Serial.println("[L]HID Error, Restart Joystick...");
+          // last_serial_joy_out=millis();
+        }
+      #endif
+      // set analog value
+      #ifdef Using_analog_output
 
-    #endif
-      delay(1);
+        dacWrite(Analog_brk, (uint16_t)((float)((Joystick_value[1]) / (float)(JOYSTICK_RANGE)) * 255));
+        dacWrite(Analog_gas, (uint16_t)((float)((Joystick_value[2]) / (float)(JOYSTICK_RANGE)) * 255));
+      #endif
+      // set MCP4728 analog value
+      #ifdef Using_MCP4728
+        // Serial.print("MCP/");
+        now = millis();
+        if (MCP_status)
+        {
+          /*
+          if(now-last_serial_joy_out>1000)
+          {
+            Serial.print("MCP/");
+            Serial.print(Joystick_value[0]);
+            Serial.print("/");
+            Serial.print(Joystick_value[1]);
+            Serial.print("/");
+            Serial.print(Joystick_value[2]);
+          }
+          */
+
+          mcp.setChannelValue(MCP4728_CHANNEL_A, (uint16_t)((float)Joystick_value[0] / (float)JOYSTICK_RANGE * 0.8f * 4096));
+          mcp.setChannelValue(MCP4728_CHANNEL_B, (uint16_t)((float)Joystick_value[1] / (float)JOYSTICK_RANGE * 0.8f * 4096));
+          mcp.setChannelValue(MCP4728_CHANNEL_C, (uint16_t)((float)Joystick_value[2] / (float)JOYSTICK_RANGE * 0.8f * 4096));
+        }
+
+      #endif
+    }
   }
 }
 
@@ -1384,275 +1382,290 @@ uint16_t OTA_count=0;
 bool message_out_b=false;
 bool OTA_enable_start=false;
 uint32_t otaTask_stackSizeIdx_u32 = 0;
-void OTATask( void * pvParameters )
+void otaUpdateTask( void * pvParameters )
 {
 
   for(;;)
   {
-    #ifdef OTA_Update
-      if(OTA_count>200)
-      {
-        message_out_b=true;
-        OTA_count=0;
-      }
-      else
-      {
-        OTA_count++;
-      }
-
-      
-      if(OTA_enable_b)
-      {
-        if(message_out_b)
+    if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0)
+    {
+      #ifdef OTA_Update
+        if(OTA_count>200)
         {
-          message_out_b=false;
-          Serial1.println("[L]OTA enable flag on");
-        }
-        if(OTA_status)
-        {
-          
-          //server.handleClient();
+          message_out_b=true;
+          OTA_count=0;
         }
         else
         {
-          Serial.println("[L]de-initialize espnow");
-          Serial.println("[L]wait...");
-          esp_err_t result= esp_now_deinit();
-          ESPNow_initial_status=false;
-          ESPNOW_status=false;
-          delay(200);
-          if(result==ESP_OK)
-          {
-            OTA_status=true;
-            delay(1000);
-            //ota_wifi_initialize(APhost);
-            wifi_initialized(SSID,PASS);
-            delay(2000);
-            ESP32OTAPull ota;
-            char* Version_tag;
-            int ret;
-            ota.SetCallback(OTAcallback);
-            ota.OverrideBoard(BRIDGE_BOARD);
-            Version_tag=BRIDGE_FIRMWARE_VERSION;
-            if(dap_action_ota_st.payloadOtaInfo_.ota_action==1)
-            {
-              Version_tag="0.0.0";
-              Serial.println("Force update");
-            }
-            switch (dap_action_ota_st.payloadOtaInfo_.mode_select)
-            {
-              case 1:
-                Serial.printf("[L]Flashing to latest Main, checking %s to see if an update is available...\n", JSON_URL_main);
-                ret = ota.CheckForOTAUpdate(JSON_URL_main, Version_tag);
-                Serial.printf("[L]CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
-                break;
-              case 2:
-                Serial.printf("[L]Flashing to latest Dev, checking %s to see if an update is available...\n", JSON_URL_dev);
-                ret = ota.CheckForOTAUpdate(JSON_URL_dev, Version_tag);
-                Serial.printf("[L]CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
-                break;
-              case 3:
-                Serial.printf("[L]Flashing to Daily build, checking %s to see if an update is available...\n", JSON_URL_dev);
-                ret = ota.CheckForOTAUpdate(JSON_URL_daily, Version_tag);
-                Serial.printf("[L]CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
-                break;
-              default:
-              break;
-            }
-
-            delay(3000);
-          }
-
+          OTA_count++;
         }
-      }
-      
-      //delay(2);
-    #endif
 
-    #ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
-      if( otaTask_stackSizeIdx_u32 == 1000)
-      {
-        UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
-        Serial.print("StackSize (OTA): ");
-        Serial.println(stackHighWaterMark);
-        otaTask_stackSizeIdx_u32 = 0;
-      }
-      otaTask_stackSizeIdx_u32++;
-    #endif
-    delay(2);
+        
+        if(OTA_enable_b)
+        {
+          if(message_out_b)
+          {
+            message_out_b=false;
+            Serial1.println("[L]OTA enable flag on");
+          }
+          if(OTA_status)
+          {
+            
+            //server.handleClient();
+          }
+          else
+          {
+            Serial.println("[L]de-initialize espnow");
+            Serial.println("[L]wait...");
+            esp_err_t result= esp_now_deinit();
+            ESPNow_initial_status=false;
+            ESPNOW_status=false;
+            delay(200);
+            if(result==ESP_OK)
+            {
+              OTA_status=true;
+              delay(1000);
+              //ota_wifi_initialize(APhost);
+              wifi_initialized(SSID,PASS);
+              delay(2000);
+              ESP32OTAPull ota;
+              char* Version_tag;
+              int ret;
+              ota.SetCallback(OTAcallback);
+              ota.OverrideBoard(BRIDGE_BOARD);
+              Version_tag=BRIDGE_FIRMWARE_VERSION;
+              if(dap_action_ota_st.payloadOtaInfo_.ota_action==1)
+              {
+                Version_tag="0.0.0";
+                Serial.println("Force update");
+              }
+              switch (dap_action_ota_st.payloadOtaInfo_.mode_select)
+              {
+                case 1:
+                  Serial.printf("[L]Flashing to latest Main, checking %s to see if an update is available...\n", JSON_URL_main);
+                  ret = ota.CheckForOTAUpdate(JSON_URL_main, Version_tag);
+                  Serial.printf("[L]CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
+                  break;
+                case 2:
+                  Serial.printf("[L]Flashing to latest Dev, checking %s to see if an update is available...\n", JSON_URL_dev);
+                  ret = ota.CheckForOTAUpdate(JSON_URL_dev, Version_tag);
+                  Serial.printf("[L]CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
+                  break;
+                case 3:
+                  Serial.printf("[L]Flashing to Daily build, checking %s to see if an update is available...\n", JSON_URL_dev);
+                  ret = ota.CheckForOTAUpdate(JSON_URL_daily, Version_tag);
+                  Serial.printf("[L]CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
+                  break;
+                default:
+                break;
+              }
+
+              delay(3000);
+            }
+
+          }
+        }
+        
+        //delay(2);
+      #endif
+
+      #ifdef PRINT_TASK_FREE_STACKSIZE_IN_WORDS
+        if( otaTask_stackSizeIdx_u32 == 1000)
+        {
+          UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
+          Serial.print("StackSize (OTA): ");
+          Serial.println(stackHighWaterMark);
+          otaTask_stackSizeIdx_u32 = 0;
+        }
+        otaTask_stackSizeIdx_u32++;
+      #endif
+      //delay(2);
+    }
   }
 }
 
 //LED task
-uint8_t LED_bright_index=0;
-uint8_t LED_bright_direction=1;
-void LED_Task( void * pvParameters)
+
+void ledUpdateTask( void * pvParameters)
 {
+  uint8_t LED_bright_index = 0;
+  uint8_t LED_bright_direction = 1;
   for(;;)
   {
-    #ifdef LED_ENABLE_WAVESHARE
-    //LED status update
-      if(LED_Status==0)
-      {
-        if(LED_bright_index>30)
+    if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0)
+    {
+      #ifdef LED_ENABLE_WAVESHARE
+      //LED status update
+        if(LED_Status==0)
         {
-          LED_bright_direction=-1;
-        }
-        if(LED_bright_index<2)
-        {
-          LED_bright_direction=1;
-        }
-        LED_bright_index=LED_bright_index+LED_bright_direction;
-        pixels.setBrightness(LED_bright_index);
-        uint8_t led_status=dap_bridge_state_st.payloadBridgeState_.Pedal_availability[0]+dap_bridge_state_st.payloadBridgeState_.Pedal_availability[1]*2+dap_bridge_state_st.payloadBridgeState_.Pedal_availability[2]*4;
-        switch (led_status)
-        {
-          case 0:
-            pixels.setPixelColor(0,0xff,0xff,0xff);
-            //pixels.setPixelColor(0,0x52,0x00,0xff);//Orange
-            pixels.show();
-            break;
-          case 1:
-            pixels.setPixelColor(0,0xff,0x00,0x00);//Red
-            pixels.show();
-            break;
-          case 2:
-            pixels.setPixelColor(0,0xff,0x0f,0x00);//Orange
-            pixels.show();
-            break;
-          case 3:
-            pixels.setPixelColor(0,0x52,0x00,0xff);//Cyan
-            pixels.show();
-            break; 
-          case 4:
-            pixels.setPixelColor(0,0x5f,0x5f,0x00);//Yellow
-            pixels.show();
-            break;
-          case 5:
-            pixels.setPixelColor(0,0x00,0x00,0xff);//Blue
-            pixels.show();
-            break;      
-          case 6:
-            pixels.setPixelColor(0,0x00,0xff,0x00);//Green
-            pixels.show();
-            break;  
-          case 7:
-            pixels.setPixelColor(0, 0x80, 0x00, 0x80);//Purple
-            pixels.show();
-            break;                                         
-          default:
-            break;
-        }
-        delay(150);           
-      }
-      if(LED_Status==1)//pairing
-      {
-        
-        //delay(1000);
-        pixels.setPixelColor(0,0xff,0x00,0x00);//Red       
-        pixels.setBrightness(25);
-        pixels.show();
-        delay(500);
-        pixels.setPixelColor(0,0x00,0x00,0x00);//fill no color      
-        //pixels.setBrightness(0);
-        pixels.show();
-        delay(500);
-      }
-
-    #endif  
-    delay(10);
-  }
-}
-
-void LED_Task_Dongle( void * pvParameters)
-{
-  for(;;)
-  {
-    #ifdef LED_ENABLE_DONGLE
-    //LED status update
-      if(LED_Status==0)
-      {
-        if(LED_bright_index>30)
-        {
-          LED_bright_direction=-1;
-        }
-        if(LED_bright_index<2)
-        {
-          LED_bright_direction=1;
-        }
-        LED_bright_index=LED_bright_index+LED_bright_direction;
-        pixels.setBrightness(LED_bright_index);
-
-        for(uint i=0;i<3;i++)
-        {
-          if(dap_bridge_state_st.payloadBridgeState_.Pedal_availability[i]==1)
+          if(LED_bright_index>30)
           {
-            pixels.setPixelColor(i,0xff,0x0f,0x00);//Orange
+            LED_bright_direction=-1;
           }
-          else
+          if(LED_bright_index<2)
           {
-            pixels.setPixelColor(i,0xff,0xff,0xff);//White
-          }            
+            LED_bright_direction=1;
+          }
+          LED_bright_index=LED_bright_index+LED_bright_direction;
+          pixels.setBrightness(LED_bright_index);
+          uint8_t led_status=dap_bridge_state_st.payloadBridgeState_.Pedal_availability[0]+dap_bridge_state_st.payloadBridgeState_.Pedal_availability[1]*2+dap_bridge_state_st.payloadBridgeState_.Pedal_availability[2]*4;
+          switch (led_status)
+          {
+            case 0:
+              pixels.setPixelColor(0,0xff,0xff,0xff);
+              //pixels.setPixelColor(0,0x52,0x00,0xff);//Orange
+              pixels.show();
+              break;
+            case 1:
+              pixels.setPixelColor(0,0xff,0x00,0x00);//Red
+              pixels.show();
+              break;
+            case 2:
+              pixels.setPixelColor(0,0xff,0x0f,0x00);//Orange
+              pixels.show();
+              break;
+            case 3:
+              pixels.setPixelColor(0,0x52,0x00,0xff);//Cyan
+              pixels.show();
+              break; 
+            case 4:
+              pixels.setPixelColor(0,0x5f,0x5f,0x00);//Yellow
+              pixels.show();
+              break;
+            case 5:
+              pixels.setPixelColor(0,0x00,0x00,0xff);//Blue
+              pixels.show();
+              break;      
+            case 6:
+              pixels.setPixelColor(0,0x00,0xff,0x00);//Green
+              pixels.show();
+              break;  
+            case 7:
+              pixels.setPixelColor(0, 0x80, 0x00, 0x80);//Purple
+              pixels.show();
+              break;                                         
+            default:
+              break;
+          }
+          delay(150);           
         }
-        pixels.show();
-        
-        delay(150);           
-      }
-      if(LED_Status==1)//pairing
-      {
-        
-        //delay(1000);
-        for(uint i=0;i<3;i++)
+        if(LED_Status==1)//pairing
         {
-          pixels.setPixelColor(i,0xff,0x00,0x00);//Red  
+          
+          //delay(1000);
+          pixels.setPixelColor(0,0xff,0x00,0x00);//Red       
+          pixels.setBrightness(25);
+          pixels.show();
+          delay(500);
+          pixels.setPixelColor(0,0x00,0x00,0x00);//fill no color      
+          //pixels.setBrightness(0);
+          pixels.show();
+          delay(500);
         }
-             
-        pixels.setBrightness(25);
-        pixels.show();
-        delay(500);
-        for(uint i=0;i<3;i++)
-        {
-          pixels.setPixelColor(i,0x00,0x00,0x00);//fill no color  
-        }
-           
-        //pixels.setBrightness(0);
-        pixels.show();
-        delay(500);
-      }
 
-    #endif  
-    delay(10);
+      #endif  
+    //delay(10);
+    }
+  }
+}
+
+void ledUpdateDongleTask( void * pvParameters)
+{
+  uint8_t LED_bright_index = 0;
+  uint8_t LED_bright_direction = 1;
+  for(;;)
+  {
+    if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0)
+    {
+      #ifdef LED_ENABLE_DONGLE
+      //LED status update
+        if(LED_Status==0)
+        {
+          if(LED_bright_index>30)
+          {
+            LED_bright_direction=-1;
+          }
+          if(LED_bright_index<2)
+          {
+            LED_bright_direction=1;
+          }
+          LED_bright_index=LED_bright_index+LED_bright_direction;
+          pixels.setBrightness(LED_bright_index);
+
+          for(uint i=0;i<3;i++)
+          {
+            if(dap_bridge_state_st.payloadBridgeState_.Pedal_availability[i]==1)
+            {
+              pixels.setPixelColor(i,0xff,0x0f,0x00);//Orange
+            }
+            else
+            {
+              pixels.setPixelColor(i,0xff,0xff,0xff);//White
+            }            
+          }
+          pixels.show();
+          
+          delay(150);           
+        }
+        if(LED_Status==1)//pairing
+        {
+          
+          //delay(1000);
+          for(uint i=0;i<3;i++)
+          {
+            pixels.setPixelColor(i,0xff,0x00,0x00);//Red  
+          }
+              
+          pixels.setBrightness(25);
+          pixels.show();
+          delay(500);
+          for(uint i=0;i<3;i++)
+          {
+            pixels.setPixelColor(i,0x00,0x00,0x00);//fill no color  
+          }
+            
+          //pixels.setBrightness(0);
+          pixels.show();
+          delay(500);
+        }
+
+      #endif  
+      //delay(10);
+      }
   }
 }
 
 
-void FanatecUpdate(void * pvParameters) 
+void fanatecUpdateTask(void * pvParameters) 
 {
   for(;;)
   {
-#ifdef Fanatec_comunication
-      fanatec.communicationUpdate();
-      if (fanatec.isPlugged()) {
-        uint16_t throttleValue = pedal_throttle_value;
-        uint16_t brakeValue = pedal_brake_value;
-        uint16_t clutchValue = pedal_cluth_value;
-        uint16_t handbrakeValue = 0;             // Set if needed
+    if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0)
+    {
+      #ifdef Fanatec_comunication
+        fanatec.communicationUpdate();
+        if (fanatec.isPlugged()) {
+          uint16_t throttleValue = pedal_throttle_value;
+          uint16_t brakeValue = pedal_brake_value;
+          uint16_t clutchValue = pedal_cluth_value;
+          uint16_t handbrakeValue = 0;             // Set if needed
 
-        // Pedal input values to 0 - 10000
-        throttleValue = map(throttleValue, 0, 10000, 0, 65535);
-        brakeValue = map(brakeValue, 0, 10000, 0, 22000);
-        clutchValue = map(clutchValue, 0, 10000, 0, 65535);
+          // Pedal input values to 0 - 10000
+          throttleValue = map(throttleValue, 0, 10000, 0, 65535);
+          brakeValue = map(brakeValue, 0, 10000, 0, 22000);
+          clutchValue = map(clutchValue, 0, 10000, 0, 65535);
 
-        // Set pedal values in FanatecInterface
-        fanatec.setThrottle(throttleValue);
-        fanatec.setBrake(brakeValue);
-        fanatec.setClutch(clutchValue);
-        fanatec.setHandbrake(handbrakeValue);
-        
-        fanatec.update();
-      }
-#endif
-    delay(10);
+          // Set pedal values in FanatecInterface
+          fanatec.setThrottle(throttleValue);
+          fanatec.setBrake(brakeValue);
+          fanatec.setClutch(clutchValue);
+          fanatec.setHandbrake(handbrakeValue);
+          
+          fanatec.update();
+        }
+      #endif
+    }
+    //delay(10);
   }
 }
 
