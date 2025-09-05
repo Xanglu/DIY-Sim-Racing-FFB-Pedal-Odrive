@@ -1,0 +1,15 @@
+{
+  "name": "MyCustomLib",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": "custom, sensor, utility",
+  "authors": [
+    {
+      "name": "",
+      "email": "",
+      "maintainer": true
+    }
+  ],
+  "frameworks": "*",
+  "platforms": "*"
+}
