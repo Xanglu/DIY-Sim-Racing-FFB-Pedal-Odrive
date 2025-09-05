@@ -2192,7 +2192,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[1] = versionMinor;
           dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[2] = versionPatch;
           //error code
-          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8 = 0;
+          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.error_code_u8 = 0;
           //pedal status update
           if(dap_calculationVariables_st.Rudder_status)
           {
@@ -2206,14 +2206,14 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           #ifdef ESPNOW_Enable
             if(ESPNow_error_code!=0)
             {
-              dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8=ESPNow_error_code;
+              dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.error_code_u8=ESPNow_error_code;
               ESPNow_error_code=0;
             }
           #endif
 
           if( (stepper->getLifelineSignal()==false) && (stepper->servoStatus!=SERVO_IDLE_NOT_CONNECTED) )
           {
-            dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.erroe_code_u8=12;
+            dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.error_code_u8=12;
           }
           
           //fill the header

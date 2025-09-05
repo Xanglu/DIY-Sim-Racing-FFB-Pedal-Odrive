@@ -26,26 +26,49 @@
 #define EOF_BYTE_1 0x56
 
 
-enum pedalStatus
-{
+enum pedalStatus{
   PEDAL_STATUS_NORMAL,
   PEDAL_STATUS_RUDDER,
   PEDAL_STATUS_RUDDERBRAKE
 };
-enum pedalID
-{
+enum pedalID{
   PEDAL_ID_CLUTCH,
   PEDAL_ID_BRAKE,
   PEDAL_ID_THROTTLE
 };
+enum class PedalSystemAction{
+  NONE,
+  RESET_PEDAL_POSITION, // not in use
+  PEDAL_RESTART,
+  ENABLE_OTA,     // not in use
+  ENABLE_PAIRING, // not in use
+  ESP_BOOT_INTO_DOWNLOAD_MODE,
+  PRINT_PEDAL_INFO
+};
+enum class RudderAction{
+  NONE,
+  RUDDER_THROTTLE_AND_BRAKE,
+  RUDDER_CLEAR_RUDDER_STATUS,
+  RUDDER_THROTTLE_AND_CLUTCH,
+  HELIRUDDER_THROTTLE_AND_BRAKE,
+  HELIRUDDER_THROTTLE_AND_CLUTCH
+};
 
+enum bridgeAction{
+  BRIDGE_ACTION_NONE,
+  BRIDGE_ACTION_ENABLE_PAIRING,
+  BRIDGE_ACTION_RESTART,
+  BRIDGE_ACTION_DOWNLOAD_MODE,
+  BRIDGE_ACTION_DEBUG,
+  BRIDGE_ACTION_JOYSTICK_FLASHING_MODE,
+  BRIDGE_ACTION_JOYSTICK_DEBUG 
+};
 
-struct payloadHeader {
-
+struct payloadHeader{
   // start of frame indicator
   uint8_t startOfFrame0_u8;
   uint8_t startOfFrame1_u8;
-  
+
   // structure identification via payload
   uint8_t payloadType;
 
@@ -55,7 +78,7 @@ struct payloadHeader {
   // store to EEPROM flag
   uint8_t storeToEeprom;
 
-  //pedal tag
+  // pedal tag
   uint8_t PedalTag;
 };
 
@@ -80,7 +103,7 @@ struct payloadPedalState_Basic {
   uint16_t pedalPosition_u16;
   uint16_t pedalForce_u16;
   uint16_t joystickOutput_u16;
-  uint8_t erroe_code_u8;
+  uint8_t error_code_u8;
   uint8_t pedalFirmwareVersion_u8[3];
   uint8_t servoStatus;
   uint8_t pedalStatus;
@@ -88,7 +111,6 @@ struct payloadPedalState_Basic {
 };
 
 struct payloadPedalState_Extended {
-
   unsigned long timeInUs_u32;
   uint32_t cycleCount_u32;
   //unsigned long timeInUsFromSerialTask_u32;
@@ -108,17 +130,17 @@ struct payloadPedalState_Extended {
   uint8_t brakeResistorState_b;
 };
 
-struct payloadBridgeState {
+struct payloadBridgeState{
   uint8_t Pedal_RSSI;
   uint8_t Pedal_availability[3];
-  uint8_t Bridge_action;//0=none, 1=enable pairing
-
+  uint8_t Bridge_action; // 0=none, 1=enable pairing 2=Restart 3=download mode
+  uint8_t Bridge_firmware_version_u8[3];
+  int32_t Pedal_RSSI_Realtime[3];
 };
 
 struct payloadRudderState {
   uint16_t pedal_position;
   float pedal_position_ratio;
-
 };
 struct payloadPedalConfig {
   // configure pedal start and endpoint
@@ -131,16 +153,6 @@ struct payloadPedalConfig {
   float preloadForce;
   
   // design force vs travel curve
-  // In percent
-  /*
-  uint8_t relativeForce_p000; 
-  uint8_t relativeForce_p020;
-  uint8_t relativeForce_p040;
-  uint8_t relativeForce_p060;
-  uint8_t relativeForce_p080;
-  uint8_t relativeForce_p100;
-  */
-
   uint8_t quantityOfControl;
   uint8_t relativeForce00;
   uint8_t relativeForce01;
@@ -237,11 +249,6 @@ struct payloadPedalConfig {
   //Custom Vibration 2
   uint8_t CV_amp_2;
   uint8_t CV_freq_2;
-  // cubic spline parameters
-  /*
-  float cubic_spline_param_a_array[5];
-  float cubic_spline_param_b_array[5];
-  */
   // PID parameters
   float PID_p_gain;
   float PID_i_gain;
@@ -282,24 +289,16 @@ struct payloadPedalConfig {
 
   //pedal type, 0= clutch, 1= brake, 2= gas
   uint8_t pedal_type;
-  //OTA flag
-  //uint8_t OTA_flag;
-
   uint8_t stepLossFunctionFlags_u8;
-  //joystick out flag
-  //uint8_t Joystick_ESPsync_to_ESP;
-
   uint8_t kf_Joystick_u8;
   uint8_t kf_modelNoise_joystick;
   uint8_t servoIdleTimeout;
-
   uint8_t positionSmoothingFactor_u8;
   
 
 };
 
 struct payloadESPNowInfo{
-  //uint8_t macAddr[6];
   uint8_t _deviceID;
   uint8_t occupy;
   uint8_t occupy2;
@@ -440,26 +439,6 @@ struct DAP_calculationVariables_st
   void Default_pos();
   void update_stepperMinpos(long newMinstop);
   void update_stepperMaxpos(long newMaxstop);
-};
-
-enum class PedalSystemAction
-{
-  NONE,
-  RESET_PEDAL_POSITION,//not in use
-  PEDAL_RESTART,
-  ENABLE_OTA,//not in use
-  ENABLE_PAIRING,//not in use
-  ESP_BOOT_INTO_DOWNLOAD_MODE,
-  PRINT_PEDAL_INFO
-};
-enum class RudderAction
-{
-  NONE,
-  RUDDER_THROTTLE_AND_BRAKE,
-  RUDDER_CLEAR_RUDDER_STATUS,
-  RUDDER_THROTTLE_AND_CLUTCH,
-  HELIRUDDER_THROTTLE_AND_BRAKE,
-  HELIRUDDER_THROTTLE_AND_CLUTCH
 };
 
 class DAP_config_class {
