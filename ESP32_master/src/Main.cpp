@@ -30,12 +30,12 @@
 #include "OTA_Pull.h"
 #include "Version_Board.h"
 #include <EEPROM.h>
-#include "DiyActivePedal_types.h"
+#include <DiyActivePedal_types.h>
 #include "Wire.h"
 #include "SPI.h"
 #include "Controller.h"
-#include "MovingAverageFilter.h"
-#include "TaskScheduler.h"
+#include <MovingAverageFilter.h>
+#include <TaskScheduler.h>
 
 // https://www.tutorialspoint.com/cyclic-redundancy-check-crc-in-arduino
 uint16_t checksumCalculator(uint8_t * data, uint16_t length)

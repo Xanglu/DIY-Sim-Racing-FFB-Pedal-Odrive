@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DiyActivePedal_types.h"
-#include "MovingAverageFilter.h"
+#include <MovingAverageFilter.h>
 #include "FastTrig.h"
 
 static const long ABS_ACTIVE_TIME_PER_TRIGGER_MILLIS = 100;
