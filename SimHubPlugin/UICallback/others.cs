@@ -1236,6 +1236,7 @@ namespace User.PluginSdkDemo
                     dap_config_st_rudder.payloadPedalConfig_.invertMotorDirection_u8 = dap_config_st[i].payloadPedalConfig_.invertMotorDirection_u8;
                     dap_config_st_rudder.payloadPedalConfig_.loadcell_rating = dap_config_st[i].payloadPedalConfig_.loadcell_rating;
                     dap_config_st_rudder.payloadPedalConfig_.stepLossFunctionFlags_u8 = dap_config_st[i].payloadPedalConfig_.stepLossFunctionFlags_u8;
+                    dap_config_st_rudder.payloadPedalConfig_.positionSmoothingFactor_u8 = dap_config_st[i].payloadPedalConfig_.positionSmoothingFactor_u8;
                     //dap_config_st_rudder.payloadPedalConfig_.Simulate_ABS_trigger = 0;
                     dap_config_st_rudder.payloadPedalConfig_.Simulate_ABS_value = dap_config_st[i].payloadPedalConfig_.Simulate_ABS_value;
                     Sendconfig_Rudder(i);

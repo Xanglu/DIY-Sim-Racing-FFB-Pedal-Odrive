@@ -438,29 +438,25 @@ void IRAM_ATTR_FLAG loadcellReadingTask( void * pvParameters )
       // detect loadcell outlier
       float loadcellDifferenceToLastCycle_fl32 = loadcellReading_fl32 - previousLoadcellReadingInKg_fl32;
       previousLoadcellReadingInKg_fl32 = loadcellReading_fl32;
-
-      if(!dap_calculationVariables_st.Rudder_status && !dap_calculationVariables_st.helicopterRudderStatus)
+      
+      if ((fabsf(loadcellDifferenceToLastCycle_fl32) < 5.0f)|| dap_calculationVariables_st.Rudder_status ||dap_calculationVariables_st.helicopterRudderStatus)
       {
         //make the force reading skip only in pedal mode
         // reject update when loadcell reading likely outlier
-        if (fabsf(loadcellDifferenceToLastCycle_fl32) < 5.0f)
-        {
           
-          // send joystick data to queue
-          if (loadcellDataQueue != NULL) {
+        // send joystick data to queue
+        if (loadcellDataQueue != NULL) {
 
-              // Package the new state data into a single struct
-              loadcellDataPackage_t newLoadcellPackage;
-              newLoadcellPackage.loadcellReadingInKg_fl32 = loadcellReading_fl32;
+          // Package the new state data into a single struct
+          loadcellDataPackage_t newLoadcellPackage;
+          newLoadcellPackage.loadcellReadingInKg_fl32 = loadcellReading_fl32;
 
-              // Send the package to the queue. Use a timeout of 0 (non-blocking).
-              // If the queue is full, the data is simply dropped. This prevents this
-              // high-priority control task from ever blocking on a full serial buffer.
-              xQueueSend(loadcellDataQueue, &newLoadcellPackage, (TickType_t)0);
-          }
+            // Send the package to the queue. Use a timeout of 0 (non-blocking).
+            // If the queue is full, the data is simply dropped. This prevents this
+            // high-priority control task from ever blocking on a full serial buffer.
+          xQueueSend(loadcellDataQueue, &newLoadcellPackage, (TickType_t)0);
         }
       }
-
       
       
       
