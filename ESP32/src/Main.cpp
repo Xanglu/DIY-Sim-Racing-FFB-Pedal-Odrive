@@ -439,9 +439,8 @@ void IRAM_ATTR_FLAG loadcellReadingTask( void * pvParameters )
       float loadcellDifferenceToLastCycle_fl32 = loadcellReading_fl32 - previousLoadcellReadingInKg_fl32;
       previousLoadcellReadingInKg_fl32 = loadcellReading_fl32;
       
-      if ((fabsf(loadcellDifferenceToLastCycle_fl32) < 5.0f)|| dap_calculationVariables_st.Rudder_status ||dap_calculationVariables_st.helicopterRudderStatus)
+      if (fabsf(loadcellDifferenceToLastCycle_fl32) < 5.0f)
       {
-        //make the force reading skip only in pedal mode
         // reject update when loadcell reading likely outlier
           
         // send joystick data to queue
@@ -820,6 +819,7 @@ void setup()
     pixels.setPixelColor(0,0xff,0x00,0x00);
     pixels.show(); 
   #endif
+
 
   // Load config from EEPROM, if valid, overwrite initial config
   EEPROM.begin(2048);
@@ -1580,6 +1580,48 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
         
         updatePedalCalcParameters(); // update the calc parameters
         moveSlowlyToPosition_b = true;
+
+        // enable/disable step loss recovery and crash
+        stepper->configSteplossRecovAndCrashDetection(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.stepLossFunctionFlags_u8);
+
+        // set position command smoothing
+        stepper->configSetPositionCommandSmoothingFactor(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.positionSmoothingFactor_u8);
+        stepper->configSetProfilingFlag( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) );
+
+        // reset all servo alarms
+        if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS) )
+        {
+          Serial.println("Set clear alarm history flag");
+          stepper->clearAllServoAlarms();
+          delay(1000); // makes sure the routine has finished
+
+          DAP_config_st tmp;
+          global_dap_config_class.getConfig(&tmp, 500);
+          tmp.payLoadPedalConfig_.debug_flags_0 &= ( ~(uint8_t)DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS); // clear the debug bit
+          //global_dap_config_class.setConfig(tmp);
+
+          configDataPackage_t configPackage_st;
+          configPackage_st.config_st = tmp;
+          xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
+        }
+
+        // print all servo parameters for debug purposes
+        if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS) )
+        {
+          DAP_config_st tmp;
+          global_dap_config_class.getConfig(&tmp, 500);
+          tmp.payLoadPedalConfig_.debug_flags_0 &= ( ~(uint8_t)DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS); // clear the debug bit
+          //global_dap_config_class.setConfig(tmp);
+
+          configDataPackage_t configPackage_st;
+          configPackage_st.config_st = tmp;
+          xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
+
+          delay(1000);  
+          stepper->printAllServoParameters();
+        }
+
+
       
       }
 
@@ -1980,7 +2022,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       }
 
       // if pedal in min position, recalibrate position --> automatic step loss compensation
-      stepper->configSteplossRecovAndCrashDetection(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.stepLossFunctionFlags_u8);
+      // stepper->configSteplossRecovAndCrashDetection(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.stepLossFunctionFlags_u8);
       if (stepper->isAtMinPos())
       {
         #if defined(OTA_update_ESP32) || defined(OTA_update)
@@ -1993,42 +2035,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
         #endif
       }
 
-      // set position command smoothing
-      stepper->configSetPositionCommandSmoothingFactor(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.positionSmoothingFactor_u8);
-      stepper->configSetProfilingFlag( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) );
-
-      // reset all servo alarms
-      if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS) )
-      {
-        Serial.println("Set clear alarm history flag");
-        stepper->clearAllServoAlarms();
-        delay(1000); // makes sure the routine has finished
-
-        DAP_config_st tmp;
-        global_dap_config_class.getConfig(&tmp, 500);
-        tmp.payLoadPedalConfig_.debug_flags_0 &= ( ~(uint8_t)DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS); // clear the debug bit
-        //global_dap_config_class.setConfig(tmp);
-
-        configDataPackage_t configPackage_st;
-        configPackage_st.config_st = tmp;
-        xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
-      }
-
-      // print all servo parameters for debug purposes
-      if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS) )
-      {
-        DAP_config_st tmp;
-        global_dap_config_class.getConfig(&tmp, 500);
-        tmp.payLoadPedalConfig_.debug_flags_0 &= ( ~(uint8_t)DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS); // clear the debug bit
-        //global_dap_config_class.setConfig(tmp);
-
-        configDataPackage_t configPackage_st;
-        configPackage_st.config_st = tmp;
-        xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
-
-        delay(1000);  
-        stepper->printAllServoParameters();
-      }
+      
 
 
       // stop movement, when OTA is in progres
@@ -2062,9 +2069,6 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       
 
       // compute joystick value
-      joystickNormalizedToInt32_orig=0.0f;
-      joystickfrac = 0.0f;
-      joystickNormalizedToInt32_eval=0.0f;
       if(dap_calculationVariables_st.Rudder_status&&dap_calculationVariables_st.rudder_brake_status)
       {
         if (1 == dap_config_pedalUpdateTask_st.payLoadPedalConfig_.travelAsJoystickOutput_u8)
