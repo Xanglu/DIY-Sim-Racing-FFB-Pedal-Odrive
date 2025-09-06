@@ -109,7 +109,6 @@ bool isSerialConfigGet[3]={false, false, false};
 
 #ifdef OTA_Update
   void otaUpdateTask(void *pvParameters);
-  TaskHandle_t Task7;
 #endif
 
 
@@ -119,33 +118,12 @@ bool isSerialConfigGet[3]={false, false, false};
   DAP_JoystickUART_State dap_joystickUART_state_lcl;
 #endif
 
-//OTA update
-#ifdef OTA_update
-#include "ota.h"
-TaskHandle_t Task4;
-#endif
-
 #ifdef Using_MCP4728
   #include <Adafruit_MCP4728.h>
   Adafruit_MCP4728 mcp;
   TwoWire MCP4728_I2C= TwoWire(1);
   bool MCP_status =false;
 #endif
-
-//#define PRINT_USED_STACK_SIZE
-// https://stackoverflow.com/questions/55998078/freertos-task-priority-and-stack-size
-#define STACK_SIZE_FOR_TASK_1 0.2 * (configTOTAL_HEAP_SIZE / 4)
-#define STACK_SIZE_FOR_TASK_2 0.2 * (configTOTAL_HEAP_SIZE / 4)
-
-//task handle
-TaskHandle_t Task1;
-TaskHandle_t Task2;
-TaskHandle_t Task3;
-TaskHandle_t Task4;
-TaskHandle_t Task5;
-TaskHandle_t taskHandleSerialRX;
-TaskHandle_t taskHandleSerialTx;
-TaskHandle_t taskHandleEepNowTX;
 
 //global variables
 bool configUpdateAvailable[3] = {false, false, false};                              
@@ -180,10 +158,6 @@ void setup()
     Serial.setRxBufferSize(1024);
     Serial.setTimeout(5);
     Serial.begin(3000000);
-    
-    //Serial0.begin(921600);
-    //Serial0.setDebugOutput(false);
-    //esp_log_level_set("*",ESP_LOG_INFO);
   #else
     Serial.setRxBufferSize(1024);
     Serial.begin(921600);
@@ -206,14 +180,7 @@ void setup()
     Serial.println(BRIDGE_FIRMWARE_VERSION);
   #endif
   parse_version(BRIDGE_FIRMWARE_VERSION,&versionMajor,&versionMinor,&versionPatch);
-  // setup multi tasking
-  /*
-  semaphore_updateJoystick = xSemaphoreCreateMutex();
-  semaphore_updateConfig = xSemaphoreCreateMutex();
-  semaphore_resetServoPos = xSemaphoreCreateMutex();
-  semaphore_updatePedalStates = xSemaphoreCreateMutex();
-  */
-  delay(10);
+  delay(5);
   //create message queue
   messageQueueHandle = xQueueCreate(10, sizeof(ESPNOW_Message));
   if (messageQueueHandle == NULL)
@@ -232,50 +199,7 @@ void setup()
   #endif
   //enable ESP-NOW
   ESPNow_initialize();
-  //ESPNow multi-tasking  
-  /*  
-  xTaskCreatePinnedToCore(
-                        espNowCommunicationTxTask,   
-                        "ESPNOW_update_Task", 
-                        10000,      
-                        NULL,      
-                        1,         
-                        &taskHandleEepNowTX,    
-                        0);     
-  delay(500);
-  //Serial multitasking
-  xTaskCreatePinnedToCore(
-                        serialCommunicationRxTask,   
-                        "Serial_update_RX_Task", 
-                        5000,    
-                        NULL,      
-                        1,         
-                        &taskHandleSerialRX,    
-                        1);     
-  delay(500);
-  xTaskCreatePinnedToCore(
-                        serialCommunicationTxTask,   
-                        "Serial_update_TX_Task", 
-                        5000,     
-                        NULL,      
-                        1,         
-                        &taskHandleSerialTx,    
-                        1);     
-  delay(500);
   
-  xTaskCreatePinnedToCore(
-      joystickUpdateTask,
-      "Joystick_update_Task",
-      10000,
-      // STACK_SIZE_FOR_TASK_2,
-      NULL,
-      1,
-      &Task2,
-      1);
-  delay(500);
-  */
-
-
   #ifdef Using_MCP4728
     MCP4728_I2C.begin(MCP_SDA,MCP_SCL,400000);
     uint8_t i2c_address[8]={0x60,0x61,0x62,0x63,0x64,0x65,0x66,0x67};
@@ -338,7 +262,7 @@ void setup()
                           &Task3,    
                           0);     
                           */
-    taskScheduler.addScheduledTask(ledUpdateTask, "LED Update", 10000, 1, 1, 3000);
+    taskScheduler.addScheduledTask(ledUpdateTask, "LED Update", REPETITION_INTERVAL_LED_UPDATE_TASK, TASK_PRIORITY_LED_UPDATE_TASK, CORE_ID_LED_UPDATE_TASK, STACK_SIZE_LED_UPDATE_TASK);
     delay(500);
   #endif
   #ifdef LED_ENABLE_DONGLE
@@ -357,7 +281,7 @@ void setup()
                           &Task3,    
                           0);
     */
-    taskScheduler.addScheduledTask(ledUpdateDongleTask, "LED Update for Dongle", 10000, 1, 1, 3000);
+    taskScheduler.addScheduledTask(ledUpdateDongleTask, "LED Update for Dongle", REPETITION_INTERVAL_LED_UPDATE_TASK, TASK_PRIORITY_LED_UPDATE_TASK, CORE_ID_LED_UPDATE_TASK, STACK_SIZE_LED_UPDATE_TASK);
     delay(500);
   #endif
   #ifdef Fanatec_comunication
@@ -373,35 +297,12 @@ void setup()
       }
     });
     delay(2000);
-    /*
-    xTaskCreatePinnedToCore(
-        fanatecUpdateTask,
-        "Fanatec_update_Task",
-        3000,
-        // STACK_SIZE_FOR_TASK_5,
-        NULL,
-        1,
-        &Task5,
-        1);
-    */
-    taskScheduler.addScheduledTask(fanatecUpdateTask, "OTA Update", 10000, 1, 1, 3000);
+    taskScheduler.addScheduledTask(fanatecUpdateTask, "FANATEC Update", REPETITION_INTERVAL_FANATEC_UPDATE_TASK,TASK_PRIORITY_FANATEC_UPDATE_TASK ,CORE_ID_FANATEC_UPDATE_TASK , STACK_SIZE_FANATEC_UPDATE_TASK);
     delay(500);
   #endif
 
   #ifdef OTA_Update
-  /*
-    xTaskCreatePinnedToCore(
-        otaUpdateTask,
-        "OTA_update_Task",
-        16000,
-        // STACK_SIZE_FOR_TASK_5,
-        NULL,
-        1,
-        &Task7,
-        1);
-    delay(500);
-    */
-    taskScheduler.addScheduledTask(otaUpdateTask, "OTA Update", 50000, 1, 1, 16000);
+    taskScheduler.addScheduledTask(otaUpdateTask, "OTA Update", REPETITION_INTERVAL_OTA_UPDATE_TASK, TASK_PRIORITY_OTA_UPDATE_TASK, CORE_ID_OTA_UPDATE_TASK, STACK_SIZE_OTA_UPDATE_TASK);
   #endif
   
   //initialize wifi 
@@ -412,10 +313,10 @@ void setup()
   }
   //task scheduler adding task
   Serial.println("[L]Initializing task scheduler...");
-  taskScheduler.addScheduledTask(serialCommunicationRxTask, "Seria RX", 2000, 1, 1, 5000);
-  taskScheduler.addScheduledTask(serialCommunicationTxTask, "Seria TX", 2000, 1, 1, 5000);
-  taskScheduler.addScheduledTask(espNowCommunicationTxTask, "Espnow tx", 2000, 1, 0, 10000);
-  taskScheduler.addScheduledTask(joystickUpdateTask, "Joystick Update", 8000, 1, 0, 10000);
+  taskScheduler.addScheduledTask(serialCommunicationRxTask, "Seria RX", REPETITION_INTERVAL_SERIAL_RX_TASK, TASK_PRIORITY_SERIAL_RX_TASK, CORE_ID_SERIAL_RX_TASK, STACK_SIZE_SERIAL_RX_TASK);
+  taskScheduler.addScheduledTask(serialCommunicationTxTask, "Seria TX", REPETITION_INTERVAL_SERIAL_TX_TASK, TASK_PRIORITY_SERIAL_TX_TASK, CORE_ID_SERIAL_TX_TASK, STACK_SIZE_SERIAL_TX_TASK);
+  taskScheduler.addScheduledTask(espNowCommunicationTxTask, "Espnow tx", REPETITION_INTERVAL_ESPNOW_TX_TASK, TASK_PRIORITY_ESPNOW_TX_TASK, CORE_ID_ESPNOW_TX_TASK, STACK_SIZE_ESPNOW_TX_TASK);
+  taskScheduler.addScheduledTask(joystickUpdateTask, "Joystick Update", REPETITION_INTERVAL_JOYSTICK_UPDATE_TASK, TASK_PRIORITY_JOYSTICK_UPDATE_TASK, CORE_ID_JOYSTICK_UPDATE_TASK, STACK_SIZE_JOYSTICK_UPDATE_TASK);
   delay(100);
   taskScheduler.begin();
 
