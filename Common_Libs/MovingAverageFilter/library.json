@@ -1,6 +1,6 @@
 {
-  "name": "MyCustomLib",
-  "version": "1.0.0",
+  "name": "MovingAverageFilter",
+  "version": "0.90.17",
   "description": "",
   "keywords": "custom, sensor, utility",
   "authors": [
