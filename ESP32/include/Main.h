@@ -94,6 +94,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 
   //#define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 1
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -117,6 +118,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 
   #define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 1
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -161,7 +163,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define OTA_update
   //#define BRAKE_RESISTOR_PIN 13
   //#define OTA_update_ESP32
-  
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -191,6 +193,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   //#define Pairing_GPIO 0
   //#define ESPNow_Pairing_function
   #define ESPNow_ESP32
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -221,6 +224,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   //#define ESPNow_Pairing_function
   #define ESPNow_ESP32
   #define OTA_update
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -265,6 +269,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define OTA_update
   #define CONTROLLER_SPECIFIC_VIDPID
   #define BAUDRATE3M
+  #define RUN_IN_CACHE
 #endif
 
 // For Gilphilbert PCBA design
@@ -312,9 +317,10 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define LED_GPIO 12
   #define OTA_update
   #define USING_BUZZER
+  #define RUN_IN_CACHE
 #endif
 
-
+// PCBA V2
 #if PCB_VERSION == 9
   // ADC defines
   #define PIN_DRDY 15//--> DRDY
@@ -413,6 +419,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define LED_ENABLE_RGB
   #define OTA_update
   #define USING_BUZZER
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -451,7 +458,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define OTA_update
   #define CONTROLLER_SPECIFIC_VIDPID
   #define BAUDRATE3M
-
+  #define RUN_IN_CACHE
   // #define ANGLE_SENSOR_GPIO 11 // disabled by default, since to much runtime impact of ADC
 #endif
 
