@@ -28,11 +28,11 @@ static inline float pedalInclineAngleDeg(float sledPositionMM, DAP_config_st * c
 
 //#define DEBUG_PEDAL_INCLINE
 #ifdef DEBUG_PEDAL_INCLINE
-  Serial.print("a: ");    Serial.print(a);
-  Serial.print(", b: ");  Serial.print(b);
-  Serial.print(", c: ");  Serial.print(c);
+  ActiveSerial->print("a: ");    ActiveSerial->print(a);
+  ActiveSerial->print(", b: ");  ActiveSerial->print(b);
+  ActiveSerial->print(", c: ");  ActiveSerial->print(c);
 
-  Serial.print(", sledPositionMM: ");  Serial.print(sledPositionMM);
+  ActiveSerial->print(", sledPositionMM: ");  ActiveSerial->print(sledPositionMM);
 #endif
 
   float nom = b*b + c*c - a*a;
@@ -46,7 +46,7 @@ static inline float pedalInclineAngleDeg(float sledPositionMM, DAP_config_st * c
   }
 
 #ifdef DEBUG_PEDAL_INCLINE
-  Serial.print(", alpha1: ");  Serial.print(alpha * RAD_TO_DEG_FL32);
+  ActiveSerial->print(", alpha1: ");  ActiveSerial->print(alpha * RAD_TO_DEG_FL32);
 #endif
 
   // add incline due to AB incline --> result is incline realtive to horizontal 
@@ -60,8 +60,8 @@ static inline float pedalInclineAngleDeg(float sledPositionMM, DAP_config_st * c
 
 
 #ifdef DEBUG_PEDAL_INCLINE
-  Serial.print(", alpha2: ");  Serial.print(alpha * RAD_TO_DEG_FL32);
-  Serial.println(" ");
+  ActiveSerial->print(", alpha2: ");  ActiveSerial->print(alpha * RAD_TO_DEG_FL32);
+  ActiveSerial->println(" ");
 #endif
 
   
@@ -91,13 +91,13 @@ static inline float convertToPedalForce(float F_l, float sledPositionMM, DAP_con
   
 
 
-  //Serial.print("a: ");    Serial.print(a);
-  //Serial.print(", b: ");  Serial.print(b);
-  //Serial.print(", c: ");  Serial.print(c);
-  //Serial.print(", d: ");  Serial.print(d);
-  //Serial.print(", sled: ");  Serial.print(sledPositionMM);
-  //Serial.print(", b_hor: ");  Serial.print(b_hor);
-  //Serial.println();
+  //ActiveSerial->print("a: ");    ActiveSerial->print(a);
+  //ActiveSerial->print(", b: ");  ActiveSerial->print(b);
+  //ActiveSerial->print(", c: ");  ActiveSerial->print(c);
+  //ActiveSerial->print(", d: ");  ActiveSerial->print(d);
+  //ActiveSerial->print(", sled: ");  ActiveSerial->print(sledPositionMM);
+  //ActiveSerial->print(", b_hor: ");  ActiveSerial->print(b_hor);
+  //ActiveSerial->println();
 
 
   // lower plus upper pedal plate length

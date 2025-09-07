@@ -1,60 +1,52 @@
 #include "Controller.h"
 
-int32_t NormalizeControllerOutputValue(float value, float minVal, float maxVal, float maxGameOutput) {
+uint16_t NormalizeControllerOutputValue(float value, float minVal, float maxVal, float maxGameOutput) {
   float valRange = (maxVal - minVal);
   if (abs(valRange) < 0.01) {
     return JOYSTICK_MIN_VALUE;   // avoid div-by-zero
   }
 
   float fractional = (value - minVal) / valRange;
-  int32_t controller = JOYSTICK_MIN_VALUE + (fractional * JOYSTICK_RANGE);
-  return constrain(controller, JOYSTICK_MIN_VALUE, (maxGameOutput/100.) * JOYSTICK_MAX_VALUE);
+  uint16_t controller = JOYSTICK_MIN_VALUE + (maxGameOutput/100.0f) * (fractional * JOYSTICK_RANGE);
+  return controller;
 }
 
 
 #ifdef USB_JOYSTICK
 
 #include <string>
-//#include <string>
+#include "Adafruit_TinyUSB.h"
+
+// HID Report Descriptor for Racing Pedal (Brake only)
+const uint8_t desc_hid_report[] = {
+    0x05, 0x01,        // Usage Page (Generic Desktop Controls)
+    0x09, 0x04,        // Usage (Joystick)
+    0xA1, 0x01,        // Collection (Application)
+
+    0x05, 0x02,        //   Usage Page (Simulation Controls)
+    0x09, 0xC5,        //   Usage (Brake)  <-- special "pedal" usage
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x26, 0xFF, 0xFF,  //   Logical Maximum (65535)
+    0x75, 0x10,        //   Report Size (16 bits)
+    0x95, 0x01,        //   Report Count (1)
+    0x81, 0x02,        //   Input (Data,Var,Abs)  <-- absolute, not relative
+
+    0xC0               // End Collection
+};
+
+
+// USB HID object
+Adafruit_USBD_HID usb_hid;
+
+// Report payload for the two axes
+typedef struct {
+  uint16_t brake;
+} hid_report_t;
+
+hid_report_t hid_report = {0};
 
 
 
-// #include "USB.h"
-// #include "esp_event.h"
-// #include "class/hid/hid.h"
-// #include "class/hid/hid_device.h"
-#include "esp32-hal-tinyusb.h"
-// #include "esp_hid_common.h"
-
-int32_t previousTransmittedControllerValue_u32 = 0;
-bool newControllerValueReceived_b = false;
-
-#define WAITTIME_FOR_HOST_TO_RESPOND_TO_HID_REPORT_IN_MS (uint32_t)500
-
-
-#include <Joystick_ESP32S2.h>
-
-Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_GAMEPAD,
-                  0, 0,                 // Button Count, Hat Switch Count
-                  false, false, false,  // X and Y, but no Z Axis
-                  false, false, false,  // No Rx, Ry, or Rz
-                  false, false,         // No rudder or throttle
-                  false, true, false);  // No accelerator, brake, or steering
-
-void SetupController() {
-  Joystick.setBrakeRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);
-  delay(100);
-
-  Joystick.begin(false, WAITTIME_FOR_HOST_TO_RESPOND_TO_HID_REPORT_IN_MS);
-
-  // rename HID device name, see e.g. https://github.com/schnoog/Joystick_ESP32S2/issues/8
-  //USB.PID(0x8211);
-  //USB.VID(0x303b);
-  //USB.productName("DIY FFB pedal");
-  //USB.manufacturerName("Open source");
-  //USB.begin();
-
-}
 void SetupController_USB(uint8_t pedal_ID) 
 {
   int PID;
@@ -79,63 +71,60 @@ void SetupController_USB(uint8_t pedal_ID)
       break;
 
   }
-  USB.PID(PID);    
-  USB.VID(0x3035);
-  USB.productName(APname);
-  USB.manufacturerName("OpenSource");
 
-  // Force USB re-enumeration
-  tud_disconnect();
-  delay(200);  // Ensure host sees disconnect
-  tud_connect();
+    // Set VID and PID
+  TinyUSBDevice.setID(0x3035, PID);
+  TinyUSBDevice.setProductDescriptor(APname);
+  TinyUSBDevice.setManufacturerDescriptor("OpenSource");
 
-  USB.begin();
-  Joystick.setBrakeRange(JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);
-  //while (!USB) delay(10); // Wait until the USB device is mounted and started
-  delay(100); 
-  Joystick.begin(false, WAITTIME_FOR_HOST_TO_RESPOND_TO_HID_REPORT_IN_MS);
+  // Manual begin() is required on core without built-in support e.g. mbed rp2040
+  if (!TinyUSBDevice.isInitialized()) {
+    TinyUSBDevice.begin(0);
+  }
+
+  // Setup HID
+  usb_hid.setPollInterval(10); // time in ms
+  usb_hid.setReportDescriptor(desc_hid_report, sizeof(desc_hid_report));
+  usb_hid.begin();
+
+  // If already enumerated, additional class driverr begin() e.g msc, hid, midi won't take effect until re-enumeration
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+    TinyUSBDevice.attach();
+  }
 }
-bool IsControllerReady() { return true; }
-void SetControllerOutputValue(int32_t value) {
-  if (previousTransmittedControllerValue_u32 != value)
+
+bool IsControllerReady() { 
+  bool returnValue_b = true;
+  if (!TinyUSBDevice.mounted()) {
+    returnValue_b = false;
+  }
+  if (!usb_hid.ready())
   {
-    previousTransmittedControllerValue_u32 = value;
-    newControllerValueReceived_b = true;
-    Joystick.setBrake(value);
+    returnValue_b = false;
+  }
+
+  return returnValue_b;
+}
+
+void SetControllerOutputValue(uint16_t value) {
+  
+
+  uint16_t tmp = value;
+
+  if (tmp < 0x7FFF)
+  {
+    tmp += 0x7FFF + 1;
   }
   else
   {
-    newControllerValueReceived_b = false;
+    tmp -= 0x7FFF + 1;
   }
 
+  hid_report.brake = tmp;
+  usb_hid.sendReport(0, &hid_report, sizeof(hid_report));
 }
-void SetControllerOutputValue_rudder(int32_t value,int32_t value2)
-{
-  Joystick.setBrake(value);
-  Joystick.setAccelerator(value2);
-}
-
-void JoystickSendState()
-{
-  if (newControllerValueReceived_b)
-  {
-    Joystick.sendState();
-  }
-}
-
-bool GetJoystickStatus()
-{
-  return Joystick._usbDeviceStatus;
-}
-
-void RestartJoystick()
-{
-  Joystick.end();
-  delay(1000);
-  SetupController();
-};
-
-
 
 
 

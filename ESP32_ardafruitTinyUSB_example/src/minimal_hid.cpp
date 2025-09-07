@@ -20,40 +20,55 @@
  * You can test the gamepad on a Windows system by pressing WIN+R, writing Joy.cpl and pressing Enter.
  */
 
-// HID report descriptor
-// Single Report (no ID) descriptor
-uint8_t const desc_hid_report[] =
-{
-  0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
-  0x09, 0x04,        // Usage (Joystick)
-  0xA1, 0x01,        // Collection (Application)
-  0x09, 0x30,        //   Usage (X)
-  0x15, 0x00,        //   Logical Minimum (0)
-  0x26, 0xFF, 0xFF,  //   Logical Maximum (65535)
-  0x75, 0x10,        //   Report Size (16)
-  0x95, 0x01,        //   Report Count (1)
-  0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-  0xC0,              // End Collection
+// HID report descriptor for a joystick with two 16-bit axes (e.g., throttle and brake)
+uint8_t const desc_hid_report[] = {
+    0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x04,        // Usage (Joystick)
+    0xA1, 0x01,        // Collection (Application)
+    
+    // Define two 16-bit axes (X and Y)
+    0x09, 0x30,        //   Usage (X) - Mapped to throttle
+    0x09, 0x31,        //   Usage (Y) - Mapped to brake
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x26, 0xFF, 0xFF,  //   Logical Maximum (65535)
+    0x75, 0x10,        //   Report Size (16)
+    0x95, 0x02,        //   Report Count (2)
+    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    
+    0xC0,              // End Collection
 };
 
 
 // USB HID object
 Adafruit_USBD_HID usb_hid;
 
-// Report payload
-uint16_t axis_value = 0;
+// Report payload for the two axes
+typedef struct {
+  uint16_t throttle;
+  uint16_t brake;
+} hid_report_t;
 
-#define USE_CDC_INSTEAD_OF_UART
+hid_report_t hid_report = {0, 0};
+
+// #define USE_CDC_INSTEAD_OF_UART
 
 // alias to serial stream, thus it can dynamically switch depending on board
 Stream *ActiveSerial;
 
 void setup() {
+
+  int PID=0x8216;
+  // Set VID and PID
+  TinyUSBDevice.setID(0x3035, PID);
+  TinyUSBDevice.setProductDescriptor("DIY FFB pedal");
+  TinyUSBDevice.setManufacturerDescriptor("OpenSource");
+
   // Manual begin() is required on core without built-in support e.g. mbed rp2040
   if (!TinyUSBDevice.isInitialized()) {
     TinyUSBDevice.begin(0);
   }
 
+  // #if ARDUINO_USB_CDC_ON_BOOT == 1
   #ifdef USE_CDC_INSTEAD_OF_UART
     Serial.begin(3000000);
     ActiveSerial = &Serial;
@@ -61,15 +76,13 @@ void setup() {
     Serial1.begin(3000000, SERIAL_8N1, 44, 43);
     ActiveSerial = &Serial1;
   #endif
-
-  
-  
   
 
   // Setup HID
   usb_hid.setPollInterval(0);
   usb_hid.setReportDescriptor(desc_hid_report, sizeof(desc_hid_report));
   usb_hid.begin();
+
 
   // If already enumerated, additional class driverr begin() e.g msc, hid, midi won't take effect until re-enumeration
   if (TinyUSBDevice.mounted()) {
@@ -94,8 +107,9 @@ void loop() {
 
   if (!usb_hid.ready()) return;
 
-  // Ramp up the axis value
-  axis_value += 50;
+  // Ramp up the axis values for demonstration
+  hid_report.throttle += 50;
+  hid_report.brake = 65535 - hid_report.throttle; // Example for brake, make it move opposite to throttle
 
   // // For CDC instance 0 (the default one)
   // #ifdef USE_CDC_INSTEAD_OF_UART
@@ -106,8 +120,10 @@ void loop() {
   //     if (!prev_dtr_state) {
   //       Serial.println("Host connected (DTR asserted)");
   //     }
-  //   Serial.print("Sending axis value: ");
-  //   Serial.println(axis_value);
+  //   Serial.print("Sending throttle: ");
+  //   Serial.print(hid_report.throttle);
+  //   Serial.print(" brake: ");
+  //   Serial.println(hid_report.brake);
   //   } else {
   //     if (prev_dtr_state) {
   //       Serial.println("Host disconnected (DTR de-asserted)");
@@ -115,8 +131,10 @@ void loop() {
   //   }
   //   prev_dtr_state = dtr;
   // #else
-  //   ActiveSerial->print("Sending axis value: ");
-  //   ActiveSerial->println(axis_value);
+  //   ActiveSerial->print("Sending throttle: ");
+  //   ActiveSerial->print(hid_report.throttle);
+  //   ActiveSerial->print(" brake: ");
+  //   ActiveSerial->println(hid_report.brake);
   // #endif
 
   static unsigned long last_micros = 0;
@@ -124,11 +142,17 @@ void loop() {
   unsigned long delta_micros = current_micros - last_micros;
   last_micros = current_micros;
 
-  ActiveSerial->print("Sending axis value: ");
-  ActiveSerial->print(axis_value);
-  ActiveSerial->print("     (Delta: ");
-  ActiveSerial->print(delta_micros);
-  ActiveSerial->println(" us)");
+  // if (delta_micros > 2000)
+  {
+    ActiveSerial->print("Sending throttle: ");
+    ActiveSerial->print(hid_report.throttle);
+    ActiveSerial->print(" brake: ");
+    ActiveSerial->print(hid_report.brake);
+    ActiveSerial->print("     (Delta: ");
+    ActiveSerial->print(delta_micros);
+    ActiveSerial->println(" us)");
+  }
+  
 
-  usb_hid.sendReport(0, &axis_value, sizeof(axis_value));
+  usb_hid.sendReport(0, &hid_report, sizeof(hid_report));
 }

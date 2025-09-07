@@ -170,14 +170,14 @@ void DAP_config_st::storeConfigToEprom(DAP_config_st& config_st)
 
   EEPROM.put(EEPROM_OFFSET, config_st); 
   EEPROM.commit();
-  Serial.println("Successfully stored config in EPROM");
+  ActiveSerial->println("Successfully stored config in EPROM");
   
   /*if (true == config_st.payLoadHeader_.storeToEeprom)
   {
     config_st.payLoadHeader_.storeToEeprom = false; // set to false, thus at restart existing EEPROM config isn't restored to EEPROM
     EEPROM.put(0, config_st); 
     EEPROM.commit();
-    Serial.println("Successfully stored config in EPROM");
+    ActiveSerial->println("Successfully stored config in EPROM");
   }*/
 }
 
@@ -194,15 +194,15 @@ void DAP_config_st::loadConfigFromEprom(DAP_config_st& config_st)
   /*if (local_config_st.payLoadHeader_.version == DAP_VERSION_CONFIG)
   {
     config_st = local_config_st;
-    Serial.println("Successfully loaded config from EPROM");
+    ActiveSerial->println("Successfully loaded config from EPROM");
   }
   else
   { 
-    Serial.println("Couldn't load config from EPROM due to version mismatch");
-    Serial.print("Target version: ");
-    Serial.println(DAP_VERSION_CONFIG);
-    Serial.print("Source version: ");
-    Serial.println(local_config_st.payLoadHeader_.version);
+    ActiveSerial->println("Couldn't load config from EPROM due to version mismatch");
+    ActiveSerial->print("Target version: ");
+    ActiveSerial->println(DAP_VERSION_CONFIG);
+    ActiveSerial->print("Source version: ");
+    ActiveSerial->println(local_config_st.payLoadHeader_.version);
 
   }*/
 
@@ -257,8 +257,8 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st)
   /*
   for (int i = 0; i < config_st.payLoadPedalConfig_.quantityOfControl - 1; ++i)
   {
-    //Serial.printf("original a=%.3f, b=%.3f\n", config_st.payLoadPedalConfig_.cubic_spline_param_a_array[i], config_st.payLoadPedalConfig_.cubic_spline_param_b_array[i]);
-    Serial.printf("ESP calculated a=%.3f, b=%.3f\n", interpolatorA[i], interpolatorB[i]);
+    //ActiveSerial->printf("original a=%.3f, b=%.3f\n", config_st.payLoadPedalConfig_.cubic_spline_param_a_array[i], config_st.payLoadPedalConfig_.cubic_spline_param_b_array[i]);
+    ActiveSerial->printf("ESP calculated a=%.3f, b=%.3f\n", interpolatorA[i], interpolatorB[i]);
   }
   */
   
@@ -298,13 +298,13 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st)
   /*
   for (int i = 0; i < 5; ++i)
   {
-    //Serial.printf("original a=%.3f, b=%.3f\n", config_st.payLoadPedalConfig_.cubic_spline_param_a_array[i], config_st.payLoadPedalConfig_.cubic_spline_param_b_array[i]);
-    Serial.printf("joystick calculated a=%.3f, b=%.3f\n", joystickInterpolarter._result.a[i], joystickInterpolarter._result.b[i]);
+    //ActiveSerial->printf("original a=%.3f, b=%.3f\n", config_st.payLoadPedalConfig_.cubic_spline_param_a_array[i], config_st.payLoadPedalConfig_.cubic_spline_param_b_array[i]);
+    ActiveSerial->printf("joystick calculated a=%.3f, b=%.3f\n", joystickInterpolarter._result.a[i], joystickInterpolarter._result.b[i]);
   }
   
   for(int i=0;i<100;i++)
   {
-    Serial.printf("joystick value:y= %.3f\n",joystickInterpolarter._result.yInterp[i]);
+    ActiveSerial->printf("joystick value:y= %.3f\n",joystickInterpolarter._result.yInterp[i]);
   }
   */
 
@@ -431,7 +431,7 @@ DAP_config_class::DAP_config_class() {
   // create the mutex
   mutex = xSemaphoreCreateMutex();
   if (mutex == NULL) {
-    Serial.println("Error: Mutex could not be created!");
+    ActiveSerial->println("Error: Mutex could not be created!");
     ESP.restart();
   }
 
@@ -467,7 +467,7 @@ void DAP_config_class::setConfig(DAP_config_st tmp) {
   }
   else
   {
-    Serial.println("Error: Coul not aquire mutex!");
+    ActiveSerial->println("Error: Coul not aquire mutex!");
   }
 
   // return returnV_b;
@@ -517,7 +517,7 @@ void DAP_config_class::initializedConfig()
   }
   else
   {
-    Serial.println("Error: Coul not aquire mutex!");
+    ActiveSerial->println("Error: Coul not aquire mutex!");
   }
 
   // return returnV_b;

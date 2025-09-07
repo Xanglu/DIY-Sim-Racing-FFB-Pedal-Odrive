@@ -22,6 +22,10 @@ float refVoltageInMV_fl32 = 5000.0f;
 
 static SemaphoreHandle_t timer_fireLoadcellReadingReady_global;
 
+
+
+
+
 // This is our Interrupt Service Routine
 void IRAM_ATTR drdyInterrupt() {
 
@@ -42,14 +46,14 @@ ADS1220_WE& getADC() {
 
   static bool firstTime = true;
   if (firstTime) {
-    Serial.println("Initializing ADS1220 ADC...");
+    ActiveSerial->println("Initializing ADS1220 ADC...");
 
     // Initialize custom SPI bus. This should be done only once.
     adsSPI.begin(FFB_ADS1220_SCLK, FFB_ADS1220_DOUT, FFB_ADS1220_DIN, FFB_ADS1220_CS);
 
     // Initialize ADS1220
     if (!adc.init()) {
-      Serial.println("ADS1220 not found!");
+      ActiveSerial->println("ADS1220 not found!");
       while (1);
     }
 
@@ -66,9 +70,9 @@ ADS1220_WE& getADC() {
 
     float refVolt_fl32 = adc.getVRef_V();
     refVoltageInMV_fl32 = refVolt_fl32 * 1000.0f; // convert to mV
-    Serial.print("Reference voltage: ");
-    Serial.print(refVolt_fl32);
-    Serial.println("V");
+    ActiveSerial->print("Reference voltage: ");
+    ActiveSerial->print(refVolt_fl32);
+    ActiveSerial->println("V");
 
     // differential channels
     adc.setCompareChannels(ADS1220_MUX_0_1);              // Differential AIN0 - AIN1
@@ -93,7 +97,7 @@ ADS1220_WE& getADC() {
     attachInterrupt(digitalPinToInterrupt(FFB_ADS1220_DRDY), drdyInterrupt, FALLING);
 
 
-    Serial.println("ADC Started");
+    ActiveSerial->println("ADC Started");
     
     firstTime = false;
   }
@@ -165,7 +169,7 @@ float IRAM_ATTR LoadCell_ADS1220::getReadingKg() const {
 void LoadCell_ADS1220::estimateBiasAndVariance() {
   getADC(); // Ensure ADC is initialized
   
-  Serial.println("Identify loadcell bias and variance");
+  ActiveSerial->println("Identify loadcell bias and variance");
   float varEstimate;
   float mean = 0.0f;
   float M2 = 0.0f;
@@ -192,13 +196,13 @@ void LoadCell_ADS1220::estimateBiasAndVariance() {
   _standardDeviationEstimate = sqrt(varEstimate);
   _varianceEstimate = varEstimate;
 
-  Serial.print("Offset ");
-  Serial.print(_zeroPoint, 5);
-  Serial.println("kg");
+  ActiveSerial->print("Offset ");
+  ActiveSerial->print(_zeroPoint, 5);
+  ActiveSerial->println("kg");
 
-  Serial.print("Stddev. est.: ");
-  Serial.print(_standardDeviationEstimate, 5);
-  Serial.println("kg");
+  ActiveSerial->print("Stddev. est.: ");
+  ActiveSerial->print(_standardDeviationEstimate, 5);
+  ActiveSerial->println("kg");
 }
 
 #endif

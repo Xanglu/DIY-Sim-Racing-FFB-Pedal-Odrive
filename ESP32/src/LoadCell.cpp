@@ -44,18 +44,18 @@ ADS1256& ADC() {
 
   static bool firstTime = true;
   if (firstTime) {
-    Serial.println("Starting ADC");  
+    ActiveSerial->println("Starting ADC");  
     adc.initSpi(ADC_CLOCK_MHZ);
     delay(1000);
     
-    Serial.println("ADS: send SDATAC command");
+    ActiveSerial->println("ADS: send SDATAC command");
     //adc.sendCommand(ADS1256_CMD_SDATAC);
     
     // start the ADS1256 with a certain data rate and gain       
     adc.begin(ADC_SAMPLE_RATE, ADS1256_GAIN_64, false);  
     
     
-    Serial.println("ADC Started");
+    ActiveSerial->println("ADC Started");
     
     adc.waitDRDY(); // wait for DRDY to go low before changing multiplexer register
     if ( fabs(CONVERSION_FACTOR) > 0.01f)
@@ -81,10 +81,10 @@ void LoadCell_ADS1256::setLoadcellRating(uint8_t loadcellRating_u8) const {
   {
       updatedConversionFactor_f64 = 2.0f * ((float)loadcellRating_u8) * (CONVERSION_FACTOR/LOADCELL_WEIGHT_RATING_KG);
   }
-  // Serial.print("OrigConversionFactor: ");
-  // Serial.print(originalConversionFactor_f64);
-  // Serial.print(",     NewConversionFactor:");
-  // Serial.println(updatedConversionFactor_f64);
+  // ActiveSerial->print("OrigConversionFactor: ");
+  // ActiveSerial->print(originalConversionFactor_f64);
+  // ActiveSerial->print(",     NewConversionFactor:");
+  // ActiveSerial->println(updatedConversionFactor_f64);
 
   // adc.setConversionFactor( updatedConversionFactor_f64 );
   adc.setConversionFactor( 1 );
@@ -105,12 +105,12 @@ LoadCell_ADS1256::LoadCell_ADS1256(uint8_t channel0, uint8_t channel1)
     if (drdySemaphore == NULL) {
         drdySemaphore = xSemaphoreCreateBinary();
         if (drdySemaphore != NULL) {
-            Serial.println("DRDY Semaphore created successfully.");
+            ActiveSerial->println("DRDY Semaphore created successfully.");
             // Attach the interrupt ONCE, after the semaphore is created.
             attachInterrupt(digitalPinToInterrupt(PIN_DRDY), drdyInterrupt, FALLING);
-            Serial.println("DRDY interrupt attached.");
+            ActiveSerial->println("DRDY interrupt attached.");
         } else {
-            Serial.println("Error: Failed to create DRDY semaphore!");
+            ActiveSerial->println("Error: Failed to create DRDY semaphore!");
         }
     }
     
@@ -155,7 +155,7 @@ float LoadCell_ADS1256::getReadingKg() const {
 void LoadCell_ADS1256::estimateBiasAndVariance() {
   ADS1256& adc = ADC();
   
-  Serial.println("Identify loadcell bias and variance");
+  ActiveSerial->println("Identify loadcell bias and variance");
   float varEstimate;
   float mean = 0.0f;
   float M2 = 0.0f;
@@ -181,17 +181,17 @@ void LoadCell_ADS1256::estimateBiasAndVariance() {
   _standardDeviationEstimate = sqrt(varEstimate);
   _varianceEstimate = varEstimate;
 
-  Serial.print("Offset ");
-  Serial.print(_zeroPoint, 5);
-  Serial.println("kg");
+  ActiveSerial->print("Offset ");
+  ActiveSerial->print(_zeroPoint, 5);
+  ActiveSerial->println("kg");
 
-  // Serial.print("Variance est.: ");
-  // Serial.print(varEstimate, 5);
-  // Serial.println("kg");
+  // ActiveSerial->print("Variance est.: ");
+  // ActiveSerial->print(varEstimate, 5);
+  // ActiveSerial->println("kg");
 
-  Serial.print("Stddev. est.: ");
-  Serial.print(_standardDeviationEstimate, 5);
-  Serial.println("kg");
+  ActiveSerial->print("Stddev. est.: ");
+  ActiveSerial->print(_standardDeviationEstimate, 5);
+  ActiveSerial->println("kg");
 }
 
 

@@ -258,7 +258,7 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
   // float stepperPos2 = stepper->getServosInternalPositionCorrected() - stepper->getMinPosition();
   // stepperPos = stepperPos2;
 
-  // Serial.printf("ESP pos: %f,    iSV pos: %f\n", stepperPos, stepperPos2);
+  // ActiveSerial->printf("ESP pos: %f,    iSV pos: %f\n", stepperPos, stepperPos2);
   // delay(20);
 
   if (false == expFilterHasBeenInitialized)
@@ -290,7 +290,7 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
   float d_f_tt_d_x_hor = -config_st->payLoadPedalConfig_.MPC_2nd_order_gain;
 
 
-  // Serial.printf("MPC 0: %f,    1:%f,    2:%f\n", config_st->payLoadPedalConfig_.MPC_0th_order_gain, config_st->payLoadPedalConfig_.MPC_1st_order_gain, config_st->payLoadPedalConfig_.MPC_2nd_order_gain);
+  // ActiveSerial->printf("MPC 0: %f,    1:%f,    2:%f\n", config_st->payLoadPedalConfig_.MPC_0th_order_gain, config_st->payLoadPedalConfig_.MPC_1st_order_gain, config_st->payLoadPedalConfig_.MPC_2nd_order_gain);
   // delay(20);
 
   // how many mm movement to order if 1kg of error force is detected
@@ -308,10 +308,10 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
   // d(x_hor) / d(step) = ( d(x_hor) / d(phi) ) * [ d(phi)/d(x) ] * { d(x)/d(step) }
   float d_x_hor_d_step = (-d_x_hor_d_phi) * (-d_phi_d_x) * mmPerStep;
 
-  // Serial.printf("PosFraction: %f,    pos:%f,    travelRange:%f,    posMin:%d,    posMax:%d\n", stepper->getCurrentPositionFractionFromExternalPos( stepperPos ), stepperPos, stepper->getCurrentTravelRange(),  calc_st->stepperPosMin, calc_st->stepperPosMax );
+  // ActiveSerial->printf("PosFraction: %f,    pos:%f,    travelRange:%f,    posMin:%d,    posMax:%d\n", stepper->getCurrentPositionFractionFromExternalPos( stepperPos ), stepperPos, stepper->getCurrentTravelRange(),  calc_st->stepperPosMin, calc_st->stepperPosMax );
   // delay(20);
 
-  // Serial.printf("speed: %f,    maxSpeed:%f\n", (float)currentSpeedInMilliHz, (float)maxSpeedInMilliHz);
+  // ActiveSerial->printf("speed: %f,    maxSpeed:%f\n", (float)currentSpeedInMilliHz, (float)maxSpeedInMilliHz);
   // delay(20);
 
   // velocity dependent force in kg = (kg*s/step) * (step/s)
@@ -333,7 +333,7 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
   // [d_x_hor_d_step] = mm/step, e.g. 0.001458
   // if (printStep > 10)
   // {
-  //   Serial.printf("Vel:%f,    mmPerStep:%f,    d_phi_d_x:%f,    d_x_hor_d_phi:%f,    d_x_hor_d_step:%f,    force:%f\n", speedNormalized_fl32, mmPerStep, d_phi_d_x, d_x_hor_d_phi, d_x_hor_d_step, velocityDependingForceInKg_fl32);
+  //   ActiveSerial->printf("Vel:%f,    mmPerStep:%f,    d_phi_d_x:%f,    d_x_hor_d_phi:%f,    d_x_hor_d_step:%f,    force:%f\n", speedNormalized_fl32, mmPerStep, d_phi_d_x, d_x_hor_d_phi, d_x_hor_d_step, velocityDependingForceInKg_fl32);
   //   printStep = 0;
   // }
   // else{
@@ -393,7 +393,7 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
     // given in kg/step
     float m2 = gradient_force_curve_fl32; 
     
-    // Serial.printf("m1:%f,    m2:%f,    speed:%f\n", m1, m2, (float)currentSpeedInHz);
+    // ActiveSerial->printf("m1:%f,    m2:%f,    speed:%f\n", m1, m2, (float)currentSpeedInHz);
     // delay(20);
 
     // Newton update
@@ -446,7 +446,7 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
 
   // stepperPos = filteredOutput;
 
-  // Serial.printf("0:%i, 1:%i, 2:%i, 3:%i, 4:%i\n", stepUpdates[0], stepUpdates[1], stepUpdates[2], stepUpdates[3], stepUpdates[4]);
+  // ActiveSerial->printf("0:%i, 1:%i, 2:%i, 3:%i, 4:%i\n", stepUpdates[0], stepUpdates[1], stepUpdates[2], stepUpdates[3], stepUpdates[4]);
   // delay(20);
   
   // read the min position
@@ -574,8 +574,8 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
 
   stepper->moveTo(minPos, true);
 
-  Serial.println("======================================");
-  Serial.println("Start system identification data:");
+  ActiveSerial->println("======================================");
+  ActiveSerial->println("Start system identification data:");
 
   unsigned long initialTime = micros();
   unsigned long t = micros();
@@ -621,6 +621,6 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
     }
   }
 
-  Serial.println("======================================");
-  Serial.println("End system identification data");
+  ActiveSerial->println("======================================");
+  ActiveSerial->println("End system identification data");
 }

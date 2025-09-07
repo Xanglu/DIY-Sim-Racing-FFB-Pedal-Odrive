@@ -231,16 +231,16 @@ class helicoptersRudder{
     /*
     if(debugPrintLast-millis()>200)
     {
-      Serial.print("Current Force=");
-      Serial.println(currentForceReading);
-      Serial.print("offset_filter=");
-      Serial.println(offset_filter);
-      Serial.print("offset_Last=");
-      Serial.println(offsetLast);
-      Serial.print("position_ratio_Last=");
-      Serial.println(position_ratio_last);
-      Serial.print("position_ratio_sync=");
-      Serial.println(position_ratio_sync);     
+      ActiveSerial->print("Current Force=");
+      ActiveSerial->println(currentForceReading);
+      ActiveSerial->print("offset_filter=");
+      ActiveSerial->println(offset_filter);
+      ActiveSerial->print("offset_Last=");
+      ActiveSerial->println(offsetLast);
+      ActiveSerial->print("position_ratio_Last=");
+      ActiveSerial->println(position_ratio_last);
+      ActiveSerial->print("position_ratio_sync=");
+      ActiveSerial->println(position_ratio_sync);     
     }
     */
   }

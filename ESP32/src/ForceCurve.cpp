@@ -81,20 +81,20 @@ float ForceCurve_Interpolated::EvalForceCubicSpline(const DAP_config_st* config_
   /*
   if(fractionalPos>0.9)
   {
-    Serial.print("force y=");
-    Serial.print(y);
-    Serial.print(", splineSegment_fl32=");
-    Serial.print(splineSegment_fl32);
-    Serial.print(", splineSegment_u8=");
-    Serial.println(splineSegment_u8);    
-    Serial.print("numberOfPoints_u32=");
-    Serial.print(numberOfPoints_u32);    
-    Serial.print(", fractionalPos_float=");
-    Serial.print(fractionalPos_float);    
-    Serial.print(", interpolar a=");
-    Serial.print(a); 
-    Serial.print(", interpolar b=");
-    Serial.println(b);     
+    ActiveSerial->print("force y=");
+    ActiveSerial->print(y);
+    ActiveSerial->print(", splineSegment_fl32=");
+    ActiveSerial->print(splineSegment_fl32);
+    ActiveSerial->print(", splineSegment_u8=");
+    ActiveSerial->println(splineSegment_u8);    
+    ActiveSerial->print("numberOfPoints_u32=");
+    ActiveSerial->print(numberOfPoints_u32);    
+    ActiveSerial->print(", fractionalPos_float=");
+    ActiveSerial->print(fractionalPos_float);    
+    ActiveSerial->print(", interpolar a=");
+    ActiveSerial->print(a); 
+    ActiveSerial->print(", interpolar b=");
+    ActiveSerial->println(b);     
   }
   */
   return y;
@@ -188,39 +188,39 @@ float ForceCurve_Interpolated::EvalForceGradientCubicSpline(const DAP_config_st*
   /*
   if(fractionalPos>0.9)
   {
-    Serial.print("forcegradient y_prime=");
-    Serial.print(y_prime);
-    Serial.print(", splineSegment_fl32=");
-    Serial.print(splineSegment_fl32);
-    Serial.print(", splineSegment_u8=");
-    Serial.println(splineSegment_u8);    
-    Serial.print("numberOfPoints_u32=");
-    Serial.print(numberOfPoints_u32);    
-    Serial.print(", fractionalPos_float=");
-    Serial.print(fractionalPos_float);    
-    Serial.print(", interpolar a=");
-    Serial.print(a); 
-    Serial.print(", interpolar b=");
-    Serial.println(b);
-    Serial.print("dx=");
-    Serial.print(dx);     
-    Serial.print(", t=");
-    Serial.print(t);
-    Serial.print(", dy=");
-    Serial.print(dy);
+    ActiveSerial->print("forcegradient y_prime=");
+    ActiveSerial->print(y_prime);
+    ActiveSerial->print(", splineSegment_fl32=");
+    ActiveSerial->print(splineSegment_fl32);
+    ActiveSerial->print(", splineSegment_u8=");
+    ActiveSerial->println(splineSegment_u8);    
+    ActiveSerial->print("numberOfPoints_u32=");
+    ActiveSerial->print(numberOfPoints_u32);    
+    ActiveSerial->print(", fractionalPos_float=");
+    ActiveSerial->print(fractionalPos_float);    
+    ActiveSerial->print(", interpolar a=");
+    ActiveSerial->print(a); 
+    ActiveSerial->print(", interpolar b=");
+    ActiveSerial->println(b);
+    ActiveSerial->print("dx=");
+    ActiveSerial->print(dx);     
+    ActiveSerial->print(", t=");
+    ActiveSerial->print(t);
+    ActiveSerial->print(", dy=");
+    ActiveSerial->print(dy);
     if(splineSegment_u8==numberOfSplineSegments)
     {
-      Serial.print(", yOrig[splineSegment_u8]=");
-      Serial.print(yOrig[splineSegment_u8 ]);
-      Serial.print(", yOrig[splineSegment_u8-1]=");
-      Serial.println(yOrig[splineSegment_u8-1]);
+      ActiveSerial->print(", yOrig[splineSegment_u8]=");
+      ActiveSerial->print(yOrig[splineSegment_u8 ]);
+      ActiveSerial->print(", yOrig[splineSegment_u8-1]=");
+      ActiveSerial->println(yOrig[splineSegment_u8-1]);
     }
     else
     {
-      Serial.print(", yOrig[splineSegment_u8 + 1]=");
-      Serial.print(yOrig[splineSegment_u8 + 1]);
-      Serial.print(", yOrig[splineSegment_u8]=");
-      Serial.println(yOrig[splineSegment_u8]);
+      ActiveSerial->print(", yOrig[splineSegment_u8 + 1]=");
+      ActiveSerial->print(yOrig[splineSegment_u8 + 1]);
+      ActiveSerial->print(", yOrig[splineSegment_u8]=");
+      ActiveSerial->println(yOrig[splineSegment_u8]);
     }
 
   }
@@ -306,20 +306,20 @@ float ForceCurve_Interpolated::EvalJoystickCubicSpline(const DAP_config_st* conf
     }
     //debug
     /*
-    Serial.print("joystick y=");
-    Serial.print(y);
-    Serial.print(", splineSegment_fl32=");
-    Serial.print(splineSegment_fl32);
-    Serial.print(", splineSegment_u8=");
-    Serial.println(splineSegment_u8);    
-    Serial.print("numberOfPoints_u32=");
-    Serial.print(numberOfPoints_u32);    
-    Serial.print(", fractionalPos_float=");
-    Serial.print(fractionalPos_float);    
-    Serial.print(", interpolar a=");
-    Serial.print(a); 
-    Serial.print(", interpolar b=");
-    Serial.println(b);
+    ActiveSerial->print("joystick y=");
+    ActiveSerial->print(y);
+    ActiveSerial->print(", splineSegment_fl32=");
+    ActiveSerial->print(splineSegment_fl32);
+    ActiveSerial->print(", splineSegment_u8=");
+    ActiveSerial->println(splineSegment_u8);    
+    ActiveSerial->print("numberOfPoints_u32=");
+    ActiveSerial->print(numberOfPoints_u32);    
+    ActiveSerial->print(", fractionalPos_float=");
+    ActiveSerial->print(fractionalPos_float);    
+    ActiveSerial->print(", interpolar a=");
+    ActiveSerial->print(a); 
+    ActiveSerial->print(", interpolar b=");
+    ActiveSerial->println(b);
     */  
   }
   if (fractionalPos_float>= calc_st->joystickOrig[(int)numberOfSplineSegments])
