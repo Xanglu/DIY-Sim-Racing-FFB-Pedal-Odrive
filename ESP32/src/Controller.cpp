@@ -1,16 +1,14 @@
 #include "Controller.h"
 
-int32_t NormalizeControllerOutputValue(float value, float minVal, float maxVal, float maxGameOutput) {
+uint16_t NormalizeControllerOutputValue(float value, float minVal, float maxVal, float maxGameOutput) {
   float valRange = (maxVal - minVal);
   if (abs(valRange) < 0.01) {
     return JOYSTICK_MIN_VALUE;   // avoid div-by-zero
   }
 
-  // float fractional = (value - minVal) / valRange;
-  // int32_t controller = JOYSTICK_MIN_VALUE + (fractional * JOYSTICK_RANGE);
-  // return constrain(value, JOYSTICK_MIN_VALUE, (maxGameOutput/100.) * JOYSTICK_MAX_VALUE);
-
-  return map(value, minVal, maxVal, JOYSTICK_MIN_VALUE, (maxGameOutput/100.0f) * JOYSTICK_MAX_VALUE);
+  float fractional = (value - minVal) / valRange;
+  uint16_t controller = JOYSTICK_MIN_VALUE + (maxGameOutput/100.0f) * (fractional * JOYSTICK_RANGE);
+  return controller;
 }
 
 
@@ -19,30 +17,34 @@ int32_t NormalizeControllerOutputValue(float value, float minVal, float maxVal, 
 #include <string>
 #include "Adafruit_TinyUSB.h"
 
-// HID report descriptor
-// Single Report (no ID) descriptor
-uint8_t const desc_hid_report[] =
-{
-  0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
-  0x09, 0x04,        // Usage (Joystick)
-  0xA1, 0x01,        // Collection (Application)
-  0x09, 0x30,        //   Usage (X)
-  0x15, 0x00,        //   Logical Minimum (0)
-  0x26, 0xFF, 0xFF,  //   Logical Maximum (65535)
-  0x75, 0x10,        //   Report Size (16)
-  0x95, 0x01,        //   Report Count (1)
-  0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-  0xC0,              // End Collection
+// HID Report Descriptor for Racing Pedal (Brake only)
+const uint8_t desc_hid_report[] = {
+    0x05, 0x01,        // Usage Page (Generic Desktop Controls)
+    0x09, 0x04,        // Usage (Joystick)
+    0xA1, 0x01,        // Collection (Application)
+
+    0x05, 0x02,        //   Usage Page (Simulation Controls)
+    0x09, 0xC5,        //   Usage (Brake)  <-- special "pedal" usage
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x26, 0xFF, 0xFF,  //   Logical Maximum (65535)
+    0x75, 0x10,        //   Report Size (16 bits)
+    0x95, 0x01,        //   Report Count (1)
+    0x81, 0x02,        //   Input (Data,Var,Abs)  <-- absolute, not relative
+
+    0xC0               // End Collection
 };
+
 
 // USB HID object
 Adafruit_USBD_HID usb_hid;
 
-// Report payload
-uint16_t axis_value = 0;
+// Report payload for the two axes
+typedef struct {
+  uint16_t brake;
+} hid_report_t;
 
-int32_t previousTransmittedControllerValue_u32 = 0;
-bool newControllerValueReceived_b = false;
+hid_report_t hid_report = {0};
+
 
 
 void SetupController_USB(uint8_t pedal_ID) 
@@ -106,13 +108,22 @@ bool IsControllerReady() {
   return returnValue_b;
 }
 
-void SetControllerOutputValue(int32_t value) {
+void SetControllerOutputValue(uint16_t value) {
   
-  axis_value = value;
 
-  previousTransmittedControllerValue_u32 = value;
-  newControllerValueReceived_b = true;
-  usb_hid.sendReport(0, &axis_value, sizeof(axis_value));
+  uint16_t tmp = value;
+
+  if (tmp < 0x7FFF)
+  {
+    tmp += 0x7FFF + 1;
+  }
+  else
+  {
+    tmp -= 0x7FFF + 1;
+  }
+
+  hid_report.brake = tmp;
+  usb_hid.sendReport(0, &hid_report, sizeof(hid_report));
 }
 
 

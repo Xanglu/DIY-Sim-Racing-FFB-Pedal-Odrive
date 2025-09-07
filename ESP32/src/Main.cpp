@@ -189,7 +189,7 @@ typedef struct {
 } PedalStatePackage_t;
 
 typedef struct {
-    int32_t joystickNormalizedToInt32;
+    uint16_t joystickNormalizedToUInt16;
     bool sendJoystickFlag_b;
 } joystickDataPackage_t;
 
@@ -1515,7 +1515,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
   float joystickNormalizedToInt32_orig;
   float joystickfrac;
   float joystickNormalizedToInt32_eval;
-  int32_t joystickNormalizedToInt32 = 0;
+  uint16_t joystickNormalizedToUInt16 = 0;
   int32_t ABS_trigger_value;
 
   uint8_t sendPedalStructsViaSerialCounter_u8 = 0;
@@ -2105,8 +2105,8 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       joystickfrac=(float)joystickNormalizedToInt32_orig/(float)JOYSTICK_MAX_VALUE;
       joystickNormalizedToInt32_eval = forceCurve.EvalJoystickCubicSpline(&dap_config_pedalUpdateTask_st, &dap_calculationVariables_st, joystickfrac);
       
-      joystickNormalizedToInt32 = joystickNormalizedToInt32_eval/100.0f* JOYSTICK_MAX_VALUE;
-      joystickNormalizedToInt32 = constrain(joystickNormalizedToInt32,0,JOYSTICK_MAX_VALUE);
+      joystickNormalizedToUInt16 = joystickNormalizedToInt32_eval/100.0f* JOYSTICK_MAX_VALUE;
+      joystickNormalizedToUInt16 = constrain(joystickNormalizedToUInt16,0,JOYSTICK_MAX_VALUE);      
 
 
       // send joystick data to queue
@@ -2121,7 +2121,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           // Package the new state data into a single struct
           joystickDataPackage_t newJoystickPackage;
           newJoystickPackage.sendJoystickFlag_b = true;
-          newJoystickPackage.joystickNormalizedToInt32 = joystickNormalizedToInt32;
+          newJoystickPackage.joystickNormalizedToUInt16 = joystickNormalizedToUInt16;
 
           // Send the package to the queue. Use a timeout of 0 (non-blocking).
           // If the queue is full, the data is simply dropped. This prevents this
@@ -2198,7 +2198,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
         {
           dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalForce_u16 =  normalizedPedalReading_fl32 * 65535.0f;
           dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalPosition_u16 = constrain(stepperPosFraction, 0.0f, 1.0f) * 65535.0f;
-          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.joystickOutput_u16 = joystickNormalizedToInt32;
+          dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.joystickOutput_u16 = joystickNormalizedToUInt16;
           dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[0] = versionMajor;
           dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[1] = versionMinor;  
           dap_state_basic_st_lcl_pedalUpdateTask.payloadPedalState_Basic_.pedalFirmwareVersion_u8[2] = versionPatch;
@@ -2350,7 +2350,7 @@ void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
       
       // profiler_joystickOutputTask.start(1);
 
-      int32_t joystickData_i32 = receivedJoystickData.joystickNormalizedToInt32;
+      uint16_t joystickData_u16 = receivedJoystickData.joystickNormalizedToUInt16;
       bool sendFlag_b = receivedJoystickData.sendJoystickFlag_b;
 
       if (sendFlag_b)
@@ -2363,7 +2363,7 @@ void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
             if(dap_calculationVariables_st.Rudder_status==false)
             {
               //general output
-              SetControllerOutputValue(joystickData_i32);
+              SetControllerOutputValue(joystickData_u16);
             }
           }
         
