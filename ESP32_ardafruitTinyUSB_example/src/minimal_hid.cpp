@@ -80,7 +80,7 @@ void loop() {
   if (!usb_hid.ready()) return;
 
   // Ramp up the axis value
-  axis_value += 256;
+  axis_value += 50;
 
 
   Serial.print("Sending axis value: ");
@@ -90,5 +90,5 @@ void loop() {
 
   usb_hid.sendReport(0, &axis_value, sizeof(axis_value));
 
-  delay(10);
+  // delay(1);
 }

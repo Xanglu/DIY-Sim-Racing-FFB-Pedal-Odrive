@@ -900,14 +900,13 @@ namespace User.PluginSdkDemo
             if (Plugin._serialPort[pedalIdx].IsOpen)
             {
                 // ESP32 S3
-                /*
-                if (Plugin.Settings.RTSDTR_False[pedalIdx] == true)
+                // RTS/DTR to false before closing port, otherwise device will stall
+                if (Plugin.Settings.USING_ESP32S3[pedalIdx] == true)
                 {
+                    // ESP32 S3
                     Plugin._serialPort[pedalIdx].RtsEnable = false;
                     Plugin._serialPort[pedalIdx].DtrEnable = false;
                 }
-                */
-
 
                 Plugin._serialPort[pedalIdx].DiscardInBuffer();
                 Plugin._serialPort[pedalIdx].DiscardOutBuffer();
