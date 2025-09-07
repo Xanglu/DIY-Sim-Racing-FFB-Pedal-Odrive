@@ -72,6 +72,10 @@ void loop() {
   TinyUSBDevice.task();
   #endif
 
+  // Check RTS and DTR status
+  // bool dtr_status = Serial.dtr();
+  // bool rts_status = Serial.rts();
+
   // not enumerated()/mounted() yet: nothing to do
   if (!TinyUSBDevice.mounted()) {
     return;
@@ -82,9 +86,22 @@ void loop() {
   // Ramp up the axis value
   axis_value += 50;
 
+  // For CDC instance 0 (the default one)
+  bool dtr = tud_cdc_connected();       // true if host has opened the port (DTR asserted)
+  bool rts = tud_cdc_get_line_state() & 2; // bit1 = RTS, bit0 = DTR
 
-  Serial.print("Sending axis value: ");
-  Serial.println(axis_value);
+  // if (dtr) {
+  //   Serial.println("DTR is asserted");
+  // }
+  // if (rts) {
+  //   Serial.println("RTS is asserted");
+  // }
+
+
+  if (dtr) {
+    Serial.print("Sending axis value: ");
+    Serial.println(axis_value);
+  }
 
   // delay(100);
 
