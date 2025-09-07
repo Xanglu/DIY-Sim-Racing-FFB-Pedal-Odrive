@@ -146,7 +146,7 @@ private:
             }
         }
         ActiveSerial->println(F("---------------------------------------------"));
-        Serial.flush();
+        ActiveSerial->flush();
         delay(10);
     }
 

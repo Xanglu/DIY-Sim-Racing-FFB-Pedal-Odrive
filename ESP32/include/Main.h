@@ -318,6 +318,8 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define OTA_update
   #define USING_BUZZER
   #define RUN_IN_CACHE
+
+  #define USE_CDC_INSTEAD_OF_UART
 #endif
 
 // PCBA V2

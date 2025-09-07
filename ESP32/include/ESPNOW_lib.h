@@ -241,7 +241,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
           uint16_t crc;
           DAP_config_st *dap_config_st_local_ptr;
           dap_config_st_local_ptr = &dap_config_espnow_recv_st;
-          // Serial.readBytes((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
+          // ActiveSerial->readBytes((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
           memcpy(dap_config_st_local_ptr, data, sizeof(DAP_config_st));
 
           // check if data is plausible
@@ -291,7 +291,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
       {
               
               memcpy(&dap_actions_st, data, sizeof(DAP_actions_st));
-              //Serial.readBytes((char*)&dap_actions_st, sizeof(DAP_actions_st));
+              //ActiveSerial->readBytes((char*)&dap_actions_st, sizeof(DAP_actions_st));
               if (dap_actions_st.payLoadHeader_.PedalTag == dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type)
               {
                 bool structChecker = true;

@@ -2451,11 +2451,11 @@ void serialCommunicationTaskRx(void *pvParameters) {
           profiler_serialCommunicationTask.start(0);
 
           // --- 1. Read all available data into our buffer ---
-          if (Serial.available()) {
+          if (ActiveSerial->available()) {
               // Prevent buffer overflow by only reading what fits
-              size_t bytesToRead = min((size_t)Serial.available(), RX_BUFFER_SIZE - buffer_len);
+              size_t bytesToRead = min((size_t)ActiveSerial->available(), RX_BUFFER_SIZE - buffer_len);
               if (bytesToRead > 0) {
-                  Serial.readBytes(&rx_buffer[buffer_len], bytesToRead);
+                  ActiveSerial->readBytes(&rx_buffer[buffer_len], bytesToRead);
                   buffer_len += bytesToRead;
               }
 
@@ -2736,7 +2736,7 @@ void serialCommunicationTaskRx(void *pvParameters) {
                       buzzerBeepAction_b=true;
                     #endif
 
-                    //Serial.readBytes((char*)&dap_action_ota_st, sizeof(DAP_action_ota_st));
+                    //ActiveSerial->readBytes((char*)&dap_action_ota_st, sizeof(DAP_action_ota_st));
                     #ifdef OTA_update
                       if(dap_action_ota_st.payLoadHeader_.payloadType==DAP_PAYLOAD_TYPE_ACTION_OTA)
                       {
@@ -3354,7 +3354,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             OTA_enable_start=true;
             ESPNow_OTA_enable=false;
             //ActiveSerial->println("get basic wifi info");
-            //Serial.readBytes((char*)&dap_action_ota_st, sizeof(DAP_action_ota_st));
+            //ActiveSerial->readBytes((char*)&dap_action_ota_st, sizeof(DAP_action_ota_st));
             #ifdef OTA_update
 
               if(dap_action_ota_st.payLoadHeader_.payloadType==DAP_PAYLOAD_TYPE_ACTION_OTA)

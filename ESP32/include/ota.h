@@ -138,7 +138,7 @@ void ota_wifi_initialize(char* APhostname)
     IPAddress local_ip(192, 168, 2, 1);
     IPAddress local_mask(255,255,255,0);
     IPAddress gateway(192, 168, 2, 1);
-    //Serial.begin(115200);
+    //ActiveSerial->begin(115200);
     WiFi.softAP(APhostname,password);
     WiFi.softAPConfig(local_ip,gateway,local_mask);
     ActiveSerial->println("");
