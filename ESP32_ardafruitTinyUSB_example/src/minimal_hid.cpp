@@ -67,7 +67,7 @@ void setup() {
   
 
   // Setup HID
-  usb_hid.setPollInterval(2);
+  usb_hid.setPollInterval(0);
   usb_hid.setReportDescriptor(desc_hid_report, sizeof(desc_hid_report));
   usb_hid.begin();
 
@@ -119,9 +119,16 @@ void loop() {
   //   ActiveSerial->println(axis_value);
   // #endif
 
+  static unsigned long last_micros = 0;
+  unsigned long current_micros = micros();
+  unsigned long delta_micros = current_micros - last_micros;
+  last_micros = current_micros;
 
   ActiveSerial->print("Sending axis value: ");
-  ActiveSerial->println(axis_value);
+  ActiveSerial->print(axis_value);
+  ActiveSerial->print("     (Delta: ");
+  ActiveSerial->print(delta_micros);
+  ActiveSerial->println(" us)");
 
   usb_hid.sendReport(0, &axis_value, sizeof(axis_value));
 }
