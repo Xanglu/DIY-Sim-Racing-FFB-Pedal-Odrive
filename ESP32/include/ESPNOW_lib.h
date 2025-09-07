@@ -129,7 +129,7 @@ void ESPNow_Joystick_Broadcast(int32_t controllerValue)
   if (result != ESP_OK) 
   {
     ESPNow_no_device=true;
-    //Serial.println("Failed send data to ESP_Master");
+    //ActiveSerial->println("Failed send data to ESP_Master");
   }
   else
   {
@@ -138,10 +138,10 @@ void ESPNow_Joystick_Broadcast(int32_t controllerValue)
   */
   
   /*if (result == ESP_OK) {
-    Serial.println("Sent with success");
+    ActiveSerial->println("Sent with success");
   }
   else {
-    Serial.println("Error sending the data");
+    ActiveSerial->println("Error sending the data");
   }*/
 }
 void ESPNow_Pairing_callback(const uint8_t *mac_addr, const uint8_t *data, int data_len)
@@ -235,7 +235,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
       {
         if (esp_now_info->src_addr[5] == esp_Host[5])
         {
-          // Serial.println("dap_config_st ESPNow recieved");
+          // ActiveSerial->println("dap_config_st ESPNow recieved");
 
           bool structChecker = true;
           uint16_t crc;
@@ -272,7 +272,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
           // if checks are successfull, overwrite global configuration struct
           if (structChecker == true)
           {
-            // Serial.println("Updating pedal config");
+            // ActiveSerial->println("Updating pedal config");
             configDataPackage_t configPackage_st;
             configPackage_st.config_st = dap_config_espnow_recv_st;
             xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
@@ -405,8 +405,8 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
                     //uint16_t crc = checksumCalculator((uint8_t*)(&(dap_config_st.payLoadHeader_)), sizeof(dap_config_st.payLoadHeader_) + sizeof(dap_config_st.payLoadPedalConfig_));
                     crc = checksumCalculator((uint8_t*)(&(dap_config_st.payLoadHeader_)), sizeof(dap_config_st.payLoadHeader_) + sizeof(dap_config_st.payLoadPedalConfig_));
                     dap_config_st_local_ptr->payloadFooter_.checkSum = crc;
-                    Serial.write((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
-                    Serial.print("\r\n");
+                    ActiveSerial->write((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
+                    ActiveSerial->print("\r\n");
                     */
                   }
                   if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::RUDDER_THROTTLE_AND_BRAKE || dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::RUDDER_THROTTLE_AND_CLUTCH)
@@ -425,19 +425,19 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
                     {
                       dap_calculationVariables_st.Rudder_status=true;
                       Rudder_initializing=true;
-                      //Serial.println("Rudder on");
+                      //ActiveSerial->println("Rudder on");
                       moveSlowlyToPosition_b=true;
-                      //Serial.print("status:");
-                      //Serial.println(dap_calculationVariables_st.Rudder_status);
+                      //ActiveSerial->print("status:");
+                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
                     }
                     else
                     {
                       dap_calculationVariables_st.Rudder_status=false;
-                      //Serial.println("Rudder off");
+                      //ActiveSerial->println("Rudder off");
                       Rudder_deinitializing=true;
                       moveSlowlyToPosition_b=true;
-                      //Serial.print("status:");
-                      //Serial.println(dap_calculationVariables_st.Rudder_status);
+                      //ActiveSerial->print("status:");
+                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
                     }
                   }
                   if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_BRAKE || dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_CLUTCH)
@@ -455,19 +455,19 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
                     {
                       dap_calculationVariables_st.helicopterRudderStatus=true;
                       HeliRudder_initializing=true;
-                      //Serial.println("Rudder on");
+                      //ActiveSerial->println("Rudder on");
                       moveSlowlyToPosition_b=true;
-                      //Serial.print("status:");
-                      //Serial.println(dap_calculationVariables_st.Rudder_status);
+                      //ActiveSerial->print("status:");
+                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
                     }
                     else
                     {
                       dap_calculationVariables_st.helicopterRudderStatus=false;
-                      //Serial.println("Rudder off");
+                      //ActiveSerial->println("Rudder off");
                       HeliRudder_deinitializing=true;
                       moveSlowlyToPosition_b=true;
-                      //Serial.print("status:");
-                      //Serial.println(dap_calculationVariables_st.Rudder_status);
+                      //ActiveSerial->print("status:");
+                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
                     }
                   }
                   if(dap_actions_st.payloadPedalAction_.Rudder_brake_action==1)
@@ -476,16 +476,16 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
                     if(dap_calculationVariables_st.rudder_brake_status==false&&dap_calculationVariables_st.Rudder_status==true)
                     {
                       dap_calculationVariables_st.rudder_brake_status=true;
-                      //Serial.println("Rudder brake on");
-                      //Serial.print("status:");
-                      //Serial.println(dap_calculationVariables_st.Rudder_status);
+                      //ActiveSerial->println("Rudder brake on");
+                      //ActiveSerial->print("status:");
+                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
                     }
                     else
                     {
                       dap_calculationVariables_st.rudder_brake_status=false;
-                      //Serial.println("Rudder brake off");
-                      //Serial.print("status:");
-                      //Serial.println(dap_calculationVariables_st.Rudder_status);
+                      //ActiveSerial->println("Rudder brake off");
+                      //ActiveSerial->print("status:");
+                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
                     }
                   }
                   //clear rudder status
@@ -494,7 +494,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
                     dap_calculationVariables_st.Rudder_status=false;
                     dap_calculationVariables_st.helicopterRudderStatus=false;
                     dap_calculationVariables_st.rudder_brake_status=false;
-                    //Serial.println("Rudder Status Clear");
+                    //ActiveSerial->println("Rudder Status Clear");
                     Rudder_deinitializing=true;
                     HeliRudder_deinitializing=true;
                     moveSlowlyToPosition_b=true;
@@ -570,11 +570,11 @@ void ESPNow_initialize()
   global_dap_config_class.getConfig(&dap_config_espnow_init_st, 1);
   
   WiFi.mode(WIFI_MODE_STA);
-  Serial.println("Initializing ESPNow, please wait");
-  // Serial.print("Current MAC Address:  ");
-  // Serial.println(WiFi.macAddress());
+  ActiveSerial->println("Initializing ESPNow, please wait");
+  // ActiveSerial->print("Current MAC Address:  ");
+  // ActiveSerial->println(WiFi.macAddress());
   WiFi.macAddress(esp_Mac);
-  Serial.printf("Device Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", esp_Mac[0], esp_Mac[1], esp_Mac[2], esp_Mac[3], esp_Mac[4], esp_Mac[5]);
+  ActiveSerial->printf("Device Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", esp_Mac[0], esp_Mac[1], esp_Mac[2], esp_Mac[3], esp_Mac[4], esp_Mac[5]);
   #ifndef ESPNow_Pairing_function
     if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 0)
     {
@@ -589,12 +589,12 @@ void ESPNow_initialize()
       esp_wifi_set_mac(WIFI_IF_STA, &Gas_mac[0]);
     }
     delay(300);
-    Serial.print("Modified MAC Address:  ");
-    Serial.println(WiFi.macAddress());
+    ActiveSerial->print("Modified MAC Address:  ");
+    ActiveSerial->println(WiFi.macAddress());
   #endif
 
   ESPNow.init();
-  Serial.println("Wait for ESPNOW");
+  ActiveSerial->println("Wait for ESPNOW");
   delay(3000);
   esp_now_rate_config_t global_peer_config;
   global_peer_config.dcm=false;
@@ -627,11 +627,11 @@ void ESPNow_initialize()
     {
       if (_ESP_pairing_reg.Pair_status[i] == 1)
       {
-        Serial.print("Paired Device #");
-        Serial.print(i);
-        // Serial.print(" Pair: ");
-        // Serial.print(_ESP_pairing_reg.Pair_status[i]);
-        Serial.printf(" Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", _ESP_pairing_reg.Pair_mac[i][0], _ESP_pairing_reg.Pair_mac[i][1], _ESP_pairing_reg.Pair_mac[i][2], _ESP_pairing_reg.Pair_mac[i][3], _ESP_pairing_reg.Pair_mac[i][4], _ESP_pairing_reg.Pair_mac[i][5]);
+        ActiveSerial->print("Paired Device #");
+        ActiveSerial->print(i);
+        // ActiveSerial->print(" Pair: ");
+        // ActiveSerial->print(_ESP_pairing_reg.Pair_status[i]);
+        ActiveSerial->printf(" Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", _ESP_pairing_reg.Pair_mac[i][0], _ESP_pairing_reg.Pair_mac[i][1], _ESP_pairing_reg.Pair_mac[i][2], _ESP_pairing_reg.Pair_mac[i][3], _ESP_pairing_reg.Pair_mac[i][4], _ESP_pairing_reg.Pair_mac[i][5]);
       }
     }
     for (int i = 0; i < 4; i++)
@@ -681,19 +681,19 @@ void ESPNow_initialize()
     {
       ESPNOW_status=true;
       //esp_now_set_peer_rate_config(esp_master, &global_peer_config);
-      Serial.println("Sucess to add joystick peer");
+      ActiveSerial->println("Sucess to add joystick peer");
     }
     if(ESPNow.add_peer(esp_Host)== ESP_OK)
     {
       ESPNOW_status=true;
       //esp_now_set_peer_rate_config(esp_Host, &global_peer_config);
-      Serial.println("Sucess to add host peer");
+      ActiveSerial->println("Sucess to add host peer");
     }
     if(ESPNow.add_peer(broadcast_mac)== ESP_OK)
     {
       ESPNOW_status=true;
       //esp_now_set_peer_rate_config(broadcast_mac, &global_peer_config);
-      Serial.println("Sucess to add broadcast peer");
+      ActiveSerial->println("Sucess to add broadcast peer");
     }
     ESPNow.reg_recv_cb(onRecv);
     ESPNow.reg_send_cb(OnSent);
@@ -702,7 +702,7 @@ void ESPNow_initialize()
     esp_wifi_set_promiscuous_rx_cb(&promiscuous_rx_cb);
     ESPNow_initial_status=true;
     ESPNOW_status=true;
-    Serial.println("ESPNow Initialized");
+    ActiveSerial->println("ESPNow Initialized");
   
 }
 

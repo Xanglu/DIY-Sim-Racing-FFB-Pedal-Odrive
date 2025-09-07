@@ -581,3 +581,9 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define TASK_PRIORITY_PROFILER_TASK (UBaseType_t)1
   #define TASK_PRIORITY_MISC_TASK (UBaseType_t)1
 #endif
+
+
+// alias to serial stream, thus it can dynamically switch depending on board
+extern Stream *ActiveSerial;
+
+#define BAUDRATE 3000000

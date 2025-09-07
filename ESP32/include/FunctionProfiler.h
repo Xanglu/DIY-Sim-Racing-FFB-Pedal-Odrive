@@ -137,15 +137,15 @@ private:
     SemaphoreHandle_t reportMutex;
 
     void printReportInternal() {
-        Serial.printf("\n------ FunctionProfiler Report (by ID) for task: %s ------\n", taskName.c_str());
+        ActiveSerial->printf("\n------ FunctionProfiler Report (by ID) for task: %s ------\n", taskName.c_str());
         for (int i = 0; i < MAX_TIMERS; ++i) {
             if (reportCounts[i] > 0) {
                 unsigned long avg = reportDurations[i] / reportCounts[i];
-                Serial.printf("ID %2d: calls=%lu | avg=%lu us | min=%lu us | max=%lu us | last=%lu us | maxs_cycle=%lu\n",
+                ActiveSerial->printf("ID %2d: calls=%lu | avg=%lu us | min=%lu us | max=%lu us | last=%lu us | maxs_cycle=%lu\n",
                     i, reportCounts[i], avg, reportMins[i], reportMaxs[i], reportLast[i], reportMaxsCycle[i]);
             }
         }
-        Serial.println(F("---------------------------------------------"));
+        ActiveSerial->println(F("---------------------------------------------"));
         Serial.flush();
         delay(10);
     }

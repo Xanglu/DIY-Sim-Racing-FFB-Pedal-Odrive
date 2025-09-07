@@ -74,7 +74,7 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 	// pinMode(pinMin, INPUT);
 	// pinMode(pinMax, INPUT);
 
-	Serial.printf("InvertStepperDir: %d\n", invertMotorDir_b);
+	ActiveSerial->printf("InvertStepperDir: %d\n", invertMotorDir_b);
 	_stepper = stepperEngine().stepperConnectToPin(pinStep);	
 
 	_stepper->setDirectionPin(pinDirection, invertMotorDir_b);
@@ -99,13 +99,13 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 	//delay(3000);
 	// find iSV57 servo ID
 	bool isv57slaveIdFound_b = isv57.findServosSlaveId();
-	Serial.print("iSV57 slaveId found:  ");
-	Serial.println( isv57slaveIdFound_b );
+	ActiveSerial->print("iSV57 slaveId found:  ");
+	ActiveSerial->println( isv57slaveIdFound_b );
 	
 	// restart ESP when no servo was detected
 	if (!isv57slaveIdFound_b)
 	{
-		Serial.println( "No servo found! Restarting ESP" );
+		ActiveSerial->println( "No servo found! Restarting ESP" );
 		ESP.restart();
 	}
 
@@ -114,7 +114,7 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 	setLifelineSignal();
 	if (getLifelineSignal() == false)
 	{
-		Serial.println( "No lifeline detected! Restarting ESP" );
+		ActiveSerial->println( "No lifeline detected! Restarting ESP" );
 		ESP.restart();
 	}
 	else
@@ -125,8 +125,8 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 		// reset iSV57 alarms
 		//bool servoAlarmsCleared = isv57.clearServoAlarms();
 
-		Serial.print("iSV57 communication state:  ");
-		Serial.println( getLifelineSignal() );
+		ActiveSerial->print("iSV57 communication state:  ");
+		ActiveSerial->println( getLifelineSignal() );
 
 		
 
@@ -223,9 +223,9 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 			{
 				servoBusVoltageParameterized_fl32 = SERVO_MAX_VOLTAGE_IN_V_36V;
 				servoBusVoltageParameterized_b = false;
-				Serial.print("Servos bus voltage in expected range (36V range): ");
-				Serial.print( servosBusVoltageInVolt_fl32 );
-				Serial.println("V");
+				ActiveSerial->print("Servos bus voltage in expected range (36V range): ");
+				ActiveSerial->print( servosBusVoltageInVolt_fl32 );
+				ActiveSerial->println("V");
 				break;
 			}
 
@@ -233,16 +233,16 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 			{
 				servoBusVoltageParameterized_fl32 = SERVO_MAX_VOLTAGE_IN_V_48V;
 				servoBusVoltageParameterized_b = false;
-				Serial.print("Servos bus voltage in expected range (48V range): ");
-				Serial.print( servosBusVoltageInVolt_fl32 );
-				Serial.println("V");
+				ActiveSerial->print("Servos bus voltage in expected range (48V range): ");
+				ActiveSerial->print( servosBusVoltageInVolt_fl32 );
+				ActiveSerial->println("V");
 				break;
 			}
 		}
 
 		if ( (false == servoRadingsTrustworthy_36VRange_b) && (false == servoRadingsTrustworthy_48VRange_b) )
 		{
-			Serial.print("Servo bus voltage not in expected range (16V-50V). Restarting ESP!");
+			ActiveSerial->print("Servo bus voltage not in expected range (16V-50V). Restarting ESP!");
 			ESP.restart();
 		}
 		
@@ -289,15 +289,15 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 		_stepper->forceStopAndNewPosition(setPosition);
 		delay(100);
 		
-		Serial.println("Min endstop reached.");
-		Serial.printf("Current pos: %d\n", _stepper->getCurrentPosition() );
+		ActiveSerial->println("Min endstop reached.");
+		ActiveSerial->printf("Current pos: %d\n", _stepper->getCurrentPosition() );
 		// move slightly away from the block to prevent mechanical hits during normal operation
 		_stepper->moveTo(0, true);
 		_endstopLimitMin = 0;
 		//delay(1000);
 
-		Serial.println("Moved to pos: 0");
-		Serial.printf("Current pos: %d\n", _stepper->getCurrentPosition() );
+		ActiveSerial->println("Moved to pos: 0");
+		ActiveSerial->printf("Current pos: %d\n", _stepper->getCurrentPosition() );
 		
 		
 		
@@ -318,8 +318,8 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 			bool servoPosRes_b = 0 == (isv57.servo_pos_given_p); 
 			if ( (false == restartServo) && (servoPosRes_b) )
 			{
-				Serial.print("Servo axis was reset succesfully! Current position: ");
-				Serial.println(isv57.servo_pos_given_p);
+				ActiveSerial->print("Servo axis was reset succesfully! Current position: ");
+				ActiveSerial->println(isv57.servo_pos_given_p);
 				servoAxisResetSuccessfull_b = true;
 				break;
 			}
@@ -327,19 +327,19 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 
 		if(false == servoAxisResetSuccessfull_b)
 		{
-			Serial.print("Servo axis not reset. Restarting ESP!");
+			ActiveSerial->print("Servo axis not reset. Restarting ESP!");
 			ESP.restart();
 		}*/
 		
 
-		// Serial.print("Servo axis current position (before clearing): ");
-		// Serial.println(isv57.servo_pos_given_p);
+		// ActiveSerial->print("Servo axis current position (before clearing): ");
+		// ActiveSerial->println(isv57.servo_pos_given_p);
 
 		// restartServo = true;
 		// delay(5000);
 
-		// Serial.print("Servo axis current position (after clearing): ");
-		// Serial.println(isv57.servo_pos_given_p);
+		// ActiveSerial->print("Servo axis current position (after clearing): ");
+		// ActiveSerial->println(isv57.servo_pos_given_p);
 
 
 
@@ -376,13 +376,13 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 			// virtual endstop
 			endPosDetected |= (_stepper->getCurrentPosition() > maxStepsToReachEndPos);
 
-			//Serial.printf("Pos: %d\n", _stepper->getCurrentPosition());
+			//ActiveSerial->printf("Pos: %d\n", _stepper->getCurrentPosition());
 		}
 		_stepper->forceStop();
 		delay(100);
 		_endstopLimitMax = _stepper->getCurrentPosition() - 5 * ENDSTOP_MOVEMENT_SENSORLESS;
 
-		Serial.printf("Max endstop reached: %d\n", _endstopLimitMax);
+		ActiveSerial->printf("Max endstop reached: %d\n", _endstopLimitMax);
 		
 		// move slowly to min position
 		//moveSlowlyToPos(_posMin);
@@ -423,7 +423,7 @@ void StepperWithLimits::pauseTask()
 void StepperWithLimits::updatePedalMinMaxPos(uint8_t pedalStartPosPct, uint8_t pedalEndPosPct) {
   int32_t limitRange = _endstopLimitMax - _endstopLimitMin;
 
-//   Serial.printf("PedalStart: %d,    PedalEnd:%d\n", pedalStartPosPct, pedalEndPosPct);
+//   ActiveSerial->printf("PedalStart: %d,    PedalEnd:%d\n", pedalStartPosPct, pedalEndPosPct);
 
   float helper;
   helper = _endstopLimitMin + (((float)limitRange * (float)pedalStartPosPct) * 0.01f);
@@ -525,10 +525,10 @@ void StepperWithLimits::correctPos()
 
 			// if (stepOffset != 0)
 			// {
-			// 	Serial.print("Position compensation: ");
-			// 	Serial.print(servo_offset_compensation_steps_i32);
-			// 	Serial.print(",   ");
-			// 	Serial.println(stepOffset);
+			// 	ActiveSerial->print("Position compensation: ");
+			// 	ActiveSerial->print(servo_offset_compensation_steps_i32);
+			// 	ActiveSerial->print(",   ");
+			// 	ActiveSerial->println(stepOffset);
 			// }
 
 			// offset = ESPs position - servos position
@@ -826,7 +826,7 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 				/************************************************************/
 				if (true == stepper_cl->clearAllServoAlarms_b)
 				{
-					Serial.println("Clearing all servo alarms.");
+					ActiveSerial->println("Clearing all servo alarms.");
 					stepper_cl->isv57.clearServoAlarms();
 					stepper_cl->isv57.readAlarmHistory();
 					stepper_cl->clearAllServoAlarms_b = false;
@@ -875,16 +875,16 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 
 					if (false == servoBusVoltageParameterized_b)
 					{
-						Serial.print("Setting virtual brake resistor to ");
-						Serial.print( servoBusVoltageParameterized_fl32 );
-						Serial.println("V");
+						ActiveSerial->print("Setting virtual brake resistor to ");
+						ActiveSerial->print( servoBusVoltageParameterized_fl32 );
+						ActiveSerial->println("V");
 
 						#ifdef BRAKE_RESISTOR_PIN
-							Serial.print("Setting real brake resistor thresholds to ");
-							Serial.print( servoBusVoltageParameterized_fl32+BRAKE_RESISTOR_UPPER_TRHESHOLD_VOLTAGE );
-							Serial.print("V and ");
-							Serial.print( servoBusVoltageParameterized_fl32+BRAKE_RESISTOR_LOWER_TRHESHOLD_VOLTAGE );
-							Serial.println("V");
+							ActiveSerial->print("Setting real brake resistor thresholds to ");
+							ActiveSerial->print( servoBusVoltageParameterized_fl32+BRAKE_RESISTOR_UPPER_TRHESHOLD_VOLTAGE );
+							ActiveSerial->print("V and ");
+							ActiveSerial->print( servoBusVoltageParameterized_fl32+BRAKE_RESISTOR_LOWER_TRHESHOLD_VOLTAGE );
+							ActiveSerial->println("V");
 						#endif
 
 						// set iSV57 parameters for 36 or 48V range
@@ -1074,7 +1074,7 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 
 
 					
-					// Serial.printf("Cond1: %d,    Cond2: %d,    Cond3: %d,    servoPos: %d\n", cond_stepperIsAtMinPos, cond_timeSinceHitMinPositionLargerThanThreshold_1, cond_timeSinceHitMinPositionLargerThanThreshold_2, servoPos_now_i16);
+					// ActiveSerial->printf("Cond1: %d,    Cond2: %d,    Cond3: %d,    servoPos: %d\n", cond_stepperIsAtMinPos, cond_timeSinceHitMinPositionLargerThanThreshold_1, cond_timeSinceHitMinPositionLargerThanThreshold_2, servoPos_now_i16);
 
 					// calculate zero position offset
 
@@ -1108,16 +1108,16 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 
 								if (print_cycle_counter_u64 == 0)
 								{
-								Serial.print("minDet: ");
-								Serial.print(minBlockCrashDetected_b);
+								ActiveSerial->print("minDet: ");
+								ActiveSerial->print(minBlockCrashDetected_b);
 
-								Serial.print("curr: ");
-								Serial.print(isv57.servo_current_percent);
+								ActiveSerial->print("curr: ");
+								ActiveSerial->print(isv57.servo_current_percent);
 								
-								Serial.print("posError: ");
-								Serial.print(isv57.servo_pos_error_p);
+								ActiveSerial->print("posError: ");
+								ActiveSerial->print(isv57.servo_pos_error_p);
 
-								Serial.println();
+								ActiveSerial->println();
 								}*/
 
 
@@ -1180,7 +1180,7 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 
 					if(stepper_cl->servoStatus==SERVO_NOT_CONNECTED)
 					{
-						Serial.println("Servo communication lost!");
+						ActiveSerial->println("Servo communication lost!");
 					}
 					
 					delay(100);
@@ -1249,7 +1249,7 @@ bool StepperWithLimits::servoIdleAction()
 	else
 	{
 	semaphore_resetServoPos = xSemaphoreCreateMutex();
-	//Serial.println("semaphore_resetServoPos == 0");
+	//ActiveSerial->println("semaphore_resetServoPos == 0");
 	}
 
 	return servo_offset_compensation_steps_i32;

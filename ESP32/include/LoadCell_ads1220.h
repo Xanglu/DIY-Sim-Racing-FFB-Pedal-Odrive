@@ -6,6 +6,7 @@
 
 #ifdef USES_ADS1220
 
+
 /*  Uses ADS1256 */
 class LoadCell_ADS1220 {
 private:

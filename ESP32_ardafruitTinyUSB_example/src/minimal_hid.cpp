@@ -43,17 +43,25 @@ Adafruit_USBD_HID usb_hid;
 // Report payload
 uint16_t axis_value = 0;
 
-#define USE_CDC_INSTEAD_OF_UART
+// #define USE_CDC_INSTEAD_OF_UART
 
 // alias to serial stream, thus it can dynamically switch depending on board
 Stream *ActiveSerial;
 
 void setup() {
+
+  int PID=0x8216;
+  // Set VID and PID
+  TinyUSBDevice.setID(0x3035, PID);
+  TinyUSBDevice.setProductDescriptor("DIY FFB pedal");
+  TinyUSBDevice.setManufacturerDescriptor("OpenSource");
+
   // Manual begin() is required on core without built-in support e.g. mbed rp2040
   if (!TinyUSBDevice.isInitialized()) {
     TinyUSBDevice.begin(0);
   }
 
+  // #if ARDUINO_USB_CDC_ON_BOOT == 1
   #ifdef USE_CDC_INSTEAD_OF_UART
     Serial.begin(3000000);
     ActiveSerial = &Serial;
@@ -61,15 +69,13 @@ void setup() {
     Serial1.begin(3000000, SERIAL_8N1, 44, 43);
     ActiveSerial = &Serial1;
   #endif
-
-  
-  
   
 
   // Setup HID
   usb_hid.setPollInterval(0);
   usb_hid.setReportDescriptor(desc_hid_report, sizeof(desc_hid_report));
   usb_hid.begin();
+
 
   // If already enumerated, additional class driverr begin() e.g msc, hid, midi won't take effect until re-enumeration
   if (TinyUSBDevice.mounted()) {
@@ -124,11 +130,15 @@ void loop() {
   unsigned long delta_micros = current_micros - last_micros;
   last_micros = current_micros;
 
-  ActiveSerial->print("Sending axis value: ");
-  ActiveSerial->print(axis_value);
-  ActiveSerial->print("     (Delta: ");
-  ActiveSerial->print(delta_micros);
-  ActiveSerial->println(" us)");
+  // if (delta_micros > 2000)
+  {
+    ActiveSerial->print("Sending axis value: ");
+    ActiveSerial->print(axis_value);
+    ActiveSerial->print("     (Delta: ");
+    ActiveSerial->print(delta_micros);
+    ActiveSerial->println(" us)");
+  }
+  
 
   usb_hid.sendReport(0, &axis_value, sizeof(axis_value));
 }

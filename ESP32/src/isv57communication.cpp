@@ -12,66 +12,66 @@ void printDecodedAlarmString(uint16_t alarm_code)
 
   switch (alarm_code & 0x0FFF) { // Mask to get lower 12 bits
     case 0x000:
-        Serial.println("Normal\n");
+        ActiveSerial->println("Normal\n");
         break;
     case 0x0E1:
     case 0x0E0:
-        Serial.println("Overcurrent\n");
+        ActiveSerial->println("Overcurrent\n");
         break;
     case 0x100:
-        Serial.println("Overload\n");
+        ActiveSerial->println("Overload\n");
         break;
     case 0x180:
-        Serial.println("Excessive position deviation\n");
+        ActiveSerial->println("Excessive position deviation\n");
         break;
     case 0x1A0:
-        Serial.println("Overspeed\n");
+        ActiveSerial->println("Overspeed\n");
         break;
     case 0x1A1:
-        Serial.println("Motor out of control\n");
+        ActiveSerial->println("Motor out of control\n");
         break;
     case 0x0D0:
-        Serial.println("Undervoltage\n");
+        ActiveSerial->println("Undervoltage\n");
         break;
     case 0x0C0:
-        Serial.println("Overvoltage\n");
+        ActiveSerial->println("Overvoltage\n");
         break;
     case 0x171:
     case 0x172:
-        Serial.println("Encoder parameter error\n");
+        ActiveSerial->println("Encoder parameter error\n");
         break;
     case 0x190:
-        Serial.println("Excessive motor vibration\n");
+        ActiveSerial->println("Excessive motor vibration\n");
         break;
     case 0x150:
-        Serial.println("Encoder disconnected\n");
+        ActiveSerial->println("Encoder disconnected\n");
         break;
     case 0x151:
     case 0x170:
-        Serial.println("Encoder data error\n");
+        ActiveSerial->println("Encoder data error\n");
         break;
     case 0x152:
-        Serial.println("Encoder HALL signal error\n");
+        ActiveSerial->println("Encoder HALL signal error\n");
         break;
     case 0x240:
-        Serial.println("Parameter saving error\n");
+        ActiveSerial->println("Parameter saving error\n");
         break;
     case 0x570:
-        Serial.println("Emergency stop\n");
+        ActiveSerial->println("Emergency stop\n");
         break;
     case 0x120:
-        Serial.println("Regenerative energy overload\n");
+        ActiveSerial->println("Regenerative energy overload\n");
         break;
     case 0x153:
-        Serial.println("Encoder battery error\n");
+        ActiveSerial->println("Encoder battery error\n");
         break;
     case 0x210:
     case 0x211:
     case 0x212:
-        Serial.println("Input configuration error (Repeated/wrong input)\n");
+        ActiveSerial->println("Input configuration error (Repeated/wrong input)\n");
         break;
     default:
-        Serial.println("Unknown or refer to Chapter 9\n");
+        ActiveSerial->println("Unknown or refer to Chapter 9\n");
         break;
   }
 }
@@ -123,7 +123,7 @@ void isv57communication::readAllServoParameters() {
 void isv57communication::disableAxis()
 {
 
-  Serial.println("Disabling servo");
+  ActiveSerial->println("Disabling servo");
 
   // 0x3f, 0x06, 0x00, 0x85, 0x03, 0x03, 0xdc, 0x0c
   //modbus.checkAndReplaceParameter(slaveId, 0x0085, 0x0303);
@@ -141,7 +141,7 @@ void isv57communication::disableAxis()
 
 void isv57communication::enableAxis() 
 {
-  Serial.println("Enabling servo");
+  ActiveSerial->println("Enabling servo");
 
   // 0x3f, 0x06, 0x00, 0x85, 0x03, 0x83, 0xdd, 0xac
   // Pr4.08: 0x085
@@ -163,7 +163,7 @@ void isv57communication::enableAxis()
 
 // void isv57communication::resetAxisCounter() 
 // {
-//   Serial.println("Reset axis counter");
+//   ActiveSerial->println("Reset axis counter");
 
 //   modbus.holdingRegisterRead(0x0085);
 //   delay(10);
@@ -303,8 +303,8 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   // disable axis after servo startup --> ESP has to enable the axis first
   // Pr4.08
   // long servoEnableStatus = modbus.holdingRegisterRead(slaveId, 0x03, pr_4_00+8);
-  // Serial.print("Servo enable setting: ");
-  // Serial.println(servoEnableStatus, HEX);
+  // ActiveSerial->print("Servo enable setting: ");
+  // ActiveSerial->println(servoEnableStatus, HEX);
   // delay(100);
   // if (servoEnableStatus != 0x303)
   // {
@@ -312,8 +312,8 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   // }
   // delay(100);
   // servoEnableStatus = modbus.holdingRegisterRead(slaveId, 0x03, pr_4_00+8);
-  // Serial.print("Servo enable setting: ");
-  // Serial.println(servoEnableStatus, HEX);
+  // ActiveSerial->print("Servo enable setting: ");
+  // ActiveSerial->println(servoEnableStatus, HEX);
 
   // disable axis by default
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_4_00+8, 0x0303);
@@ -326,7 +326,7 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
     // disable axis a second time, since the second signal must be send to. Don't know yet the meaning of that signal.
     disableAxis();
 
-    Serial.println("Servo registered in NVM have been updated! Please power cycle the servo and the ESP!");
+    ActiveSerial->println("Servo registered in NVM have been updated! Please power cycle the servo and the ESP!");
 
     // identified with logic analyzer. See \StepperParameterization\Meesages\StoreSettingsToEEPROM_0.png
     modbus.holdingRegisterWrite(slaveId, 0x019A, 0x5555); // store the settings to servos NVM
@@ -355,9 +355,9 @@ bool isv57communication::findServosSlaveId()
   {
     slaveId = slaveIdTest;
     slaveIdFound = true;
-    Serial.print("Found servo slave ID:");
-    Serial.print(slaveId);
-    Serial.print("\r\n");
+    ActiveSerial->print("Found servo slave ID:");
+    ActiveSerial->print(slaveId);
+    ActiveSerial->print("\r\n");
   }
 
 
@@ -369,9 +369,9 @@ bool isv57communication::findServosSlaveId()
         {
           slaveId = slaveIdTest;
           slaveIdFound = true;
-          Serial.print("Found servo slave ID:");
-          Serial.print(slaveId);
-          Serial.print("\r\n");
+          ActiveSerial->print("Found servo slave ID:");
+          ActiveSerial->print(slaveId);
+          ActiveSerial->print("\r\n");
           break;
         }
 
@@ -389,12 +389,12 @@ bool isv57communication::checkCommunication()
 {
   if(modbus.requestFrom(slaveId, 0x03, 0x0000, 2) > 0)
   {
-    //Serial.println("Lifeline check: true");
+    //ActiveSerial->println("Lifeline check: true");
     return true;
   }
   else
   {
-    //Serial.println("Lifeline check: false");
+    //ActiveSerial->println("Lifeline check: false");
     return false;
   }
 }
@@ -455,27 +455,27 @@ void isv57communication::readServoStates() {
   isv57dynamicStates_.servo_voltage_0p1V = regArray[3];
   isv57dynamicStates_.lastUpdateTimeInMS_u32 = millis();
 
-  //Serial.print("Bytes :");
-  //Serial.println(bytesReceived_i);
+  //ActiveSerial->print("Bytes :");
+  //ActiveSerial->println(bytesReceived_i);
   
   
   
   // print registers
   if (0)
   {
-    Serial.print("Pos_given:");
-    Serial.print(isv57dynamicStates_.servo_pos_given_p);
+    ActiveSerial->print("Pos_given:");
+    ActiveSerial->print(isv57dynamicStates_.servo_pos_given_p);
 
-    Serial.print(",Pos_error:");
-    Serial.print(isv57dynamicStates_.servo_pos_error_p);
+    ActiveSerial->print(",Pos_error:");
+    ActiveSerial->print(isv57dynamicStates_.servo_pos_error_p);
 
-    Serial.print(",Cur_given:");
-    Serial.print(isv57dynamicStates_.servo_current_percent);
+    ActiveSerial->print(",Cur_given:");
+    ActiveSerial->print(isv57dynamicStates_.servo_current_percent);
 
-    Serial.print(",Voltage:");
-    Serial.print(isv57dynamicStates_.servo_voltage_0p1V);
+    ActiveSerial->print(",Voltage:");
+    ActiveSerial->print(isv57dynamicStates_.servo_voltage_0p1V);
 
-    Serial.println(" "); 
+    ActiveSerial->println(" "); 
   }
   
 }
@@ -507,8 +507,8 @@ bool isv57communication::readCurrentAlarm() {
     for (uint8_t regIdx = 0; regIdx < 1; regIdx++)
     { 
       uint16_t tmp = modbus.uint16(regIdx) && 0x0FFF; // mask the first half byte as it does not contain info
-      Serial.print("Current iSV57 alarm: ");
-      Serial.println( tmp, HEX);
+      ActiveSerial->print("Current iSV57 alarm: ");
+      ActiveSerial->println( tmp, HEX);
     }
   }
 
@@ -519,7 +519,7 @@ bool isv57communication::readCurrentAlarm() {
 bool isv57communication::readAlarmHistory() {
 
   bool alarmWasFound_b = false;
-	Serial.print("\niSV57 alarm history: ");
+	ActiveSerial->print("\niSV57 alarm history: ");
 	for (uint8_t idx=0; idx < 12; idx++)
 	{
 	  // example signal, read the 9th alarm
@@ -537,11 +537,11 @@ bool isv57communication::readAlarmHistory() {
 
         if (alarm_code > 0)
         {
-          Serial.print("Alarm Idx: ");
-          Serial.print(idx);
-          Serial.print(",    Alarm Code: ");
-          Serial.print( alarm_code, HEX);
-          Serial.print(" --> ");
+          ActiveSerial->print("Alarm Idx: ");
+          ActiveSerial->print(idx);
+          ActiveSerial->print(",    Alarm Code: ");
+          ActiveSerial->print( alarm_code, HEX);
+          ActiveSerial->print(" --> ");
           printDecodedAlarmString(alarm_code);
           alarmWasFound_b = true;
         }
@@ -553,10 +553,10 @@ bool isv57communication::readAlarmHistory() {
   // In case of no alarm --> indicate with string
   if (false == alarmWasFound_b)
   {
-    Serial.print("No alarm was found.");
+    ActiveSerial->print("No alarm was found.");
   }
 
-	Serial.print("\n");
+	ActiveSerial->print("\n");
     
 	return 1;
 }
