@@ -567,10 +567,11 @@ void promiscuous_rx_cb(void *buf, wifi_promiscuous_pkt_type_t type) {
 void ESPNow_initialize()
 {
   DAP_config_st dap_config_espnow_init_st;
-  global_dap_config_class.getConfig(&dap_config_espnow_init_st, 1);
+  global_dap_config_class.getConfig(&dap_config_espnow_init_st, 500);
   
   WiFi.mode(WIFI_MODE_STA);
   Serial.println("Initializing ESPNow, please wait");
+  delay(1000);
   // Serial.print("Current MAC Address:  ");
   // Serial.println(WiFi.macAddress());
   WiFi.macAddress(esp_Mac);
@@ -596,16 +597,7 @@ void ESPNow_initialize()
   ESPNow.init();
   Serial.println("Wait for ESPNOW");
   delay(3000);
-  esp_now_rate_config_t global_peer_config;
-  global_peer_config.dcm=false;
-  global_peer_config.ersu=false;
-  global_peer_config.phymode=WIFI_PHY_MODE_HT20;
-  global_peer_config.rate=WIFI_PHY_RATE_MCS0_LGI;
   #ifdef ESPNow_S3
-    // esp_wifi_config_espnow_rate(WIFI_IF_STA, 	WIFI_PHY_RATE_54M);
-    //esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_11M_L);
-    global_peer_config.rate=WIFI_PHY_RATE_11M_L;
-  // esp_wifi_set_max_tx_power(WIFI_POWER_8_5dBm);
     #if PCB_VERSION == 9
       //esp_wifi_set_max_tx_power(WIFI_POWER_19_5dBm);
     #else
@@ -614,7 +606,6 @@ void ESPNow_initialize()
   #endif
   #ifdef ESPNow_ESP32
     esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_MCS0_LGI);
-    //global_peer_config.rate=WIFI_PHY_RATE_MCS0_LGI;
     // esp_wifi_config_espnow_rate(WIFI_IF_STA, 	WIFI_PHY_RATE_54M);
   #endif
   #ifdef ESPNow_Pairing_function
@@ -662,7 +653,6 @@ void ESPNow_initialize()
     {
       memcpy(Recv_mac, Gas_mac, 6);
       ESPNow.add_peer(Recv_mac);
-      //esp_now_set_peer_rate_config(Recv_mac, &global_peer_config);
     }
 
     if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == PEDAL_ID_THROTTLE)
@@ -670,8 +660,6 @@ void ESPNow_initialize()
       memcpy(Recv_mac, Brk_mac, 6);
       ESPNow.add_peer(Brk_mac);
       ESPNow.add_peer(Clu_mac);
-      //esp_now_set_peer_rate_config(Brk_mac, &global_peer_config);
-      //esp_now_set_peer_rate_config(Clu_mac, &global_peer_config);
     }
     
 

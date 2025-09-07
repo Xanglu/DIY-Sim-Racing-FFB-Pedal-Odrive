@@ -409,7 +409,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define USB_JOYSTICK
 
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
-  #define ESPNow_Pairing_function
+  //#define ESPNow_Pairing_function
   #define Hardware_Pairing_button
   #define Pairing_GPIO 33
   //#define ESPNow_debug_rudder
