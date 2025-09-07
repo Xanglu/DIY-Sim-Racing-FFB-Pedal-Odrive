@@ -17,7 +17,7 @@ uint8_t Brk_mac[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x34};
 uint8_t broadcast_mac[]={0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 uint8_t esp_Host[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x35};
 uint8_t esp_Mac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-uint8_t* Recv_mac;
+uint8_t Recv_mac[]={0};
 uint16_t ESPNow_send=0;
 uint16_t ESPNow_recieve=0;
 int32_t rssi[4]={0,0,0,0};//clutch, brake,throttle,bridge
@@ -171,10 +171,14 @@ void ESPNow_Pairing_callback(const uint8_t *mac_addr, const uint8_t *data, int d
 
 void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len) 
 {
+  if(esp_now_info->src_addr==NULL || data==NULL || data_len<=0)
+  {
+    return;
+  }
   //uint8_t mac_addr[6]={0};
   DAP_config_st dap_config_espnow_recv_st;
   
-  global_dap_config_class.getConfig(&dap_config_espnow_recv_st, 1u);
+  global_dap_config_class.getConfig(&dap_config_espnow_recv_st, 500);
 
   /*
   if(ESPNOW_status)
@@ -286,7 +290,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
       if(data_len==sizeof(dap_actions_st))
       {
               
-              memcpy(&dap_actions_st, data, sizeof(dap_actions_st));
+              memcpy(&dap_actions_st, data, sizeof(DAP_actions_st));
               //Serial.readBytes((char*)&dap_actions_st, sizeof(DAP_actions_st));
               if (dap_actions_st.payLoadHeader_.PedalTag == dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type)
               {
@@ -412,7 +416,8 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
                     {
                       if (dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type == 2)
                       {
-                        Recv_mac=Clu_mac;
+                        //Recv_mac=Clu_mac;
+                        memcpy(Recv_mac, Clu_mac, 6);
                         //ESPNow.add_peer(Recv_mac);
                       }
                     }
@@ -442,7 +447,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
                     {
                       if (dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type == 2)
                       {
-                        Recv_mac=Clu_mac;
+                        memcpy(Recv_mac, Clu_mac, 6);
                         //ESPNow.add_peer(Recv_mac);
                       }
                     }
@@ -653,26 +658,20 @@ void ESPNow_initialize()
     }
     #endif
 
-    if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 1)
+    if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == PEDAL_ID_BRAKE || dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == PEDAL_ID_CLUTCH)
     {
-      Recv_mac=Gas_mac;
+      memcpy(Recv_mac, Gas_mac, 6);
       ESPNow.add_peer(Recv_mac);
       //esp_now_set_peer_rate_config(Recv_mac, &global_peer_config);
     }
 
-    if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 2)
+    if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == PEDAL_ID_THROTTLE)
     {
-      Recv_mac=Brk_mac;
+      memcpy(Recv_mac, Brk_mac, 6);
       ESPNow.add_peer(Brk_mac);
       ESPNow.add_peer(Clu_mac);
       //esp_now_set_peer_rate_config(Brk_mac, &global_peer_config);
       //esp_now_set_peer_rate_config(Clu_mac, &global_peer_config);
-    }
-    if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 0)
-    {
-      Recv_mac=Gas_mac;
-      ESPNow.add_peer(Recv_mac);
-      //esp_now_set_peer_rate_config(Recv_mac, &global_peer_config);
     }
     
 
