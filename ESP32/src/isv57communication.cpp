@@ -1,10 +1,10 @@
 #include "isv57communication.h"
 #include "Main.h"
 
-Modbus modbus(Serial1);
+Modbus modbus(Serial2);
 
 
-
+Stream *ActiveSerialForServoCommunication = nullptr;
 
 
 void printDecodedAlarmString(uint16_t alarm_code) 
@@ -83,12 +83,23 @@ void printDecodedAlarmString(uint16_t alarm_code)
 isv57communication::isv57communication()
 {
   
+  
+
   //Serial1.begin(38400, SERIAL_8N2, ISV57_RXPIN, ISV57_TXPIN, true); // Modbus serial
   #if PCB_VERSION == 10 || PCB_VERSION == 9 || PCB_VERSION == 12 || PCB_VERSION == 13
-    Serial1.begin(38400, SERIAL_8N1, ISV57_RXPIN, ISV57_TXPIN, false); // Modbus serial
+    Serial2.begin(38400, SERIAL_8N1, ISV57_RXPIN, ISV57_TXPIN, false); // Modbus serial
   #else
-    Serial1.begin(38400, SERIAL_8N1, ISV57_RXPIN, ISV57_TXPIN, true); // Modbus serial
+    Serial2.begin(38400, SERIAL_8N1, ISV57_RXPIN, ISV57_TXPIN, true); // Modbus serial
   #endif
+
+
+  // #ifdef USE_CDC_INSTEAD_OF_UART
+  //   ActiveSerialForServoCommunication = &Serial2;
+  // #else
+  //   ActiveSerialForServoCommunication = &Serial2;
+  // #endif
+
+  ActiveSerialForServoCommunication = &Serial2;
 
 
   modbus.init(false);

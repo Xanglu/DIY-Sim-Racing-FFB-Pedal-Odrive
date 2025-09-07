@@ -686,6 +686,7 @@ static void uart_event_task(void *pvParameters) {
 void setup()
 {
   DAP_config_st dap_config_st_local;
+  DAP_config_st dap_config_st_eeprom;
 
   // setup serial
   #ifdef USE_CDC_INSTEAD_OF_UART
@@ -829,20 +830,20 @@ void setup()
   // Load config from EEPROM, if valid, overwrite initial config
   EEPROM.begin(2048);
   global_dap_config_class.loadConfigFromEprom();
-  global_dap_config_class.getConfig(&dap_config_st_local, 500);
+  global_dap_config_class.getConfig(&dap_config_st_eeprom, 500);
 
 
   // check validity of data from EEPROM  
   bool structChecker = true;
   uint16_t crc;
-  if ( dap_config_st_local.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_CONFIG ){ 
+  if ( dap_config_st_eeprom.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_CONFIG ){ 
     structChecker = false;
     /*ActiveSerial->print("Payload type expected: ");
     ActiveSerial->print(DAP_PAYLOAD_TYPE_CONFIG);
     ActiveSerial->print(",   Payload type received: ");
     ActiveSerial->println(dap_config_st_local.payLoadHeader_.payloadType);*/
   }
-  if ( dap_config_st_local.payLoadHeader_.version != DAP_VERSION_CONFIG ){ 
+  if ( dap_config_st_eeprom.payLoadHeader_.version != DAP_VERSION_CONFIG ){ 
     structChecker = false;
     /*ActiveSerial->print("Config version expected: ");
     ActiveSerial->print(DAP_VERSION_CONFIG);
@@ -850,8 +851,8 @@ void setup()
     ActiveSerial->println(dap_config_st_local.payLoadHeader_.version);*/
   }
   // checksum validation
-  crc = checksumCalculator((uint8_t*)(&(dap_config_st_local.payLoadHeader_)), sizeof(dap_config_st_local.payLoadHeader_) + sizeof(dap_config_st_local.payLoadPedalConfig_));
-  if (crc != dap_config_st_local.payloadFooter_.checkSum){ 
+  crc = checksumCalculator((uint8_t*)(&(dap_config_st_eeprom.payLoadHeader_)), sizeof(dap_config_st_eeprom.payLoadHeader_) + sizeof(dap_config_st_eeprom.payLoadPedalConfig_));
+  if (crc != dap_config_st_eeprom.payloadFooter_.checkSum){ 
     structChecker = false;
     /*ActiveSerial->print("CRC expected: ");
     ActiveSerial->print(crc);
@@ -869,10 +870,10 @@ void setup()
   {
     ActiveSerial->println("Updating pedal config from EEPROM");
     //global_dap_config_class.setConfig(dap_config_st_local);
-
+    dap_config_st_local = dap_config_st_eeprom;
     configDataPackage_t configPackage_st;
     configPackage_st.config_st = dap_config_st_local;
-    xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
+    // xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
 
   }
   else
@@ -911,6 +912,9 @@ void setup()
       //delay(3000);
   #endif
 
+  ActiveSerial->printf("InvertStepperDir 0: %d\n", 1);
+
+  ActiveSerial->println("Config sent successfully 1");
 
   bool invMotorDir = dap_config_st_local.payLoadPedalConfig_.invertMotorDirection_u8 > 0;
   stepper = new StepperWithLimits(stepPinStepper, dirPinStepper, invMotorDir, dap_calculationVariables_st.stepsPerMotorRevolution); 

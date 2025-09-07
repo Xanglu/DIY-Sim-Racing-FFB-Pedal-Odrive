@@ -6,9 +6,11 @@ int32_t NormalizeControllerOutputValue(float value, float minVal, float maxVal, 
     return JOYSTICK_MIN_VALUE;   // avoid div-by-zero
   }
 
-  float fractional = (value - minVal) / valRange;
-  int32_t controller = JOYSTICK_MIN_VALUE + (fractional * JOYSTICK_RANGE);
-  return constrain(controller, JOYSTICK_MIN_VALUE, (maxGameOutput/100.) * JOYSTICK_MAX_VALUE);
+  // float fractional = (value - minVal) / valRange;
+  // int32_t controller = JOYSTICK_MIN_VALUE + (fractional * JOYSTICK_RANGE);
+  // return constrain(value, JOYSTICK_MIN_VALUE, (maxGameOutput/100.) * JOYSTICK_MAX_VALUE);
+
+  return map(value, minVal, maxVal, JOYSTICK_MIN_VALUE, (maxGameOutput/100.0f) * JOYSTICK_MAX_VALUE);
 }
 
 
