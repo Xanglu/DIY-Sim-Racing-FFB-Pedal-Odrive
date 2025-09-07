@@ -43,13 +43,23 @@ Adafruit_USBD_HID usb_hid;
 // Report payload
 uint16_t axis_value = 0;
 
+// #define USE_CDC_INSTEAD_OF_UART
+
 void setup() {
   // Manual begin() is required on core without built-in support e.g. mbed rp2040
   if (!TinyUSBDevice.isInitialized()) {
     TinyUSBDevice.begin(0);
   }
 
-  Serial.begin(3000000);
+  #ifdef USE_CDC_INSTEAD_OF_UART
+    Serial.begin(3000000);
+    // USBSerial &DebugSerial = Serial;  // alias to Serial1
+  #else
+    Serial1.begin(3000000, SERIAL_8N1, 44, 43);
+    // HardwareSerial &DebugSerial22 = Serial1;  // alias to Serial1
+  #endif
+  
+  
 
   // Setup HID
   usb_hid.setPollInterval(2);
@@ -63,7 +73,7 @@ void setup() {
     TinyUSBDevice.attach();
   }
 
-  Serial.println("Adafruit TinyUSB HID Single Axis example");
+  Serial1.println("Adafruit TinyUSB HID Single Axis example");
 }
 
 void loop() {
@@ -83,12 +93,26 @@ void loop() {
   axis_value += 50;
 
   // For CDC instance 0 (the default one)
-  bool dtr = tud_cdc_connected();       // true if host has opened the port (DTR asserted)
-  bool rts = tud_cdc_get_line_state() & 2; // bit1 = RTS, bit0 = DTR
-
-  if (dtr) {
+  #ifdef USE_CDC_INSTEAD_OF_UART
+    static bool prev_dtr_state = false;
+    bool dtr = tud_cdc_connected();       // true if host has opened the port (DTR asserted)
+    bool rts = tud_cdc_get_line_state() & 2; // bit1 = RTS, bit0 = DTR
+    if (dtr) {
+      if (!prev_dtr_state) {
+        Serial.println("Host connected (DTR asserted)");
+      }
     Serial.print("Sending axis value: ");
     Serial.println(axis_value);
-  }
+    } else {
+      if (prev_dtr_state) {
+        Serial.println("Host disconnected (DTR de-asserted)");
+      }
+    }
+    prev_dtr_state = dtr;
+  #else
+    Serial1.print("Sending axis value: ");
+    Serial1.println(axis_value);
+  #endif
+
   usb_hid.sendReport(0, &axis_value, sizeof(axis_value));
 }
