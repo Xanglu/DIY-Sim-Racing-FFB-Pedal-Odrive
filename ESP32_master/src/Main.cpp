@@ -1191,10 +1191,13 @@ void joystickUpdateTask( void * pvParameters )
   unsigned long now;
   uint16_t pedalJoystick_last[3] = {0, 0, 0};
   bool pedalJoystickUpdate_b = false;
+  unsigned joystick_test_time = millis();
+  bool print_value_b=false;
   for(;;)
   {
     if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0)
     {
+
       for (int i = 0; i < 3; i++)
       {
         if (pedalJoystick_last[i] != Joystick_value_original[i])
