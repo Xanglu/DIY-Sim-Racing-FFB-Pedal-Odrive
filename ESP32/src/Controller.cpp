@@ -1,18 +1,19 @@
 #include "Controller.h"
 
 uint16_t NormalizeControllerOutputValue(float value, float minVal, float maxVal, float maxGameOutput) {
-  float valRange = (maxVal - minVal);
-  if (abs(valRange) < 0.01) {
+  float valRange_fl32 = (maxVal - minVal);
+  if (fabsf(valRange_fl32) < 0.01f) {
     return JOYSTICK_MIN_VALUE;   // avoid div-by-zero
   }
 
-  float corrected_min_value = minVal + 0.005f * valRange;
-  float corrected_max_value = maxVal - 0.005f * valRange;
-  float corrected_valRange = (corrected_max_value - corrected_min_value);
+  float corrected_range_fl32 = 0.005f * valRange_fl32;
+  float corrected_min_value_fl32 = minVal + corrected_range_fl32;
+  float corrected_max_value_fl32 = maxVal - corrected_range_fl32;
+  float corrected_valRange_fl32 = (corrected_max_value_fl32 - corrected_min_value_fl32);
 
-  float fractional = (value - corrected_min_value) / corrected_valRange;
-  int32_t controller = JOYSTICK_MIN_VALUE + (fractional * JOYSTICK_RANGE);
-  int16_t controller_u16 = constrain(controller, JOYSTICK_MIN_VALUE, (maxGameOutput/100.) * JOYSTICK_MAX_VALUE);
+  float fractional_fl32 = (value - corrected_min_value_fl32) / corrected_valRange_fl32;
+  int32_t controller_i32 = JOYSTICK_MIN_VALUE + (fractional_fl32 * JOYSTICK_RANGE);
+  int16_t controller_u16 = constrain(controller_i32, JOYSTICK_MIN_VALUE, (maxGameOutput * 0.01f) * JOYSTICK_MAX_VALUE);
   return controller_u16;
 }
 
