@@ -266,21 +266,22 @@ void ESPNow_initialize()
 {
 
     WiFi.mode(WIFI_MODE_STA);
-    Serial.println("[L]Initializing ESPNow, please wait"); 
+    ActiveSerial->println("[L]Initializing ESPNow, please wait"); 
+    delay(1000);
     WiFi.macAddress(esp_Mac); 
-    Serial.printf("[L]Device Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", esp_Mac[0], esp_Mac[1], esp_Mac[2], esp_Mac[3], esp_Mac[4], esp_Mac[5]);
+    ActiveSerial->printf("[L]Device Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", esp_Mac[0], esp_Mac[1], esp_Mac[2], esp_Mac[3], esp_Mac[4], esp_Mac[5]);
     
-    //Serial.print("Current MAC Address:  ");  
-    //Serial.println(WiFi.macAddress());
+    //ActiveSerial->print("Current MAC Address:  ");  
+    //ActiveSerial->println(WiFi.macAddress());
     #ifndef ESPNow_Pairing_function
-      Serial.println("Overwriting Mac address.......");
+      ActiveSerial->println("Overwriting Mac address.......");
       esp_wifi_set_mac(WIFI_IF_STA, &esp_Host[0]);
       delay(300);
-      Serial.print("[L]Modified MAC Address:  ");  
-      Serial.println(WiFi.macAddress());
+      ActiveSerial->print("[L]Modified MAC Address:  ");  
+      ActiveSerial->println(WiFi.macAddress());
     #endif
     ESPNow.init();
-    Serial.println("[L]Waiting for ESPNOW");
+    ActiveSerial->println("[L]Waiting for ESPNOW");
     delay(3000);
     #ifdef Using_Board_ESP32
     esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_MCS0_LGI);
@@ -298,16 +299,16 @@ void ESPNow_initialize()
     memcpy(&_ESP_pairing_reg, &ESP_pairing_reg_local,sizeof(ESP_pairing_reg));
     //_ESP_pairing_reg=ESP_pairing_reg_local;
     //EEPROM.get(EEPROM_offset, _ESP_pairing_reg);
-    Serial.print("[L]");
+    ActiveSerial->print("[L]");
     for(int i=0;i<4;i++)
     { 
       if(_ESP_pairing_reg.Pair_status[i]==1)
       {
-        Serial.print("Paired Device #");
-        Serial.print(i);
-        //Serial.print(" Pair: ");
-        //Serial.print(_ESP_pairing_reg.Pair_status[i]);
-        Serial.printf(" Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", _ESP_pairing_reg.Pair_mac[i][0], _ESP_pairing_reg.Pair_mac[i][1], _ESP_pairing_reg.Pair_mac[i][2], _ESP_pairing_reg.Pair_mac[i][3], _ESP_pairing_reg.Pair_mac[i][4], _ESP_pairing_reg.Pair_mac[i][5]);
+        ActiveSerial->print("Paired Device #");
+        ActiveSerial->print(i);
+        //ActiveSerial->print(" Pair: ");
+        //ActiveSerial->print(_ESP_pairing_reg.Pair_status[i]);
+        ActiveSerial->printf(" Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", _ESP_pairing_reg.Pair_mac[i][0], _ESP_pairing_reg.Pair_mac[i][1], _ESP_pairing_reg.Pair_mac[i][2], _ESP_pairing_reg.Pair_mac[i][3], _ESP_pairing_reg.Pair_mac[i][4], _ESP_pairing_reg.Pair_mac[i][5]);
       }           
     }
     
@@ -319,7 +320,7 @@ void ESPNow_initialize()
         {
           if(MacCheck(_ESP_pairing_reg.Pair_mac[0],_ESP_pairing_reg.Pair_mac[1])||MacCheck(_ESP_pairing_reg.Pair_mac[0],_ESP_pairing_reg.Pair_mac[2]))
           {
-            Serial.println("[L]Clutch mac address is same with others, no clutch reading will apply");
+            ActiveSerial->println("[L]Clutch mac address is same with others, no clutch reading will apply");
           }
           else
           {
@@ -335,7 +336,7 @@ void ESPNow_initialize()
         {
           if(MacCheck(_ESP_pairing_reg.Pair_mac[1],_ESP_pairing_reg.Pair_mac[2]))
           {
-            Serial.println("[L]Throttle mac address is same with Brake, no Throttle reading will apply");
+            ActiveSerial->println("[L]Throttle mac address is same with Brake, no Throttle reading will apply");
           }
           else
           {
@@ -350,35 +351,35 @@ void ESPNow_initialize()
     }
     #endif
     
-    Serial.printf("[L]BRK Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", Brk_mac[0], Brk_mac[1], Brk_mac[2], Brk_mac[3], Brk_mac[4], Brk_mac[5]);
+    ActiveSerial->printf("[L]BRK Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", Brk_mac[0], Brk_mac[1], Brk_mac[2], Brk_mac[3], Brk_mac[4], Brk_mac[5]);
     if(ESPNow.add_peer(Brk_mac)== ESP_OK)
     {
       ESPNOW_status=true;
-      Serial.println("Sucess to add BRK Mac");
+      ActiveSerial->println("Sucess to add BRK Mac");
     }
-    Serial.printf("[L]GAS Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", Gas_mac[0], Gas_mac[1], Gas_mac[2], Gas_mac[3], Gas_mac[4], Gas_mac[5]);
+    ActiveSerial->printf("[L]GAS Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", Gas_mac[0], Gas_mac[1], Gas_mac[2], Gas_mac[3], Gas_mac[4], Gas_mac[5]);
     if(ESPNow.add_peer(Gas_mac)== ESP_OK)
     {
       ESPNOW_status=true;
-      Serial.println("Sucess to add Throttle Mac");
+      ActiveSerial->println("Sucess to add Throttle Mac");
     }
-    Serial.printf("[L]CLU Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", Clu_mac[0], Clu_mac[1], Clu_mac[2], Clu_mac[3], Clu_mac[4], Clu_mac[5]);
+    ActiveSerial->printf("[L]CLU Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", Clu_mac[0], Clu_mac[1], Clu_mac[2], Clu_mac[3], Clu_mac[4], Clu_mac[5]);
     if(ESPNow.add_peer(Clu_mac)== ESP_OK)
     {
       ESPNOW_status=true;
-      Serial.println("Sucess to add Clutch Mac");
+      ActiveSerial->println("Sucess to add Clutch Mac");
     }     
-    Serial.printf("[L]HOST Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", esp_Host[0], esp_Host[1], esp_Host[2], esp_Host[3], esp_Host[4], esp_Host[5]); 
+    ActiveSerial->printf("[L]HOST Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", esp_Host[0], esp_Host[1], esp_Host[2], esp_Host[3], esp_Host[4], esp_Host[5]); 
     if(ESPNow.add_peer(esp_Host)== ESP_OK)
     {
       ESPNOW_status=true;
-      Serial.println("Sucess to add host peer");
+      ActiveSerial->println("Sucess to add host peer");
     }
 
     if(ESPNow.add_peer(broadcast_mac)== ESP_OK)
     {
       ESPNOW_status=true;
-      Serial.println("[L]Sucess to add broadcast peer");
+      ActiveSerial->println("[L]Sucess to add broadcast peer");
     }
     ESPNow.reg_recv_cb(onRecv);
     ESPNow.reg_send_cb(OnSent);
@@ -386,17 +387,17 @@ void ESPNow_initialize()
     esp_wifi_set_promiscuous(true);
     esp_wifi_set_promiscuous_rx_cb(&promiscuous_rx_cb);
     ESPNow_initial_status=true;
-    Serial.println("[L]ESPNow Initialized");
+    ActiveSerial->println("[L]ESPNow Initialized");
   
 }
 void print_struct_hex(DAP_bridge_state_st* s) {
     const uint8_t* p = (const uint8_t*)s;
     for (size_t i = 0; i < sizeof(DAP_bridge_state_st); i++) 
     {
-      Serial.print("0x");  
-      if (p[i] < 16) Serial.print('0');
-      Serial.print(p[i], HEX);
-      Serial.print("-");
+      ActiveSerial->print("0x");  
+      if (p[i] < 16) ActiveSerial->print('0');
+      ActiveSerial->print(p[i], HEX);
+      ActiveSerial->print("-");
     }
-    Serial.println("");
+    ActiveSerial->println("");
 }

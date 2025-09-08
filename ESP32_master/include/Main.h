@@ -349,3 +349,6 @@
 #define STACK_SIZE_OTA_UPDATE_TASK (int64_t) 16000
 #define STACK_SIZE_FANATEC_UPDATE_TASK (int64_t) 3000
 #define STACK_SIZE_LED_UPDATE_TASK (int64_t) 3000
+
+
+extern Stream *ActiveSerial;
