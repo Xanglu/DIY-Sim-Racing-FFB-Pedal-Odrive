@@ -267,6 +267,7 @@ void ESPNow_initialize()
 
     WiFi.mode(WIFI_MODE_STA);
     ActiveSerial->println("[L]Initializing ESPNow, please wait"); 
+    delay(1000);
     WiFi.macAddress(esp_Mac); 
     ActiveSerial->printf("[L]Device Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", esp_Mac[0], esp_Mac[1], esp_Mac[2], esp_Mac[3], esp_Mac[4], esp_Mac[5]);
     

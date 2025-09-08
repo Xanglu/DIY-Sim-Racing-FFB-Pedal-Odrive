@@ -1,0 +1,136 @@
+#include "TinyusbJoystick.h"
+
+TinyusbJoystick::TinyusbJoystick() 
+{     
+}
+
+bool TinyusbJoystick::IsReady()
+{
+    bool returnValue_b = true;
+    if (!TinyUSBDevice.mounted())
+    {
+        returnValue_b = false;
+    }
+    if (!usb_hid.ready())
+    {
+        returnValue_b = false;
+    }
+
+    return returnValue_b;
+}
+
+void TinyusbJoystick::Begin()
+{
+    // Set VID and PID
+    int PID = 0x8213;
+    int VID = 0x3035;
+    //Serial.println("[L]starting USB joystick");
+    TinyUSBDevice.setID(VID, PID);
+    TinyUSBDevice.setProductDescriptor("DIY_FFB_PEDAL_JOYSTICK");
+    TinyUSBDevice.setManufacturerDescriptor("OPENSOURCE");
+    //ActiveSerial->
+    // Manual begin() is required on core without built-in support e.g. mbed rp2040
+    if (!TinyUSBDevice.isInitialized())
+    {
+        TinyUSBDevice.begin(0);
+    }
+
+    // Setup HID
+    usb_hid.setPollInterval(8); // time in ms
+    usb_hid.setReportDescriptor(desc_hid_report, sizeof(desc_hid_report));
+    usb_hid.begin();
+
+    // If already enumerated, additional class driverr begin() e.g msc, hid, midi won't take effect until re-enumeration
+    if (TinyUSBDevice.mounted())
+    {
+        TinyUSBDevice.detach();
+        delay(10);
+        TinyUSBDevice.attach();
+    }
+}
+
+void TinyusbJoystick::SetRx(int16_t value)
+{
+    uint16_t tmp = value;
+    if (tmp < 0x7FFF)
+    {
+        tmp += 0x7FFF + 1;
+    }
+    else
+    {
+        tmp -= 0x7FFF + 1;
+    }
+    hid_report.rx = tmp;
+}
+
+void TinyusbJoystick::SetRy(int16_t value)
+{
+    uint16_t tmp = value;
+    if (tmp < 0x7FFF)
+    {
+        tmp += 0x7FFF + 1;
+    }
+    else
+    {
+        tmp -= 0x7FFF + 1;
+    }
+    hid_report.ry = tmp;
+}
+void TinyusbJoystick::SetRz(int16_t value)
+{
+    uint16_t tmp = value;
+    if (tmp < 0x7FFF)
+    {
+        tmp += 0x7FFF + 1;
+    }
+    else
+    {
+        tmp -= 0x7FFF + 1;
+    }
+    hid_report.rz = tmp;
+}
+
+void TinyusbJoystick::SetXAxis(int16_t value)
+{
+    uint16_t tmp = value;
+    if (tmp < 0x7FFF)
+    {
+        tmp += 0x7FFF + 1;
+    }
+    else
+    {
+        tmp -= 0x7FFF + 1;
+    }
+    hid_report.x = tmp;
+}
+void TinyusbJoystick::SetYAxis(int16_t value)
+{
+    uint16_t tmp = value;
+    if (tmp < 0x7FFF)
+    {
+        tmp += 0x7FFF + 1;
+    }
+    else
+    {
+        tmp -= 0x7FFF + 1;
+    }
+    hid_report.y = tmp;
+}
+void TinyusbJoystick::SetZAxis(int16_t value)
+{
+    uint16_t tmp = value;
+    if (tmp < 0x7FFF)
+    {
+        tmp += 0x7FFF + 1;
+    }
+    else
+    {
+        tmp -= 0x7FFF + 1;
+    }
+    hid_report.z = tmp;
+}
+
+void TinyusbJoystick::SendState()
+{
+    usb_hid.sendReport(0, &hid_report, sizeof(hid_report));
+}

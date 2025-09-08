@@ -35,10 +35,8 @@ Stream *ActiveSerial = nullptr;
 #include <DiyActivePedal_types.h>
 #include "Wire.h"
 #include "SPI.h"
-//#include "Controller.h"
-#ifdef USB_JOYSTICK
-  #include "AdafruitController.h"
-#endif
+#include "JoystickController.h"
+
 #include <MovingAverageFilter.h>
 #include <TaskScheduler.h>
 
@@ -199,7 +197,7 @@ void setup()
   parse_version(BRIDGE_FIRMWARE_VERSION,&versionMajor,&versionMinor,&versionPatch);
   delay(5);
   #ifdef USB_JOYSTICK
-    ActiveSerial->println("Setup controller");
+    ActiveSerial->println("[L]Setup controller");
     SetupController();
   #endif
   //create message queue
@@ -1249,13 +1247,13 @@ void joystickUpdateTask( void * pvParameters )
               SetControllerOutputValueRudder_brake(pedal_brake_value, pedal_throttle_value);
             }
           }
-          /*
+          
           if (pedalJoystickUpdate_b)
           {
             joystickSendState();
             pedalJoystickUpdate_b = false;
           }
-            */
+          
 
           // bool joystatus=GetJoystickStatus();
         }

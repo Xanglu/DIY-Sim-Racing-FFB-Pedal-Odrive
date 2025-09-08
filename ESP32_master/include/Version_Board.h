@@ -1,3 +1,4 @@
+
 #define BRIDGE_FIRMWARE_VERSION "0.90.18"
 #if PCB_VERSION==5
 	#define BRIDGE_BOARD   "Bridge_FANATEC"
