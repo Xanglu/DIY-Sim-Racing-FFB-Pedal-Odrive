@@ -6,9 +6,14 @@ uint16_t NormalizeControllerOutputValue(float value, float minVal, float maxVal,
     return JOYSTICK_MIN_VALUE;   // avoid div-by-zero
   }
 
-  float fractional = (value - minVal) / valRange;
-  uint16_t controller = JOYSTICK_MIN_VALUE + (maxGameOutput/100.0f) * (fractional * JOYSTICK_RANGE);
-  return controller;
+  float corrected_min_value = minVal + 0.005f * valRange;
+  float corrected_max_value = maxVal - 0.005f * valRange;
+  float corrected_valRange = (corrected_max_value - corrected_min_value);
+
+  float fractional = (value - corrected_min_value) / corrected_valRange;
+  int32_t controller = JOYSTICK_MIN_VALUE + (fractional * JOYSTICK_RANGE);
+  int16_t controller_u16 = constrain(controller, JOYSTICK_MIN_VALUE, (maxGameOutput/100.) * JOYSTICK_MAX_VALUE);
+  return controller_u16;
 }
 
 
@@ -26,7 +31,7 @@ const uint8_t desc_hid_report[] = {
     0x05, 0x02,        //   Usage Page (Simulation Controls)
     0x09, 0xC5,        //   Usage (Brake)  <-- special "pedal" usage
     0x15, 0x00,        //   Logical Minimum (0)
-    0x26, 0xFF, 0xFF,  //   Logical Maximum (65535)
+    0x26, 0xFF, 0x7F,  //   Logical Maximum (65535)
     0x75, 0x10,        //   Report Size (16 bits)
     0x95, 0x01,        //   Report Count (1)
     0x81, 0x02,        //   Input (Data,Var,Abs)  <-- absolute, not relative
@@ -110,17 +115,7 @@ bool IsControllerReady() {
 
 void SetControllerOutputValue(uint16_t value) {
   
-
-  uint16_t tmp = value;
-
-  if (tmp < 0x7FFF)
-  {
-    tmp += 0x7FFF + 1;
-  }
-  else
-  {
-    tmp -= 0x7FFF + 1;
-  }
+  uint16_t tmp = value - INT16_MIN;
 
   hid_report.brake = tmp;
   usb_hid.sendReport(0, &hid_report, sizeof(hid_report));
