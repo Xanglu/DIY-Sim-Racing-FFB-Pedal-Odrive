@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Arduino.h"
-
+#include "Main.h"
 static const uint16_t JOYSTICK_MIN_VALUE = 0;
 static const uint16_t JOYSTICK_MAX_VALUE = UINT16_MAX;
 static const uint16_t JOYSTICK_RANGE = JOYSTICK_MAX_VALUE - JOYSTICK_MIN_VALUE;
