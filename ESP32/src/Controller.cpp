@@ -45,7 +45,7 @@ Adafruit_USBD_HID usb_hid;
 
 // Report payload for the two axes
 typedef struct {
-  uint16_t brake;
+  int16_t brake;
 } hid_report_t;
 
 hid_report_t hid_report = {0};
@@ -115,7 +115,8 @@ bool IsControllerReady() {
 
 void SetControllerOutputValue(uint16_t value) {
   
-  uint16_t tmp = value - INT16_MIN;
+  // trafo to sint16, as report seems to expect that
+  int16_t tmp = map(value, 0, UINT16_MAX, INT16_MIN, INT16_MAX);
 
   hid_report.brake = tmp;
   usb_hid.sendReport(0, &hid_report, sizeof(hid_report));

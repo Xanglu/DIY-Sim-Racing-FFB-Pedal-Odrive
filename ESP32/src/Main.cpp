@@ -2355,18 +2355,15 @@ void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
 
       if (sendFlag_b)
       {
-
         // send joystick output
-        
-          if (IsControllerReady()) 
+        if (IsControllerReady()) 
+        {
+          if(dap_calculationVariables_st.Rudder_status==false)
           {
-            if(dap_calculationVariables_st.Rudder_status==false)
-            {
-              //general output
-              SetControllerOutputValue(joystickData_u16);
-            }
+            //general output
+            SetControllerOutputValue(joystickData_u16);
           }
-        
+        }
       }
 
       // profiler_joystickOutputTask.end(1);
