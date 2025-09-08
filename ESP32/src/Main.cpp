@@ -690,12 +690,16 @@ void setup()
 
   // setup serial
   #ifdef USE_CDC_INSTEAD_OF_UART
-    Serial.begin(BAUD3M);
+    Serial.begin(DEFAULTBAUD);
     ActiveSerial = &Serial;
-  #else
+  #elif CONFIG_IDF_TARGET_ESP32S3
     Serial1.begin(BAUD3M, SERIAL_8N1, 44, 43);
     // Serial.begin(BAUD3M, SERIAL_8N1, 44, 43);
     ActiveSerial = &Serial1;
+  #elif CONFIG_IDF_TARGET_ESP32
+    Serial.begin(DEFAULTBAUD);
+    // Serial.begin(BAUD3M, SERIAL_8N1, 44, 43);
+    ActiveSerial = &Serial;
   #endif
 
 
@@ -796,13 +800,13 @@ void setup()
   ActiveSerial->println(DAP_FIRMWARE_VERSION);
   //#endif
   #ifdef PRINT_PARTITION_TABLE
-    printf("========== Partition Table ==========\n");
-    printf("| %-10s | %-4s | %-7s | %-8s | %-8s | %-5s |\n", "Name", "Type", "SubType", "Offset", "Size", "Encrypted");
-    printf("--------------------------------------------------------------------------------\n");
+    ActiveSerial->printf("========== Partition Table ==========\n");
+    ActiveSerial->printf("| %-10s | %-4s | %-7s | %-8s | %-8s | %-5s |\n", "Name", "Type", "SubType", "Offset", "Size", "Encrypted");
+    ActiveSerial->printf("--------------------------------------------------------------------------------\n");
     esp_partition_iterator_t it = esp_partition_find(ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, NULL);
     while (it != NULL) {
         const esp_partition_t *part = esp_partition_get(it);
-        printf("| %-10s | 0x%02x | 0x%02x    | 0x%08x | 0x%08x | %-5s |\n",
+        ActiveSerial->printf("| %-10s | 0x%02x | 0x%02x    | 0x%08x | 0x%08x | %-5s |\n",
                part->label,      
                part->type,       
                part->subtype,    
@@ -812,7 +816,7 @@ void setup()
         it = esp_partition_next(it);
     }
     esp_partition_iterator_release(it);
-    printf("=====================================\n");
+    ActiveSerial->printf("=====================================\n");
   #endif
   
 	#ifdef Hardware_Pairing_button
@@ -1296,12 +1300,8 @@ xTaskCreatePinnedToCore(
   #ifdef CONTROLLER_SPECIFIC_VIDPID
     SetupController_USB(dap_config_st_local.payLoadPedalConfig_.pedal_type);
     delay(500);
-  #endif  
-  #ifndef CONTROLLER_SPECIFIC_VIDPID
-  // init controller
-  #ifdef USB_JOYSTICK
+  #elif defined(USB_JOYSTICK)
     SetupController();
-  #endif
   //delay(3000);
   #endif
 

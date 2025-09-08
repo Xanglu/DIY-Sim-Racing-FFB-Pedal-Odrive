@@ -15,4 +15,5 @@ uint16_t NormalizeControllerOutputValue(float value, float minVal, float maxVal,
   void SetupController_USB(uint8_t pedal_ID);
   bool IsControllerReady();
   void SetControllerOutputValue(uint16_t value);
+  void SetupController();
 #endif

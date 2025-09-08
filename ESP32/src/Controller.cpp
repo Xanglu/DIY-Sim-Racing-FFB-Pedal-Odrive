@@ -101,6 +101,27 @@ void SetupController_USB(uint8_t pedal_ID)
   }
 }
 
+void SetupController() 
+{
+
+  // Manual begin() is required on core without built-in support e.g. mbed rp2040
+  if (!TinyUSBDevice.isInitialized()) {
+    TinyUSBDevice.begin(0);
+  }
+
+  // Setup HID
+  usb_hid.setPollInterval(10); // time in ms
+  usb_hid.setReportDescriptor(desc_hid_report, sizeof(desc_hid_report));
+  usb_hid.begin();
+
+  // If already enumerated, additional class driverr begin() e.g msc, hid, midi won't take effect until re-enumeration
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+    TinyUSBDevice.attach();
+  }
+}
+
 bool IsControllerReady() { 
   bool returnValue_b = true;
   if (!TinyUSBDevice.mounted()) {
