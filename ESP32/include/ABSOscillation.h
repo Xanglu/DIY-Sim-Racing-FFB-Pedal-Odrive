@@ -55,7 +55,7 @@ public:
       //frequency depend on road condition
       float absFreq = calcVars_st->absFrequency;
       absFreq = absFreq*(1.0f + ((float)calcVars_st->TrackCondition) * 0.1f );
-      absFreq = constrain(absFreq, 0, 50.0f);
+      absFreq = constrain(absFreq, 0.0f, 50.0f);
       
       float absForceOffset_local = 0.0f;
       _absTimeMillis += timeNowMillis - _lastCallTimeMillis;
@@ -157,11 +157,11 @@ public:
       float RPM_amp_base = calcVars_st->RPM_AMP;
       float RPM_amp = 0.0f; 
 
-      RPM_amp = RPM_amp_base*(1.0f+ 0.3f * RPM_value * 0.01f);
+      RPM_amp = RPM_amp_base * (1.0f + 0.3f * RPM_value * 0.01f);
       float RPM_freq = constrain(RPM_value*(RPM_max_freq-RPM_min_freq)* 0.01f, RPM_min_freq, RPM_max_freq);
       _RPMTimeMillis += timeNowMillis - _lastCallTimeMillis;
       float RPMTimeSeconds = _RPMTimeMillis * 0.001f;
-      RPMForceOffset = RPM_amp * isin( 2.0f*PI_FL32* RPM_freq* RPMTimeSeconds * RAD_TO_DEG_FL32); 
+      RPMForceOffset = RPM_amp * isin( 360.0f * RPM_freq* RPMTimeSeconds ); 
     }
 
     _lastCallTimeMillis = timeNowMillis;
@@ -212,7 +212,7 @@ public:
       float BPTimeSeconds = _BiteTimeMillis * 0.001f;
 
       //RPMForceOffset = calcVars_st->absAmplitude * sin(calcVars_st->absFrequency * RPMTimeSeconds);
-      BitePointForceOffset = BP_amp * isin( 360.0f * BP_freq* BPTimeSeconds);
+      BitePointForceOffset = BP_amp * isin( 360.0f * BP_freq * BPTimeSeconds);
     }
 
     BitePoint_Force_offset = BitePointForceOffset;

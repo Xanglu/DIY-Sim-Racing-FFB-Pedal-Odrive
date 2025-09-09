@@ -139,7 +139,7 @@ bool IsControllerReady() {
 void SetControllerOutputValue(uint16_t value) {
   
   // trafo to sint16, as report seems to expect that
-  int16_t tmp = map(value, 0, UINT16_MAX, 0, INT16_MAX);
+  int16_t tmp = map(value, JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE, 0, INT16_MAX);
 
   hid_report.brake = tmp;
   usb_hid.sendReport(0, &hid_report, sizeof(hid_report));

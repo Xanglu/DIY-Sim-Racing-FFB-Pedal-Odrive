@@ -1539,6 +1539,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
   static bool sendExtendedFlag_b = false;
   static float absForceOffset = 0.0f;
   static float absPosOffset = 0.0f;
+  static int32_t stepperPosCurrent_i32;
 
   static uint32_t cycleCount_u32 = 0;
 
@@ -1863,6 +1864,8 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
 
       stepperPosFraction = stepper->getCurrentPositionFraction();
+      stepperPosCurrent_i32 = stepper->getCurrentPosition();
+
       int32_t Position_Next = 0;
       
       // select control loop algo
@@ -2084,7 +2087,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       {
         if (1 == dap_config_pedalUpdateTask_st.payLoadPedalConfig_.travelAsJoystickOutput_u8)
         {
-          joystickNormalizedToInt32_orig = NormalizeControllerOutputValue((Position_Next-dap_calculationVariables_st.stepperPosRange/2), dap_calculationVariables_st.stepperPosMin, dap_calculationVariables_st.stepperPosMin+dap_calculationVariables_st.stepperPosRange/2.0f, dap_config_pedalUpdateTask_st.payLoadPedalConfig_.maxGameOutput);
+          joystickNormalizedToInt32_orig = NormalizeControllerOutputValue((stepperPosCurrent_i32-dap_calculationVariables_st.stepperPosRange/2), dap_calculationVariables_st.stepperPosMin, dap_calculationVariables_st.stepperPosMin+dap_calculationVariables_st.stepperPosRange/2.0f, dap_config_pedalUpdateTask_st.payLoadPedalConfig_.maxGameOutput);
         }
         else
         {
@@ -2095,7 +2098,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       {
         if (1 == dap_config_pedalUpdateTask_st.payLoadPedalConfig_.travelAsJoystickOutput_u8)
         {
-          joystickNormalizedToInt32_orig = NormalizeControllerOutputValue(Position_Next, dap_calculationVariables_st.stepperPosMin, dap_calculationVariables_st.stepperPosMax, dap_config_pedalUpdateTask_st.payLoadPedalConfig_.maxGameOutput);
+          joystickNormalizedToInt32_orig = NormalizeControllerOutputValue(stepperPosCurrent_i32, dap_calculationVariables_st.stepperPosMin, dap_calculationVariables_st.stepperPosMax, dap_config_pedalUpdateTask_st.payLoadPedalConfig_.maxGameOutput);
         }
         else
         {            
@@ -2106,7 +2109,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       joystickNormalizedToInt32_eval = forceCurve.EvalJoystickCubicSpline(&dap_config_pedalUpdateTask_st, &dap_calculationVariables_st, joystickfrac);
       
       joystickNormalizedToUInt16 = joystickNormalizedToInt32_eval/100.0f* JOYSTICK_MAX_VALUE;
-      joystickNormalizedToUInt16 = constrain(joystickNormalizedToUInt16,0,JOYSTICK_MAX_VALUE);      
+      joystickNormalizedToUInt16 = constrain(joystickNormalizedToUInt16, JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE);      
 
 
       // send joystick data to queue
