@@ -2361,6 +2361,7 @@ void IRAM_ATTR_FLAG joystickOutputTask( void * pvParameters )
           if(dap_calculationVariables_st.Rudder_status==false)
           {
             //general output
+            // ActiveSerial->printf("joystick: %lu\n", joystickData_u16);
             SetControllerOutputValue(joystickData_u16);
           }
         }

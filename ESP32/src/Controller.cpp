@@ -2,18 +2,19 @@
 
 uint16_t NormalizeControllerOutputValue(float value, float minVal, float maxVal, float maxGameOutput) {
   float valRange_fl32 = (maxVal - minVal);
-  if (fabsf(valRange_fl32) < 0.01f) {
+  float deadzoneCorrection_fl32 = 0.005f * valRange_fl32;
+
+  float corrected_min_value_fl32 = minVal + deadzoneCorrection_fl32;
+  float corrected_max_value_fl32 = maxVal - deadzoneCorrection_fl32;
+  float corrected_valRange_fl32 = (corrected_max_value_fl32 - corrected_min_value_fl32);
+  
+  if (abs(corrected_valRange_fl32) < 0.0000001f) {
     return JOYSTICK_MIN_VALUE;   // avoid div-by-zero
   }
 
-  float corrected_range_fl32 = 0.005f * valRange_fl32;
-  float corrected_min_value_fl32 = minVal + corrected_range_fl32;
-  float corrected_max_value_fl32 = maxVal - corrected_range_fl32;
-  float corrected_valRange_fl32 = (corrected_max_value_fl32 - corrected_min_value_fl32);
-
   float fractional_fl32 = (value - corrected_min_value_fl32) / corrected_valRange_fl32;
-  int32_t controller_i32 = JOYSTICK_MIN_VALUE + (fractional_fl32 * JOYSTICK_RANGE);
-  int16_t controller_u16 = constrain(controller_i32, JOYSTICK_MIN_VALUE, (maxGameOutput * 0.01f) * JOYSTICK_MAX_VALUE);
+  float controller_fl32 = JOYSTICK_MIN_VALUE + (fractional_fl32 * JOYSTICK_RANGE);
+  uint16_t controller_u16 = constrain(controller_fl32, JOYSTICK_MIN_VALUE, (maxGameOutput * 0.01f) * JOYSTICK_MAX_VALUE);
   return controller_u16;
 }
 
@@ -138,7 +139,7 @@ bool IsControllerReady() {
 void SetControllerOutputValue(uint16_t value) {
   
   // trafo to sint16, as report seems to expect that
-  int16_t tmp = map(value, 0, UINT16_MAX, INT16_MIN, INT16_MAX);
+  int16_t tmp = map(value, 0, UINT16_MAX, 0, INT16_MAX);
 
   hid_report.brake = tmp;
   usb_hid.sendReport(0, &hid_report, sizeof(hid_report));
