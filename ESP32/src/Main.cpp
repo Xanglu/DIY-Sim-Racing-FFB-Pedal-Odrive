@@ -691,6 +691,7 @@ void setup()
   // setup serial
   #ifdef USE_CDC_INSTEAD_OF_UART
     Serial.begin(DEFAULTBAUD);
+    Serial.enableReboot(false);
     ActiveSerial = &Serial;
   #elif CONFIG_IDF_TARGET_ESP32S3
     Serial1.begin(BAUD3M, SERIAL_8N1, 44, 43);
