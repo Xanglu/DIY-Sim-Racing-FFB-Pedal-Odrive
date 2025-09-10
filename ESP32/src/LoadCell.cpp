@@ -30,9 +30,11 @@ static SemaphoreHandle_t drdySemaphore = NULL;
 // --- Interrupt Service Routine (ISR) ---
 // This function is called every time the DRDY pin goes low
 void IRAM_ATTR drdyInterrupt() {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     // Give the semaphore to unblock the reading task.
     if (drdySemaphore != NULL) {
-        xSemaphoreGiveFromISR(drdySemaphore, NULL);
+        xSemaphoreGiveFromISR(drdySemaphore, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);  // request context switch if needed
     }
 }
 
