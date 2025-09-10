@@ -106,6 +106,7 @@ LoadCell_ADS1256::LoadCell_ADS1256(uint8_t channel0, uint8_t channel1)
         drdySemaphore = xSemaphoreCreateBinary();
         if (drdySemaphore != NULL) {
             ActiveSerial->println("DRDY Semaphore created successfully.");
+            ActiveSerial->println("starting attach.....");
             // Attach the interrupt ONCE, after the semaphore is created.
             attachInterrupt(digitalPinToInterrupt(PIN_DRDY), drdyInterrupt, FALLING);
             ActiveSerial->println("DRDY interrupt attached.");

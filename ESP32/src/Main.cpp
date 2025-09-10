@@ -691,8 +691,13 @@ void setup()
   // setup serial
   #ifdef USE_CDC_INSTEAD_OF_UART
     Serial.begin(DEFAULTBAUD);
-    Serial.enableReboot(false);
+    //Serial.enableReboot(false);
+    
+    Serial.setTxTimeoutMs(100);
     ActiveSerial = &Serial;
+    #ifdef USB_JOYSTICK
+      SetupController();
+    #endif
   #elif CONFIG_IDF_TARGET_ESP32S3
     Serial1.begin(BAUD3M, SERIAL_8N1, 44, 43);
     // Serial.begin(BAUD3M, SERIAL_8N1, 44, 43);
@@ -1302,7 +1307,7 @@ xTaskCreatePinnedToCore(
     SetupController_USB(dap_config_st_local.payLoadPedalConfig_.pedal_type);
     delay(500);
   #elif defined(USB_JOYSTICK)
-    SetupController();
+    //SetupController();
   //delay(3000);
   #endif
 

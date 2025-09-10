@@ -269,7 +269,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define OTA_update
   #define CONTROLLER_SPECIFIC_VIDPID
   #define BAUDRATE3M
-  #define RUN_IN_CACHE
+  
 #endif
 
 // For Gilphilbert PCBA design
@@ -317,7 +317,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define LED_GPIO 12
   #define OTA_update
   #define USING_BUZZER
-  #define RUN_IN_CACHE
+  
 
   #define USE_CDC_INSTEAD_OF_UART
 #endif
@@ -421,7 +421,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define LED_ENABLE_RGB
   #define OTA_update
   #define USING_BUZZER
-  #define RUN_IN_CACHE
+  
 #endif
 
 
@@ -460,7 +460,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define OTA_update
   #define CONTROLLER_SPECIFIC_VIDPID
   #define BAUDRATE3M
-  #define RUN_IN_CACHE
+  
   // #define ANGLE_SENSOR_GPIO 11 // disabled by default, since to much runtime impact of ADC
 #endif
 
