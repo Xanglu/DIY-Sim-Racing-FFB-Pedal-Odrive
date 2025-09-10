@@ -696,6 +696,7 @@ void setup()
     Serial.setTxTimeoutMs(100);
     ActiveSerial = &Serial;
     #ifdef USB_JOYSTICK
+      ActiveSerial->println("Setup Controller");
       SetupController();
     #endif
   #elif CONFIG_IDF_TARGET_ESP32S3
@@ -1302,13 +1303,11 @@ xTaskCreatePinnedToCore(
     ActiveSerial->println("ESPNOW task did not started due to Assignment error, please usb connect to Simhub and finish Assignment.");
   }
   #endif
-  ActiveSerial->println("Setup Controller");
-  #ifdef CONTROLLER_SPECIFIC_VIDPID
+  
+  #if defined(CONTROLLER_SPECIFIC_VIDPID) && defined(USB_JOYSTICK) && !defined(USE_CDC_INSTEAD_OF_UART)
+    ActiveSerial->println("Setup Controller");
     SetupController_USB(dap_config_st_local.payLoadPedalConfig_.pedal_type);
     delay(500);
-  #elif defined(USB_JOYSTICK)
-    //SetupController();
-  //delay(3000);
   #endif
 
 
