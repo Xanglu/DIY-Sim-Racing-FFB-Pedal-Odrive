@@ -559,7 +559,7 @@ void espNowCommunicationTxTask( void * pvParameters )
 bool PedalUpdateIntervalPrint_b=false;
 unsigned long PedalUpdateLast=0;
 unsigned long UARTJoystickUpdateLast=0;
-bool PedalUpdateIntervalPrint_trigger=false;
+bool isBridgeInDebugMode_b=false;
 bool UARTJoystickUpdate_b=false;
 int joystick_fake_value=0;
 
@@ -891,17 +891,17 @@ void serialCommunicationRxTask( void * pvParameters)
               }
               if (dap_bridge_state_lcl.payloadBridgeState_.Bridge_action == BRIDGE_ACTION_DEBUG)
               {
-                if (PedalUpdateIntervalPrint_trigger)
+                if (isBridgeInDebugMode_b)
                 {
                   // aciton=4 print pedal update interval
                   ActiveSerial->println("[L]Bridge debug mode off.");
-                  PedalUpdateIntervalPrint_trigger = false;
+                  isBridgeInDebugMode_b = false;
                 }
                 else
                 {
                   // aciton=4 print pedal update interval
                   ActiveSerial->println("[L]Bridge debug mode on.");
-                  PedalUpdateIntervalPrint_trigger = true;
+                  isBridgeInDebugMode_b = true;
                 }
               }
               if (dap_bridge_state_lcl.payloadBridgeState_.Bridge_action == BRIDGE_ACTION_JOYSTICK_FLASHING_MODE)
@@ -1158,7 +1158,7 @@ void serialCommunicationTxTask( void * pvParameters)
       //debug message print
       if(PedalUpdateIntervalPrint_b)
       {
-        if(PedalUpdateIntervalPrint_trigger)
+        if(isBridgeInDebugMode_b)
         {
           for(pedalIDX=0;pedalIDX<3;pedalIDX++)
           {
@@ -1209,6 +1209,15 @@ void joystickUpdateTask( void * pvParameters )
       #ifdef USB_JOYSTICK
         if (IsControllerReady() && pedalJoystickUpdate_b)
         {
+          if(isBridgeInDebugMode_b)
+          {
+            ActiveSerial->print("[L]Throttle value:");
+            ActiveSerial->println(pedal_throttle_value);
+            ActiveSerial->print("[L]Brake value:");
+            ActiveSerial->println(pedal_brake_value);
+            ActiveSerial->print("[L]Cluth value:");
+            ActiveSerial->println(pedal_cluth_value);
+          }
           if (pedal_status == 0)
           {
             SetControllerOutputValueAccelerator(pedal_cluth_value);
