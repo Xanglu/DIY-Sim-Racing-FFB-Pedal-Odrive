@@ -29,7 +29,7 @@ bool previousIsv57LifeSignal_b = true;
 #define TIME_SINCE_SERVO_POS_CHANGE_TO_DETECT_CRASH_IN_MS 10000
 #define TWO_TO_THE_POWER_OF_15_MINUS_1 (uint32_t)32767 // 2^15 - 1
 //#define INT16_MAX (int32_t)65536
-static SemaphoreHandle_t semaphore_lifelineSignal = xSemaphoreCreateMutex();
+static SemaphoreHandle_t semaphore_lifelineSignal = NULL;
 static SemaphoreHandle_t semaphore_resetServoPos = xSemaphoreCreateMutex();
 static SemaphoreHandle_t semaphore_readServoValues = xSemaphoreCreateMutex();
 static SemaphoreHandle_t semaphore_getSetCorrectedServoPos = xSemaphoreCreateMutex();
@@ -70,7 +70,8 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 
 {
 
-  
+	semaphore_lifelineSignal = xSemaphoreCreateMutex();
+
 	// pinMode(pinMin, INPUT);
 	// pinMode(pinMax, INPUT);
 
@@ -556,47 +557,29 @@ void StepperWithLimits::correctPos()
 bool StepperWithLimits::getLifelineSignal()
 {
 	bool signal_b = false;
-	/*if(semaphore_lifelineSignal!=NULL)
-	{
-
-		// Take the semaphore and just update the config file, then release the semaphore
-		if(xSemaphoreTake(semaphore_lifelineSignal, (TickType_t)1)==pdTRUE)
-		{
+	// if(semaphore_lifelineSignal!=NULL)
+	// {
+	// 	// Take the semaphore and just update the config file, then release the semaphore
+	// 	if(xSemaphoreTake(semaphore_lifelineSignal, pdMS_TO_TICKS(1))==pdTRUE)
+	// 	{
 		  signal_b = isv57LifeSignal_b;
-		}
+	// 	}
 
-	}
-	else
-	{
-		semaphore_lifelineSignal = xSemaphoreCreateMutex();
-	}*/
-	
-
-	signal_b = isv57LifeSignal_b;
+	// }
 
 	return signal_b;
 }
 
 void StepperWithLimits::setLifelineSignal()
 {
-
-	isv57LifeSignal_b = isv57.checkCommunication();
-
-
-	/*if(semaphore_lifelineSignal!=NULL)
-	{
-
-		// Take the semaphore and just update the config file, then release the semaphore
-		if(xSemaphoreTake(semaphore_lifelineSignal, (TickType_t)1)==pdTRUE)
-		{
+	// if(semaphore_lifelineSignal!=NULL)
+	// {
+	// 	// Take the semaphore and just update the config file, then release the semaphore
+	// 	if(xSemaphoreTake(semaphore_lifelineSignal, pdMS_TO_TICKS(1))==pdTRUE)
+	// 	{
 		  isv57LifeSignal_b = isv57.checkCommunication();
-		}
-
-	}
-	else
-	{
-		semaphore_lifelineSignal = xSemaphoreCreateMutex();
-	}*/
+// 		}
+// 	}
 }
 
 

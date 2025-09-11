@@ -26,7 +26,7 @@ KalmanFilter_1st_order::KalmanFilter_1st_order(float varianceEstimate)
   _R *= 1000.0f * 1000.0f;
 }
 
-float KalmanFilter_1st_order::filteredValue(float measurement, float command, uint8_t modelNoiseScaling_u8) {
+float IRAM_ATTR_FLAG KalmanFilter_1st_order::filteredValue(float measurement, float command, uint8_t modelNoiseScaling_u8) {
   // Obtain time (this part is unchanged)
   unsigned long currentTime = micros();
   unsigned long elapsedTime = currentTime - _timeLastObservation;
@@ -132,6 +132,6 @@ float KalmanFilter_1st_order::filteredValue(float measurement, float command, ui
   return _x[0] / 1000.0f; // conversion g --> kg
 }
 
-float KalmanFilter_1st_order::changeVelocity() {
+float IRAM_ATTR_FLAG KalmanFilter_1st_order::changeVelocity() {
   return _x[1]; // conversion g/ms --> kg/s
 }

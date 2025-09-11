@@ -33,11 +33,11 @@ public:
   {}
 
 public:
-  void trigger() {
+  void IRAM_ATTR_FLAG trigger() {
     _timeLastTriggerMillis = millis();
   }
   
-  void forceOffset(DAP_calculationVariables_st* calcVars_st, uint8_t absPattern, uint8_t absForceOrTarvelBit, float * absForceOffset, float * absPosOffset) {
+  void IRAM_ATTR_FLAG forceOffset(DAP_calculationVariables_st* calcVars_st, uint8_t absPattern, uint8_t absForceOrTarvelBit, float * absForceOffset, float * absPosOffset) {
 
     long timeNowMillis = millis();
     float timeSinceTrigger = (timeNowMillis - _timeLastTriggerMillis);
@@ -130,11 +130,11 @@ public:
   float RPM_value = 0.0f;
   int32_t RPM_position_offset = 0;
 public:
-  void trigger() {
+  void IRAM_ATTR_FLAG trigger() {
     _timeLastTriggerMillis = millis();
   }
   
-  void forceOffset(DAP_calculationVariables_st* calcVars_st) {
+  void IRAM_ATTR_FLAG forceOffset(DAP_calculationVariables_st* calcVars_st) {
 
     long timeNowMillis = millis();
     float timeSinceTrigger = (timeNowMillis - _timeLastTriggerMillis);
@@ -187,11 +187,11 @@ public:
   //float RPM_value =0;
   float BitePoint_Force_offset = 0.0f;
 public:
-  void trigger() {
+  void IRAM_ATTR_FLAG  trigger() {
     _timeLastTriggerMillis = millis();
   }
   
-  void forceOffset(DAP_calculationVariables_st* calcVars_st) {
+  void IRAM_ATTR_FLAG forceOffset(DAP_calculationVariables_st* calcVars_st) {
 
     long timeNowMillis = millis();
     float timeSinceTrigger = (timeNowMillis - _timeLastTriggerMillis);
@@ -233,7 +233,7 @@ class G_force_effect
   float g_norm_inverse = 0.10193679918450560652395514780836f; //1 / 9.81f;
   
 
-  void forceOffset(DAP_calculationVariables_st* calcVars_st, uint8_t G_multi)
+  void IRAM_ATTR_FLAG forceOffset(DAP_calculationVariables_st* calcVars_st, uint8_t G_multi)
   {
     
     if(G_value == -128.0f)
@@ -267,11 +267,11 @@ public:
   //float RPM_value =0;
   float WS_Force_offset = 0.0f;
 public:
-  void trigger() {
+  void IRAM_ATTR_FLAG trigger() {
     _timeLastTriggerMillis = millis();
   }
   
-  void forceOffset(DAP_calculationVariables_st* calcVars_st) {
+  void IRAM_ATTR_FLAG forceOffset(DAP_calculationVariables_st* calcVars_st) {
 
 
     long timeNowMillis = millis();
@@ -306,7 +306,7 @@ class Road_impact_effect
   float Road_Impact_force_raw=0;
   uint8_t Road_Impact_value=0;
 
-  void forceOffset(DAP_calculationVariables_st* calcVars_st, uint8_t Road_impact_multi)
+  void IRAM_ATTR_FLAG forceOffset(DAP_calculationVariables_st* calcVars_st, uint8_t Road_impact_multi)
   {
     uint32_t Force_Range;
     float Road_multiplier = ((float)Road_impact_multi)* 0.01f;
@@ -333,7 +333,7 @@ public:
   //float RPM_value =0;
   float CV_Force_offset = 0.0f;
 public:
-  void trigger() {
+  void IRAM_ATTR_FLAG trigger() {
     _timeLastTriggerMillis = millis();
   }
   

@@ -925,15 +925,12 @@ void setup()
 
   ActiveSerial->printf("InvertStepperDir 0: %d\n", 1);
 
-  ActiveSerial->println("Config sent successfully 1");
-
   bool invMotorDir = dap_config_st_local.payLoadPedalConfig_.invertMotorDirection_u8 > 0;
   stepper = new StepperWithLimits(stepPinStepper, dirPinStepper, invMotorDir, dap_calculationVariables_st.stepsPerMotorRevolution); 
 
   motorRevolutionsPerSteps_fl32 = 1.0f / ( (float)dap_calculationVariables_st.stepsPerMotorRevolution );
   // ActiveSerial->printf("Steps per motor revolution: %d\n", dap_calculationVariables_st.stepsPerMotorRevolution);
 
-  ActiveSerial->println("Config sent successfully 2");
   #ifdef USES_ADS1220
     /*  Uses ADS1220 */
     loadcell = new LoadCell_ADS1220();
@@ -943,18 +940,12 @@ void setup()
     loadcell = new LoadCell_ADS1256();
   #endif
 
-  ActiveSerial->println("Config sent successfully 3");
-  
-
   loadcell->setLoadcellRating(dap_config_st_local.payLoadPedalConfig_.loadcell_rating);
-
   loadcell->estimateBiasAndVariance();       // automatically identify sensor noise for KF parameterization
 
 	// find the min & max endstops
 	ActiveSerial->println("Start homing");
 	stepper->findMinMaxSensorless(dap_config_st_local);
-
- 
   ActiveSerial->print("Min Position is "); ActiveSerial->println(stepper->getLimitMin());
   ActiveSerial->print("Max Position is "); ActiveSerial->println(stepper->getLimitMax());
 
@@ -987,9 +978,6 @@ void setup()
   // setup multi tasking
   semaphore_updatePedalStates = xSemaphoreCreateMutex();
 
-
-
-  
 
 
   delay(10);
@@ -2415,7 +2403,7 @@ static inline size_t getExpectedPacketSize(uint8_t payloadType) {
 }
 
 // NOTE: The IRAM_ATTR attribute has been removed as it is not needed for a FreeRTOS task function.
-void serialCommunicationTaskRx(void *pvParameters) {
+void IRAM_ATTR_FLAG serialCommunicationTaskRx(void *pvParameters) {
     FunctionProfiler profiler_serialCommunicationTask;
     profiler_serialCommunicationTask.setName("SerialCommunicationRx");
     profiler_serialCommunicationTask.setNumberOfCalls(500);

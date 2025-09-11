@@ -1,6 +1,7 @@
 // FunctionProfiler.h
 #pragma once
 #include <Arduino.h>
+#include <Main.h>
 #include <limits>
 #include <string>
 #include "freertos/FreeRTOS.h"

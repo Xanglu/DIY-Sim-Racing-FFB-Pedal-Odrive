@@ -3,6 +3,7 @@
 
 #include "Arduino.h"
 #include <stdint.h>
+#include "Main.h"
 
 class KalmanFilter_1st_order {
 public:
@@ -10,10 +11,10 @@ public:
   KalmanFilter_1st_order(float varianceEstimate);
 
   // Main filter function
-  float filteredValue(float measurement, float command, uint8_t modelNoiseScaling_u8);
+  float IRAM_ATTR_FLAG filteredValue(float measurement, float command, uint8_t modelNoiseScaling_u8);
 
   // Getters for the state variables
-  float changeVelocity();
+  float IRAM_ATTR_FLAG changeVelocity();
   
 private:
   // State vector [position; velocity]

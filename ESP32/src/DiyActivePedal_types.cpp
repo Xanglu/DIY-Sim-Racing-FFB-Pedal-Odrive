@@ -350,17 +350,17 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st)
     // stepsPerMotorRevolution = 3750;
 }
 
-void DAP_calculationVariables_st::dynamic_update()
+void IRAM_ATTR_FLAG DAP_calculationVariables_st::dynamic_update()
 {
   Force_Range = Force_Max - Force_Min;
 }
 
-void DAP_calculationVariables_st::reset_maxforce()
+void IRAM_ATTR_FLAG DAP_calculationVariables_st::reset_maxforce()
 {
   Force_Max = Force_Max_default;
 }
 
-void DAP_calculationVariables_st::updateEndstops(long newMinEndstop, long newMaxEndstop) {
+void IRAM_ATTR_FLAG DAP_calculationVariables_st::updateEndstops(long newMinEndstop, long newMaxEndstop) {
  
   if ( newMinEndstop == newMaxEndstop )
   {
@@ -378,7 +378,7 @@ void DAP_calculationVariables_st::updateEndstops(long newMinEndstop, long newMax
   //current_pedal_position_ratio=((float)(current_pedal_position-stepperPosMin_default))/((float)stepperPosRange_default);
 }
 
-void DAP_calculationVariables_st::updateStiffness() {
+void IRAM_ATTR_FLAG DAP_calculationVariables_st::updateStiffness() {
   springStiffnesss = Force_Range / stepperPosRange;
   if ( fabsf(springStiffnesss) > 0.0001f )
   {

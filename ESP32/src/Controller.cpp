@@ -1,6 +1,6 @@
 #include "Controller.h"
 
-uint16_t NormalizeControllerOutputValue(float value, float minVal, float maxVal, float maxGameOutput) {
+uint16_t IRAM_ATTR_FLAG NormalizeControllerOutputValue(float value, float minVal, float maxVal, float maxGameOutput) {
   float valRange_fl32 = (maxVal - minVal);
   float deadzoneCorrection_fl32 = 0.005f * valRange_fl32;
 
