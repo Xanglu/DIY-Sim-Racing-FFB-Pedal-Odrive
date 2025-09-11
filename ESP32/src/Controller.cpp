@@ -24,16 +24,21 @@ uint16_t NormalizeControllerOutputValue(float value, float minVal, float maxVal,
 #include <string>
 #include "Adafruit_TinyUSB.h"
 
+
+#define JOYSTICK_AXIS_MINIMUM 0
+#define JOYSTICK_AXIS_MAXIMUM 65535
+
+
 // HID Report Descriptor for Racing Pedal (Brake only)
 const uint8_t desc_hid_report[] = {
     0x05, 0x01,        // Usage Page (Generic Desktop Controls)
-    0x09, 0x04,        // Usage (Joystick)
+    0x09, 0x05,        // Usage (0x04: Joystick, 0x05: Gamepad)
     0xA1, 0x01,        // Collection (Application)
 
     0x05, 0x02,        //   Usage Page (Simulation Controls)
     0x09, 0xC5,        //   Usage (Brake)  <-- special "pedal" usage
     0x15, 0x00,        //   Logical Minimum (0)
-    0x26, 0xFF, 0x7F,  //   Logical Maximum (65535)
+    0x27, 0xFF, 0xFF, 0x00, 0x00,  //   0x25: 1byte logical max; 0x26: 2byte logical max; 0x27: 4byte logical max;  Logical Maximum (65535)
     0x75, 0x10,        //   Report Size (16 bits)
     0x95, 0x01,        //   Report Count (1)
     0x81, 0x02,        //   Input (Data,Var,Abs)  <-- absolute, not relative
@@ -47,10 +52,11 @@ Adafruit_USBD_HID usb_hid;
 
 // Report payload for the two axes
 typedef struct {
-  int16_t brake;
+  uint8_t brake_lowerByte;
+  uint8_t brake_higherByte;
 } hid_report_t;
 
-hid_report_t hid_report = {0};
+hid_report_t hid_report = {0,0};
 
 
 
@@ -138,10 +144,12 @@ bool IsControllerReady() {
 
 void SetControllerOutputValue(uint16_t value) {
   
-  // trafo to sint16, as report seems to expect that
-  int16_t tmp = map(value, JOYSTICK_MIN_VALUE, JOYSTICK_MAX_VALUE, 0, INT16_MAX);
+  uint8_t highByte = (uint8_t)(value >> 8);
+	uint8_t lowByte = (uint8_t)(value & 0x00FF);
 
-  hid_report.brake = tmp;
+  hid_report.brake_lowerByte = lowByte;
+  hid_report.brake_higherByte = highByte;
+
   usb_hid.sendReport(0, &hid_report, sizeof(hid_report));
 }
 
