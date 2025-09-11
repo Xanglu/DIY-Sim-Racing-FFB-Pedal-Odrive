@@ -966,9 +966,9 @@ namespace User.PluginSdkDemo
                     {
                         if (ESPsync_serialPort.IsOpen) 
                         {
-                            ESPsync_serialPort.DiscardInBuffer();  
+                            //ESPsync_serialPort.DiscardInBuffer();  
                             ESPsync_serialPort.Write(newBuffer, 0, newBuffer.Length);
-                            System.Threading.Thread.Sleep(30);
+                            //System.Threading.Thread.Sleep(30);
                         }
                     }
                     else
@@ -976,11 +976,11 @@ namespace User.PluginSdkDemo
                         if (_serialPort[PIDX].IsOpen)
                         {
                             // clear inbuffer 
-                            _serialPort[PIDX].DiscardInBuffer();
+                            //_serialPort[PIDX].DiscardInBuffer();
 
                             // send query command
                             _serialPort[PIDX].Write(newBuffer, 0, newBuffer.Length);
-                            System.Threading.Thread.Sleep(50);
+                            //System.Threading.Thread.Sleep(50);
                         }
                     }
                 }
