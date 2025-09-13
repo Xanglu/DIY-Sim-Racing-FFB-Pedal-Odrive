@@ -109,8 +109,8 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 if (Settings != null)
                 {
-                    Label_Pedal_interval_trigger.Content = "Action Interval: " + Settings.Pedal_action_interval[Settings.table_selected] + "ms";
-                    Slider_Pedal_interval_trigger.Value = Settings.Pedal_action_interval[Settings.table_selected];
+                    Label_Pedal_interval_trigger.Content = "Effect FPS: " + Settings.Pedal_action_fps[Settings.table_selected] ;
+                    Slider_Pedal_interval_trigger.Value = Settings.Pedal_action_fps[Settings.table_selected];
                     if (Settings.reading_config == 1)
                     {
                         checkbox_pedal_read.IsChecked = true;
@@ -251,8 +251,8 @@ namespace User.PluginSdkDemo.UIFunction
 
         private void Slider_Pedal_interval_trigger_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            Settings.Pedal_action_interval[Settings.table_selected] = (byte)e.NewValue;
-            Label_Pedal_interval_trigger.Content = "Action Interval: " + Settings.Pedal_action_interval[Settings.table_selected] + "ms";
+            Settings.Pedal_action_fps[Settings.table_selected] = (byte)e.NewValue;
+            Label_Pedal_interval_trigger.Content = "Effect FPS: " + Settings.Pedal_action_fps[Settings.table_selected] ;
             SettingsChangedEvent(Settings);
         }
 

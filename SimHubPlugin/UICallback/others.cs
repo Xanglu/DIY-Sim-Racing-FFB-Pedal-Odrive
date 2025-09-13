@@ -493,8 +493,9 @@ namespace User.PluginSdkDemo
                             live_preview_b = false;
                         }
                     }
+                    float time_interval = 1000.0f / Plugin.Settings.Pedal_action_fps[indexOfSelectedPedal_u];
 
-                    if (millisceonds > Plugin.Settings.Pedal_action_interval[indexOfSelectedPedal_u] && live_preview_b)
+                    if (millisceonds > time_interval && live_preview_b)
                     {
                         //live_preview_b = true;
                         Plugin.SendConfigWithoutSaveToEEPROM(dap_config_st[indexOfSelectedPedal_u], (byte)indexOfSelectedPedal_u);

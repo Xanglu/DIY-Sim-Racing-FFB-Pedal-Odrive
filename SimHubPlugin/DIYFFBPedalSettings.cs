@@ -51,7 +51,7 @@ namespace User.PluginSdkDemo
         public bool Serial_auto_clean = false; //clean serial monitor
         public bool Serial_auto_clean_bridge = false; //clean serial monitor bridge
         public bool Using_CDC_bridge = false;
-        public byte[] Pedal_action_interval = new byte[3] { 50, 51, 53 };
+        public byte[] Pedal_action_fps = new byte[3] { 20, 20, 20 };
         public bool Rudder_RPM_effect_b = false;
         public bool Rudder_ACC_effect_b = false;
         public bool Rudder_ACC_WindForce = false;
