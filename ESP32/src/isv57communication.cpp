@@ -589,26 +589,26 @@ void isv57communication::resetToFactoryParams()
   // Read:  3F 03 02 55 55 6E EE
 
 
-  // disable axis first
-  disableAxis();
-  ActiveSerial->println("Disabling axis first\n");
-  delay(500);
+  // // disable axis first
+  // disableAxis();
+  // ActiveSerial->println("Disabling axis first\n");
+  // delay(500);
 
 
-  // identified with logic analyzer. See \StepperParameterization\Meesages\ResetToFactorySettings_0.png
-  long tmp = modbus.holdingRegisterRead(0x01F0);
+  // // identified with logic analyzer. See \StepperParameterization\Meesages\ResetToFactorySettings_0.png
+  // long tmp = modbus.holdingRegisterRead(0x01F0);
 
-  if (tmp == 0x00)
-  {
-    ActiveSerial->println("First test passed\n");
-    modbus.holdingRegisterWrite(slaveId, 0x019a, 0x4444);
+  // if (tmp == 0x00)
+  // {
+  //   ActiveSerial->println("First test passed\n");
+  //   modbus.holdingRegisterWrite(slaveId, 0x019a, 0x4444);
 
-    tmp = modbus.holdingRegisterRead(0x01F7);
+  //   tmp = modbus.holdingRegisterRead(0x01F7);
 
-    if (tmp == 0x5555)
-    {
-      ActiveSerial->println("Reset to factory settings successfull\n");
-    }
-  }
+  //   if (tmp == 0x5555)
+  //   {
+  //     ActiveSerial->println("Reset to factory settings successfull\n");
+  //   }
+  // }
 }
 
