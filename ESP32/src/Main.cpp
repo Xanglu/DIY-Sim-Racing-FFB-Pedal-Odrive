@@ -689,6 +689,7 @@ void setup()
   DAP_config_st dap_config_st_eeprom;
 
   // setup serial
+  // #define USE_CDC_INSTEAD_OF_UART
   #ifdef USE_CDC_INSTEAD_OF_UART
     Serial.begin(DEFAULTBAUD);
     //Serial.enableReboot(false);
@@ -922,8 +923,6 @@ void setup()
       pixels.show(); 
       //delay(3000);
   #endif
-
-  ActiveSerial->printf("InvertStepperDir 0: %d\n", 1);
 
   bool invMotorDir = dap_config_st_local.payLoadPedalConfig_.invertMotorDirection_u8 > 0;
   stepper = new StepperWithLimits(stepPinStepper, dirPinStepper, invMotorDir, dap_calculationVariables_st.stepsPerMotorRevolution); 

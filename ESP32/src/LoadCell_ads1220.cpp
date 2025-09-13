@@ -28,12 +28,12 @@ static SemaphoreHandle_t timer_fireLoadcellReadingReady_global;
 
 // This is our Interrupt Service Routine
 void IRAM_ATTR drdyInterrupt() {
-
-  if(timer_fireLoadcellReadingReady_global != NULL)
-  {
-    // It immediately gives the semaphore to wake up myCore1Task.
-    xSemaphoreGiveFromISR(timer_fireLoadcellReadingReady_global, NULL);
-  }
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    // Give the semaphore to unblock the reading task.
+    if (drdySemaphore != NULL) {
+        xSemaphoreGiveFromISR(drdySemaphore, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);  // request context switch if needed
+    }
 }
 
 /* Provides a singleton instance of the ADS1220 ADC driver. */

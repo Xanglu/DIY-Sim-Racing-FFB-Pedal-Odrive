@@ -223,6 +223,7 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+2, 0); // deactivate auto gain
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+3, 10); // machine stiffness
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+4, 80); // ratio of inertia
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+6, 0); // motor command direction
   //retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+6, commandRotationDirection); // Command Pulse Rotational Direction
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+8, (long)stepsPerMotorRev_u32); // microsteps
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+9, 1); // 1st numerator 
@@ -285,7 +286,7 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   // Pr5 register
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_5_00+13, 5000); // overspeed level
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_5_00+20, 1); // encoder output resolution  {0: Encoder units; 1: Command units; 2: 10000pulse/rotation}
-  
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_5_00+35, 1); // lock front panel
 
   //retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_5_00+32, 300); // command pulse input maximum setup
 
