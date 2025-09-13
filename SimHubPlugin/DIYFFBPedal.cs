@@ -85,6 +85,7 @@ namespace User.PluginSdkDemo
         public byte TrackSurfaceCondition = 0;
         public bool[] PedalConfigRead_b = new bool[3] { false, false, false };
         public List<VidPidResult> comportList = new List<VidPidResult>();
+        private const float actionIntervalTolerance = 0.5f;
         //public vJoyInterfaceWrap.vJoy joystick;
         //effect trigger timer
         DateTime[] Action_currentTime = new DateTime[3];
@@ -288,8 +289,15 @@ namespace User.PluginSdkDemo
 
         unsafe public void SendPedalAction(DAP_action_st action_tmp, Byte PedalID)
         {
-            //DAP_action_st* v = &action_tmp;
-            //byte* p = (byte*)v;
+            
+            action_tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            action_tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            action_tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            action_tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
+            action_tmp.payloadHeader_.PedalTag = PedalID;
+            DAP_action_st* v = &action_tmp;
+            byte* p = (byte*)v;
+            action_tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
             int length = sizeof(DAP_action_st);
             byte[] newBuffer = new byte[length];
             newBuffer = getBytes_Action(action_tmp);
@@ -801,7 +809,7 @@ namespace User.PluginSdkDemo
                         Action_currentTime[pedalIdx] = DateTime.Now;
                         TimeSpan diff_action = Action_currentTime[pedalIdx] - Action_lastTime[pedalIdx];
                         int millisceonds_action = (int)diff_action.TotalMilliseconds;
-                        float time_interval= 1000.0f / Settings.Pedal_action_fps[pedalIdx];
+                        float time_interval= (1000.0f / Settings.Pedal_action_fps[pedalIdx])-actionIntervalTolerance;
                         if (millisceonds_action <= time_interval)
                         {
                             update_flag = false;
