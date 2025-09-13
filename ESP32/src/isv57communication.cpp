@@ -1,5 +1,6 @@
 #include "isv57communication.h"
 #include "Main.h"
+#include "isv57_tunedParameters.h"
 
 Modbus modbus(Serial2);
 
@@ -610,5 +611,37 @@ void isv57communication::resetToFactoryParams()
   //     ActiveSerial->println("Reset to factory settings successfull\n");
   //   }
   // }
+
+
+
+  disableAxis();
+
+  bool retValue_b = false;
+  
+  for (uint16_t registerIndex_u16 = 0; registerIndex_u16 < ISV57_NMB_OF_REGISTERS; registerIndex_u16++)
+  {
+    retValue_b |= modbus.checkAndReplaceParameter(slaveId, registerIndex_u16, tuned_parameters[registerIndex_u16]);
+  }
+
+
+
+  // store the settings to servos NVM if necesssary
+  if (retValue_b)
+  {
+
+    ActiveSerial->println("Servo registered in NVM have been updated! Please power cycle the servo and the ESP!");
+
+    // identified with logic analyzer. See \StepperParameterization\Meesages\StoreSettingsToEEPROM_0.png
+    modbus.holdingRegisterWrite(slaveId, 0x019A, 0x5555); // store the settings to servos NVM
+    // ToDo: according to iSV57 manual, 0x2211 is the command to write values to EEPROM
+    delay(500);
+    
+    // ToDo: soft reset servo. The iSV57 docu says Pr0.25: 0x6666 is soft reset
+    // modbus.holdingRegisterWrite(slaveId, 0x019A, 0x6666); // store the settings to servos NVM
+    
+    isv57_update_parameter_b=true;
+    delay(1000);
+  }
+  
 }
 
