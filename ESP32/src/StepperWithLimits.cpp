@@ -177,6 +177,12 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 
 
 // Clear all servo alarms
+void StepperWithLimits::resetServoParametersToFactoryValues()
+{
+	resetServoRegistersToFactoryValues_b = true;
+}
+
+// Clear all servo alarms
 void StepperWithLimits::clearAllServoAlarms()
 {
 	clearAllServoAlarms_b = true;
@@ -815,6 +821,19 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 					stepper_cl->clearAllServoAlarms_b = false;
 				}
 				
+				/************************************************************/
+				/* 					reset to factory parameters				*/
+				/************************************************************/
+				if (true == stepper_cl->resetServoRegistersToFactoryValues_b)
+				{
+					ActiveSerial->println("Reset to factory settings.");
+					stepper_cl->isv57.resetToFactoryParams();
+					stepper_cl->resetServoRegistersToFactoryValues_b = false;
+
+					delay(500);
+					ESP.restart();
+				}
+
 				/************************************************************/
 				/* 					log all servo params 					*/
 				/************************************************************/

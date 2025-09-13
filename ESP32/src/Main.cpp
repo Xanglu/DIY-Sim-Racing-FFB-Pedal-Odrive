@@ -15,7 +15,7 @@
 // #define DEBUG_INFO_0_LOADCELL_READING 4
 #define DEBUG_INFO_0_SERVO_READINGS 8
 #define DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS 16
-#define DEBUG_INFO_0_STATE_BASIC_INFO_STRUCT 32
+#define DEBUG_INFO_0_RESET_SERVO_TO_FACTORY 32
 #define DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT 64
 #define DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS 128
 
@@ -1608,6 +1608,29 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           configPackage_st.config_st = tmp;
           xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
         }
+
+        // reset all servo alarms
+        if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_RESET_SERVO_TO_FACTORY) )
+        {
+          DAP_config_st tmp;
+          global_dap_config_class.getConfig(&tmp, 500);
+          tmp.payLoadPedalConfig_.debug_flags_0 &= ( ~(uint8_t)DEBUG_INFO_0_RESET_SERVO_TO_FACTORY); // clear the debug bit
+          tmp.payLoadHeader_.storeToEeprom = 1;
+          //global_dap_config_class.setConfig(tmp);
+
+          configDataPackage_t configPackage_st;
+          configPackage_st.config_st = tmp;
+          xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
+
+          delay(500);
+
+          global_dap_config_class.storeConfigToEprom();
+
+          ActiveSerial->println("Resetting servo parameters to factory values");
+          stepper->resetServoParametersToFactoryValues();
+        }
+
+        
 
         // print all servo parameters for debug purposes
         if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS) )

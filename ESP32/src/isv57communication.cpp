@@ -577,9 +577,38 @@ bool isv57communication::readAlarmHistory() {
 
 void isv57communication::resetToFactoryParams() 
 {
+  // Identified with Free Device Monitoring Studio: https://hhdsoftware.com/device-monitoring-studio
+  // Data view
+  // Write:  3F 03 01 F0 00 01 81 1B
+  // Read: 3F 03 02 00 00 91 81
+
+  // Write:  3F 06 01 9A 44 44 9F F4
+  // Read:  3F 06 01 9A 44 44 9F F4
+
+  // Write:  3F 03 01 F7 00 01 30 DA
+  // Read:  3F 03 02 55 55 6E EE
+
+
+  // disable axis first
+  disableAxis();
+  ActiveSerial->println("Disabling axis first\n");
+  delay(500);
+
+
   // identified with logic analyzer. See \StepperParameterization\Meesages\ResetToFactorySettings_0.png
-	//modbus.holdingRegisterWrite(slaveId, 0x01F0, 0x0001);
-  // 0x3f, 0x03, 0x01, 0xF0, 0x00, 0x01, 0x81, 0x1B
-  modbus.holdingRegisterRead(0x01F0);
+  long tmp = modbus.holdingRegisterRead(0x01F0);
+
+  if (tmp == 0x00)
+  {
+    ActiveSerial->println("First test passed\n");
+    modbus.holdingRegisterWrite(slaveId, 0x019a, 0x4444);
+
+    tmp = modbus.holdingRegisterRead(0x01F7);
+
+    if (tmp == 0x5555)
+    {
+      ActiveSerial->println("Reset to factory settings successfull\n");
+    }
+  }
 }
 

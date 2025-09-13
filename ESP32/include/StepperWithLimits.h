@@ -43,6 +43,7 @@ private:
 
 	bool logAllServoParams = false;
 	bool clearAllServoAlarms_b = false;
+	bool resetServoRegistersToFactoryValues_b = false;
 
 	bool updateServoParams_b = false;
 
@@ -98,6 +99,7 @@ public:
 	void configSetPositionCommandSmoothingFactor(uint8_t posCommandSmoothingFactorArg_u8);
 	void printAllServoParameters();
 	void clearAllServoAlarms();
+	void resetServoParametersToFactoryValues();
 	void configSetProfilingFlag(bool proFlag_b);
 
 
