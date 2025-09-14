@@ -30,8 +30,8 @@ static SemaphoreHandle_t timer_fireLoadcellReadingReady_global;
 void IRAM_ATTR drdyInterrupt() {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     // Give the semaphore to unblock the reading task.
-    if (drdySemaphore != NULL) {
-        xSemaphoreGiveFromISR(drdySemaphore, &xHigherPriorityTaskWoken);
+    if (timer_fireLoadcellReadingReady_global != NULL) {
+        xSemaphoreGiveFromISR(timer_fireLoadcellReadingReady_global, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);  // request context switch if needed
     }
 }

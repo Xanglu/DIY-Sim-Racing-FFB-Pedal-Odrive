@@ -2,7 +2,7 @@
 
 // Description: Array of tuned parameters derived from the file 'tuned-130_13_09_2025.h'
 // Size: 305 elements
-// Type: Signed 16-bit integer
+// Type: Signed 32-bit integer
 #define ISV57_NMB_OF_REGISTERS 305
 const int32_t tuned_parameters[ISV57_NMB_OF_REGISTERS] = {
     1,     // 0

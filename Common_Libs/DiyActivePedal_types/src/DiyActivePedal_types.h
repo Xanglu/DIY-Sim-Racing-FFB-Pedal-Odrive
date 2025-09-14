@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "CubicInterpolatorFloat.h"
 // define the payload revision
-#define DAP_VERSION_CONFIG 156
+#define DAP_VERSION_CONFIG 157
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -122,6 +122,7 @@ struct payloadPedalState_Extended {
   int16_t servoPosition_i16;
   int16_t servoPositionTarget_i16;
   int16_t servoPositionEstimated_i16;
+  int16_t targetPosition_i16;
   //int16_t servoPositionEstimated_stepperPos_i16;
   int16_t servo_position_error_i16;
   uint16_t angleSensorOutput_ui16;

@@ -22,6 +22,7 @@ namespace User.PluginSdkDemo
         public Int16 servoPosition_i16;
         public Int16 servoPositionTarget_i16;
         public Int16 servoPositionEstimated_i16;
+        public Int16 targetPosition_i16;
         //public Int16 servoPositionEstimated_stepperPos_i16;
         public Int16 servo_position_error_i16;
         public UInt16 angleSensorOutput_ui16;
