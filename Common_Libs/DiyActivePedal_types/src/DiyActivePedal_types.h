@@ -123,6 +123,7 @@ struct payloadPedalState_Extended {
   int16_t servoPositionTarget_i16;
   int16_t servoPositionEstimated_i16;
   int16_t targetPosition_i16;
+  int32_t currentSpeedInMilliHz_i32;
   //int16_t servoPositionEstimated_stepperPos_i16;
   int16_t servo_position_error_i16;
   uint16_t angleSensorOutput_ui16;

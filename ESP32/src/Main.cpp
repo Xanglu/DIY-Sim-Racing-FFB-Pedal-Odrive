@@ -1882,7 +1882,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       stepperPosCurrent_i32 = stepper->getCurrentPosition();
 
       int32_t Position_Next = 0;
-      
+      int32_t Position_Next_2 = 0;
       // select control loop algo
       switch (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.control_strategy_b) {
         case 0:
@@ -1899,6 +1899,8 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           // Position_Next = MoveByForceTargetingStrategy_old(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0/*effect_force*/, changeVelocity, d_phi_d_x, d_x_hor_d_phi);
           break;
       }
+
+      Position_Next_2 = Position_Next;
 
       // end profiler 4, movement strategy
       profiler_pedalUpdateTask.end(5);
@@ -2279,11 +2281,10 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_current_percent_i16 = stepper->getServosCurrent();
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servo_position_error_i16 = stepper->getServosPosError();
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionEstimated_i16 = stepper->getEstimatedPosError();
-          dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.targetPosition_i16 = Position_Next - minPos;
-          
-
-
+          dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.targetPosition_i16 = Position_Next_2 - minPos;
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.servoPositionTarget_i16 = stepper->getCurrentPosition() - minPos;
+          dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.currentSpeedInMilliHz_i32 = stepper->getCurrentSpeedInMilliHz();
+
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.angleSensorOutput_ui16 = angleReading_ui16;
           dap_state_extended_st_lcl_pedalUpdateTask.payloadPedalState_Extended_.brakeResistorState_b = stepper->getBrakeResistorState();
           dap_state_extended_st_lcl_pedalUpdateTask.payLoadHeader_.PedalTag = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.pedal_type;

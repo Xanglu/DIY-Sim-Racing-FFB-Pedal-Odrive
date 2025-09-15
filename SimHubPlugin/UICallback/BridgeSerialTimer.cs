@@ -335,6 +335,7 @@ namespace User.PluginSdkDemo
                                                             writer.Write(", brakeResistorState_b");
                                                             writer.Write(", servoPosEstimated_InSteps");
                                                             writer.Write(", targetPosition_InSteps");
+                                                            writer.Write(", currentSpeedInMilliHz_i32");
                                                             //writer.Write(", servoPositionEstimated_stepperPos_i16");
                                                             writer.Write("\n");
                                                         }
@@ -352,7 +353,7 @@ namespace User.PluginSdkDemo
                                                     writeCntr++;
 
                                                     // Build the entire string in one line using interpolation
-                                                    writer.WriteLine($"{writeCntr},{state.timeInUs_u32},{state.cycleCount_u32},{state.pedalForce_raw_fl32},{state.pedalForce_filtered_fl32},{state.forceVel_est_fl32},{state.servoPosition_i16},{state.servoPositionTarget_i16},{state.servo_position_error_i16},{state.servo_current_percent_i16},{state.servo_voltage_0p1V_i16 / 10.0f},{state.angleSensorOutput_ui16},{state.brakeResistorState_b},{state.servoPositionEstimated_i16},{state.targetPosition_i16}");
+                                                    writer.WriteLine($"{writeCntr},{state.timeInUs_u32},{state.cycleCount_u32},{state.pedalForce_raw_fl32},{state.pedalForce_filtered_fl32},{state.forceVel_est_fl32},{state.servoPosition_i16},{state.servoPositionTarget_i16},{state.servo_position_error_i16},{state.servo_current_percent_i16},{state.servo_voltage_0p1V_i16 / 10.0f},{state.angleSensorOutput_ui16},{state.brakeResistorState_b},{state.servoPositionEstimated_i16},{state.targetPosition_i16},{state.currentSpeedInMilliHz_i32}");
                                                 }
 
 
