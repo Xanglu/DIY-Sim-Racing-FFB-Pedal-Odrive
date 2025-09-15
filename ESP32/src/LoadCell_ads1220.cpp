@@ -21,7 +21,9 @@ float updatedConversionFactor_f64 = 1.0f;
 float refVoltageInMV_fl32 = 5000.0f;
 
 static SemaphoreHandle_t timer_fireLoadcellReadingReady_global;
-
+// --- Semaphore Handle ---
+// Moved to global scope to be accessible by the ISR and the class
+static SemaphoreHandle_t drdySemaphore = NULL;
 
 
 
