@@ -600,9 +600,8 @@ void ESPNow_initialize()
   ActiveSerial->println("Wait for ESPNOW");
   delay(3000);
   #ifdef ESPNow_S3
-    #if PCB_VERSION == 9
-      //esp_wifi_set_max_tx_power(WIFI_POWER_19_5dBm);
-    #else
+    #if PCB_VERSION == 7
+      esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_11M_L);
       esp_wifi_set_max_tx_power(WIFI_POWER_8_5dBm);
     #endif
   #endif
