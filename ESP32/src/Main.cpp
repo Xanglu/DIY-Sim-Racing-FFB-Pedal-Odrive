@@ -1902,6 +1902,8 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
       Position_Next_2 = Position_Next;
 
+      
+
       // end profiler 4, movement strategy
       profiler_pedalUpdateTask.end(5);
 
@@ -2048,6 +2050,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           if(Position_check < BP_trigger_max)
           {
             _BitePointOscillation.trigger();
+
           }
         }
       }
@@ -2083,7 +2086,14 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       {
         if (!moveSlowlyToPosition_b)
         {
-          stepper->moveTo(Position_Next, false);
+          // set speed thus movement finished in next call
+          int32_t plannedSteps_i32 = Position_Next - stepperPosCurrent_i32;
+          // uint32_t plannedSpeedInHz_u32 = abs( plannedSteps_i32 * 1000000 / REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US );
+          uint32_t plannedSpeedInHz_u32 = abs( plannedSteps_i32 * 1000 ); // stepper task time is 1ms --> planned steps / 1ms * 1000ms/1s
+          plannedSpeedInHz_u32 = constrain(plannedSpeedInHz_u32, 1, MAXIMUM_STEPPER_SPEED);
+          stepper->moveToPosWithSpeed(Position_Next, plannedSpeedInHz_u32);
+
+          // stepper->moveTo(Position_Next, false);
         }
         else
         {

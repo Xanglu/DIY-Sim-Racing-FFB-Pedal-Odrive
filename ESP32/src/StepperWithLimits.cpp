@@ -45,8 +45,8 @@ bool setServoToSleep_b = false;
 #define BRAKE_RESISTOR_UPPER_TRHESHOLD_VOLTAGE 4.0f
 #define BRAKE_RESISTOR_LOWER_TRHESHOLD_VOLTAGE 1.0f
 
-#define STEPPER_TASK_TIME_IN_MS (uint8_t)4
-#define STEPPER_FORWARD_PLANNING_TIME_IN_MS (uint8_t)4
+#define STEPPER_TASK_TIME_IN_MS (uint8_t)1
+#define STEPPER_FORWARD_PLANNING_TIME_IN_MS (uint8_t)1
 
 FastAccelStepperEngine& stepperEngine() {
   static FastAccelStepperEngine myEngine = FastAccelStepperEngine();   // this is a factory and manager for all stepper instances
@@ -404,6 +404,11 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 	}	
 	
 
+}
+
+void StepperWithLimits::moveToPosWithSpeed(int32_t targetPos_ui32, uint32_t speedInHz_u32) {
+  _stepper->setSpeedInHz(speedInHz_u32);
+  _stepper->moveTo(targetPos_ui32, false);
 }
 
 

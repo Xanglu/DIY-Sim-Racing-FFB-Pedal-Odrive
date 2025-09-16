@@ -67,6 +67,7 @@ public:
 	void forceStop();
 	int8_t moveTo(int32_t position, bool blocking = false);
 	void moveSlowlyToPos(int32_t targetPos_ui32);
+	void moveToPosWithSpeed(int32_t targetPos_ui32, uint32_t speedInHz_u32);
 
 	int32_t getCurrentPositionFromMin() const;
 	int32_t getMinPosition() const;
