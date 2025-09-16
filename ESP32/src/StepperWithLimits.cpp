@@ -48,43 +48,29 @@ bool setServoToSleep_b = false;
 #define STEPPER_TASK_TIME_IN_MS (uint8_t)1
 #define STEPPER_FORWARD_PLANNING_TIME_IN_MS (uint8_t)1
 
-FastAccelStepperEngine& stepperEngine() {
-  static FastAccelStepperEngine myEngine = FastAccelStepperEngine();   // this is a factory and manager for all stepper instances
-
-  static bool firstTime = true;
-  if (firstTime) {
-     myEngine.init(CORE_ID_STEPPER_TASK);
-     firstTime = false;
-  }
-  
-  myEngine.task_rate(STEPPER_TASK_TIME_IN_MS);
-  return myEngine;
-}
-
 
 StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool invertMotorDir_b, uint32_t stepsPerMotorRev_arg_u32)
   :  _endstopLimitMin(0),    _endstopLimitMax(0)
   , _posMin(0),      _posMax(0)
   , stepsPerMotorRev_u32(stepsPerMotorRev_arg_u32)
-
-
 {
 
-	semaphore_lifelineSignal = xSemaphoreCreateMutex();
+  	_stepper = new FastNonAccelStepper(pinStep, pinDirection, invertMotorDir_b); 
+
 
 	// pinMode(pinMin, INPUT);
 	// pinMode(pinMax, INPUT);
 
-	ActiveSerial->printf("InvertStepperDir: %d\n", invertMotorDir_b);
-	_stepper = stepperEngine().stepperConnectToPin(pinStep);	
+	Serial.printf("InvertStepperDir: %d\n", invertMotorDir_b);
+	// _stepper = stepperEngine().stepperConnectToPin(pinStep);	
 
-	_stepper->setDirectionPin(pinDirection, invertMotorDir_b);
-    _stepper->setAutoEnable(true);
-    _stepper->setAbsoluteSpeedLimit( maxSpeedInTicks ); // ticks
-    _stepper->setSpeedInTicks( maxSpeedInTicks ); // ticks
-    _stepper->setAcceleration(MAXIMUM_STEPPER_ACCELERATION);  // steps/s²
-	_stepper->setLinearAcceleration(0);
-    _stepper->setForwardPlanningTimeInMs(STEPPER_FORWARD_PLANNING_TIME_IN_MS);
+	// _stepper->setDirectionPin(pinDirection, invertMotorDir_b);
+    // _stepper->setAutoEnable(true);
+    // _stepper->setAbsoluteSpeedLimit( maxSpeedInTicks ); // ticks
+    // _stepper->setSpeedInTicks( maxSpeedInTicks ); // ticks
+    // _stepper->setAcceleration(MAXIMUM_STEPPER_ACCELERATION);  // steps/s²
+	// _stepper->setLinearAcceleration(0);
+    // _stepper->setForwardPlanningTimeInMs(STEPPER_FORWARD_PLANNING_TIME_IN_MS);
 
 	
 	/************************************************************/
@@ -280,12 +266,12 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 		}
 			
 		// reduce speed and acceleration
-		_stepper->setSpeedInHz(MAXIMUM_STEPPER_SPEED / 16);
-		_stepper->setAcceleration(MAXIMUM_STEPPER_ACCELERATION / 16);
-		
+		_stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED / 16);
+
 		// run continously in one direction until endstop is hit
-		//_stepper->keepRunningBackward(MAXIMUM_STEPPER_SPEED / 10);
-		_stepper->move(INT32_MIN, false);
+		ActiveSerial->println("Move to min");
+		// _stepper->forceStopAndNewPosition(0);
+		_stepper->keepRunningBackward(MAXIMUM_STEPPER_SPEED / 16);
 		
 		while( (!endPosDetected) && (getLifelineSignal()) ){
 			delay(1);
@@ -306,56 +292,8 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 		ActiveSerial->println("Moved to pos: 0");
 		ActiveSerial->printf("Current pos: %d\n", _stepper->getCurrentPosition() );
 		
-		
-		
-
-		/************************************************************/
-		/* 			reset servos internal position counter,			*/
-		/*			thus step loss recovery is simplified.			*/
-		/************************************************************/
-		// restart servo axis. This will reset the seros reg_add_position_given_p count to zero, thus equalizing the ESP zero and the servos zero position.
-		/*restartServo = true;
-
-		bool servoAxisResetSuccessfull_b = false;
-		for (uint16_t waitTillServoCounterWasReset_Idx = 0; waitTillServoCounterWasReset_Idx < 10; waitTillServoCounterWasReset_Idx++)
-		{
-			delay(100);
-
-			//bool servoPosRes_b = (50 > abs(isv57.servo_pos_given_p) ) || ( 50 > (INT16_MAX - abs(isv57.servo_pos_given_p))  );
-			bool servoPosRes_b = 0 == (isv57.servo_pos_given_p); 
-			if ( (false == restartServo) && (servoPosRes_b) )
-			{
-				ActiveSerial->print("Servo axis was reset succesfully! Current position: ");
-				ActiveSerial->println(isv57.servo_pos_given_p);
-				servoAxisResetSuccessfull_b = true;
-				break;
-			}
-		}
-
-		if(false == servoAxisResetSuccessfull_b)
-		{
-			ActiveSerial->print("Servo axis not reset. Restarting ESP!");
-			ESP.restart();
-		}*/
-		
-
-		// ActiveSerial->print("Servo axis current position (before clearing): ");
-		// ActiveSerial->println(isv57.servo_pos_given_p);
-
-		// restartServo = true;
-		// delay(5000);
-
-		// ActiveSerial->print("Servo axis current position (after clearing): ");
-		// ActiveSerial->println(isv57.servo_pos_given_p);
-
-
-
-
-		
-		
 		delay(200);
 		isv57.setZeroPos();
-		// setMinPosition();
 
 		
 		/************************************************************/
@@ -369,7 +307,6 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 		endPosDetected = false; //abs( isv57.servo_current_percent) > STEPPER_WITH_LIMITS_SENSORLESS_CURRENT_THRESHOLD_IN_PERCENT;
 		
 		// run continously in one direction until endstop is hit
-		//_stepper->keepRunningForward(MAXIMUM_STEPPER_SPEED / 10);
 		_stepper->move(INT32_MAX, false);
 
 		// if endstop is reached, communication is lost or virtual endstop is hit
@@ -392,38 +329,34 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 		ActiveSerial->printf("Max endstop reached: %d\n", _endstopLimitMax);
 		
 		// move slowly to min position
-		//moveSlowlyToPos(_posMin);
-		//moveSlowlyToPos(5*ENDSTOP_MOVEMENT_SENSORLESS);
 		moveSlowlyToPos(0);
 		
-		
-		// increase speed and accelerartion back to normal
-		//_stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED);
-		_stepper->setAcceleration(MAXIMUM_STEPPER_ACCELERATION);
-		_stepper->setSpeedInHz(MAXIMUM_STEPPER_SPEED);
+		// increase speed back to normal
+		_stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED);
 	}	
 	
 
 }
 
 void StepperWithLimits::moveToPosWithSpeed(int32_t targetPos_ui32, uint32_t speedInHz_u32) {
-  _stepper->setSpeedInHz(speedInHz_u32);
+  _stepper->setMaxSpeed(speedInHz_u32);
   _stepper->moveTo(targetPos_ui32, false);
 }
 
 
 void StepperWithLimits::moveSlowlyToPos(int32_t targetPos_ui32) {
-  // reduce speed and accelerartion
-  //_stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED / 4);
-  _stepper->setSpeedInHz(MAXIMUM_STEPPER_SPEED / 4);
+
+  // Get previous speed level
+  uint32_t prevSpeed_u32 = _stepper->getMaxSpeed();
+
+  // reduce speed
+  _stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED / 4);
 
   // move to min
   _stepper->moveTo(targetPos_ui32, true);
 
-
-  // increase speed and accelerartion
-  //_stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED);
-  _stepper->setSpeedInHz(MAXIMUM_STEPPER_SPEED);
+  // reset speed to previous speedlevel
+  _stepper->setMaxSpeed(prevSpeed_u32);
 }
 
 
@@ -452,16 +385,7 @@ void StepperWithLimits::forceStop() {
 
 int8_t StepperWithLimits::moveTo(int32_t position, bool blocking) {
 
-  long curPos = _stepper->getCurrentPosition();
-  int32_t absPosChange = abs(position - curPos);
-  float absPosChangeNormalized_fl32 = (float)absPosChange / 10000.0f;
-  absPosChangeNormalized_fl32 = constrain(absPosChangeNormalized_fl32, 0.01f, 1.0f);
-
-//   _stepper->setSpeedInHz(MAXIMUM_STEPPER_SPEED * absPosChangeNormalized_fl32);
-//   _stepper->setAcceleration(MAXIMUM_STEPPER_ACCELERATION * absPosChangeNormalized_fl32);
-
   _stepper->moveTo(position, blocking);
-
   return 1;
 }
 
@@ -497,8 +421,7 @@ int32_t StepperWithLimits::getTargetPositionSteps() const {
 
 void StepperWithLimits::setSpeed(uint32_t speedInStepsPerSecond) 
 {
-  //_stepper->setMaxSpeed(speedInStepsPerSecond);            // steps/s 
-  _stepper->setSpeedInHz(MAXIMUM_STEPPER_SPEED);
+  _stepper->setMaxSpeed(speedInStepsPerSecond);            // steps/s 
 }
 
 bool StepperWithLimits::isAtMinPos()
@@ -512,12 +435,15 @@ bool StepperWithLimits::isAtMinPos()
 
 int32_t StepperWithLimits::getCurrentSpeedInMilliHz()
 {
-	return _stepper->getCurrentSpeedInMilliHz();
+	return _stepper->getMaxSpeed();
+	// return MAXIMUM_STEPPER_SPEED * 1000;
 }
 
 uint32_t StepperWithLimits::getMaxSpeedInMilliHz()
 {
-	return _stepper->getMaxSpeedInMilliHz();
+	// return _stepper->getMaxSpeedInMilliHz();
+	// Hz to mHz: 1 Hz = 1000 milli Hz
+	return MAXIMUM_STEPPER_SPEED * 1000;
 }
 
 

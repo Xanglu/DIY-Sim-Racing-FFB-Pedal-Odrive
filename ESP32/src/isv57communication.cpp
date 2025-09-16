@@ -240,10 +240,10 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
 
   // Pr1 register
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+0, 200); // 1st position gain
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+1, 300); // 1st velocity loop gain
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+1, 200); // 1st velocity loop gain
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+2, 300); // 1st time constant of velocity loop
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+3, 15); // 1st filter of velocity detection
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+4, 150); // 1st torque filter
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+4, 100); // 1st torque filter
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+10, 200); // velocity feed forward gain
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+11, 6000); // velocity feed forward filter
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+12, 0); // torque feed forward gain

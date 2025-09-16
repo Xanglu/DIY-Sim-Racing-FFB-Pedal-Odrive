@@ -2091,9 +2091,9 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           // uint32_t plannedSpeedInHz_u32 = abs( plannedSteps_i32 * 1000000 / REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US );
           uint32_t plannedSpeedInHz_u32 = abs( plannedSteps_i32 * 1000 ); // stepper task time is 1ms --> planned steps / 1ms * 1000ms/1s
           plannedSpeedInHz_u32 = constrain(plannedSpeedInHz_u32, 1, MAXIMUM_STEPPER_SPEED);
-          stepper->moveToPosWithSpeed(Position_Next, plannedSpeedInHz_u32);
+          // stepper->moveToPosWithSpeed(Position_Next, plannedSpeedInHz_u32);
 
-          // stepper->moveTo(Position_Next, false);
+          stepper->moveTo(Position_Next, false);
         }
         else
         {

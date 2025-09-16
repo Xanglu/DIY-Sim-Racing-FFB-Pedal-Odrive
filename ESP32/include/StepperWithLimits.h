@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FastAccelStepper.h>
+#include <FastNonAccelStepper.h>
 #include "isv57communication.h"
 #include "DiyActivePedal_types.h"
 #include "Main.h"
@@ -21,7 +21,7 @@ enum ServoStatus
 
 class StepperWithLimits {
 private:
-	FastAccelStepper* _stepper;
+	FastNonAccelStepper* _stepper;
 	int32_t _endstopLimitMin, _endstopLimitMax;    // stepper position at limit switches
 	int32_t _posMin,   _posMax;      // stepper position at min/max of travel
 
