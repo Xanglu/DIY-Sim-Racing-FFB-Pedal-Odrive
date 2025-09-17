@@ -26,7 +26,10 @@
 #define DEFAULTBAUD 921600
 #include "Arduino.h"
 #include "Main.h"
-
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+  #include "soc/soc.h"
+  #include "soc/rtc_cntl_reg.h"
+#endif
 Stream *ActiveSerial = nullptr;
 
 #include "Version_Board.h"
