@@ -835,8 +835,6 @@ void setup()
   #endif
 
   #ifdef USING_LED
-    pixels.begin();
-    pixels.setBrightness(20);
     pixels.setPixelColor(0,0xff,0x00,0x00);
     pixels.show(); 
   #endif
