@@ -329,7 +329,7 @@ void StepperWithLimits::findMinMaxSensorless(DAP_config_st dap_config_st)
 		ActiveSerial->printf("Max endstop reached: %d\n", _endstopLimitMax);
 		
 		// move slowly to min position
-		moveSlowlyToPos(0);
+		moveSlowlyToPos(100);
 		
 		// increase speed back to normal
 		_stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED);
@@ -350,7 +350,7 @@ void StepperWithLimits::moveSlowlyToPos(int32_t targetPos_ui32) {
   uint32_t prevSpeed_u32 = _stepper->getMaxSpeed();
 
   // reduce speed
-  _stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED / 4);
+  _stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED / 16);
 
   // move to min
   _stepper->moveTo(targetPos_ui32, true);

@@ -282,7 +282,7 @@ StepperWithLimits* stepper = NULL;
 
 #include "StepperMovementStrategy.h"
 
-bool moveSlowlyToPosition_b = false;
+bool moveSlowlyToPosition_b = true;
 /**********************************************************************************************/
 /*                                                                                            */
 /*                         OTA                                                                */
