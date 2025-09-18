@@ -101,11 +101,14 @@ LoadCell_ADS1256::LoadCell_ADS1256(uint8_t channel0, uint8_t channel1)
 {
     global_channel0_u8 = channel0;
     global_channel1_u8 = channel1;
-
+    // Get the ADC instance to ensure it's initialized
+    ADS1256& adc = ADC();
+    delay(100);
     // --- ONE-TIME SETUP ---
     // Create the binary semaphore ONCE.
     if (drdySemaphore == NULL) {
         drdySemaphore = xSemaphoreCreateBinary();
+
         if (drdySemaphore != NULL) {
             ActiveSerial->println("DRDY Semaphore created successfully.");
             ActiveSerial->println("starting attach.....");
@@ -117,8 +120,7 @@ LoadCell_ADS1256::LoadCell_ADS1256(uint8_t channel0, uint8_t channel1)
         }
     }
     
-    // Get the ADC instance to ensure it's initialized
-    ADS1256& adc = ADC();
+
     // Set the initial MUX channels for differential reading
     adc.setChannel(channel0, channel1);
 }

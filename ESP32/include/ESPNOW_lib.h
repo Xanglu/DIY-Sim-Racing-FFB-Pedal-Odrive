@@ -568,36 +568,35 @@ void ESPNow_initialize()
 {
   DAP_config_st dap_config_espnow_init_st;
   global_dap_config_class.getConfig(&dap_config_espnow_init_st, 500);
-  
   WiFi.mode(WIFI_MODE_STA);
-
-  ActiveSerial->println("Initializing ESPNow, please wait");
   delay(1000);
-  ActiveSerial->println("Initializing ESPNow, please wait");
+  ActiveSerial->println("Initializing Wifi, please wait");
   // ActiveSerial->print("Current MAC Address:  ");
   // ActiveSerial->println(WiFi.macAddress());
   WiFi.macAddress(esp_Mac);
   ActiveSerial->printf("Device Mac: %02X:%02X:%02X:%02X:%02X:%02X\n", esp_Mac[0], esp_Mac[1], esp_Mac[2], esp_Mac[3], esp_Mac[4], esp_Mac[5]);
   #ifndef ESPNow_Pairing_function
-    if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 0)
+    switch (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type)
     {
+    case PEDAL_ID_CLUTCH:
       esp_wifi_set_mac(WIFI_IF_STA, &Clu_mac[0]);
-    }
-    if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 1)
-    {
+      break;
+    case PEDAL_ID_BRAKE:
       esp_wifi_set_mac(WIFI_IF_STA, &Brk_mac[0]);
-    }
-    if (dap_config_espnow_init_st.payLoadPedalConfig_.pedal_type == 2)
-    {
+      break;  
+    case PEDAL_ID_THROTTLE:
       esp_wifi_set_mac(WIFI_IF_STA, &Gas_mac[0]);
+      break;         
+    default:
+      ActiveSerial->println("Mac address overwrite failed, no pedal role assignment.");
+      break;
     }
     delay(300);
-    ActiveSerial->print("Modified MAC Address:  ");
+    ActiveSerial->print("Overwrite MAC Address:  ");
     ActiveSerial->println(WiFi.macAddress());
   #endif
-
+  ActiveSerial->println("Initializing ESP-NOW");
   ESPNow.init();
-  ActiveSerial->println("Wait for ESPNOW");
   delay(3000);
   #ifdef ESPNow_S3
     #if PCB_VERSION == 7
@@ -662,28 +661,12 @@ void ESPNow_initialize()
       ESPNow.add_peer(Brk_mac);
       ESPNow.add_peer(Clu_mac);
     }
-    
+    bool peerAddingChecker=true;
+    if(ESPNow.add_peer(esp_master)!= ESP_OK) peerAddingChecker=false;
+    if(ESPNow.add_peer(broadcast_mac)!= ESP_OK) peerAddingChecker=false;
+    if(ESPNow.add_peer(esp_Host)!= ESP_OK) peerAddingChecker=false;
+    if(peerAddingChecker) ActiveSerial->println("Sucess to add peers");
 
-
-    
-    if(ESPNow.add_peer(esp_master)== ESP_OK)
-    {
-      ESPNOW_status=true;
-      //esp_now_set_peer_rate_config(esp_master, &global_peer_config);
-      ActiveSerial->println("Sucess to add joystick peer");
-    }
-    if(ESPNow.add_peer(esp_Host)== ESP_OK)
-    {
-      ESPNOW_status=true;
-      //esp_now_set_peer_rate_config(esp_Host, &global_peer_config);
-      ActiveSerial->println("Sucess to add host peer");
-    }
-    if(ESPNow.add_peer(broadcast_mac)== ESP_OK)
-    {
-      ESPNOW_status=true;
-      //esp_now_set_peer_rate_config(broadcast_mac, &global_peer_config);
-      ActiveSerial->println("Sucess to add broadcast peer");
-    }
     ESPNow.reg_recv_cb(onRecv);
     ESPNow.reg_send_cb(OnSent);
     //rssi calculate

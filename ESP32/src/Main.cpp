@@ -1233,18 +1233,9 @@ xTaskCreatePinnedToCore(
         {
           //ActiveSerial->print("Pedal Type");
           //ActiveSerial->println(Pedal_assignment);
-          if(Pedal_assignment==0)
-          {
-            ActiveSerial->println("Overriding Pedal as Clutch.");
-          }
-          if(Pedal_assignment==1)
-          {
-            ActiveSerial->println("Overriding Pedal as Brake.");
-          }
-          if(Pedal_assignment==2)
-          {
-            ActiveSerial->println("Overriding Pedal as Throttle.");
-          }
+          if(Pedal_assignment==PEDAL_ID_CLUTCH) ActiveSerial->println("Overriding Pedal as Clutch.");
+          if(Pedal_assignment==PEDAL_ID_BRAKE) ActiveSerial->println("Overriding Pedal as Brake.");
+          if(Pedal_assignment==PEDAL_ID_THROTTLE) ActiveSerial->println("Overriding Pedal as Throttle.");
           DAP_config_st tmp;
           global_dap_config_class.getConfig(&tmp, 500);
           tmp.payLoadPedalConfig_.pedal_type = Pedal_assignment;
@@ -1254,7 +1245,7 @@ xTaskCreatePinnedToCore(
           configDataPackage_t configPackage_st;
           configPackage_st.config_st = tmp;
           xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
-
+          delay(1000); //delay for writting config into global
         }
         else
         {
@@ -1271,17 +1262,7 @@ xTaskCreatePinnedToCore(
   {
     ActiveSerial->println("Starting ESP now tasks");
     ESPNow_initialize();
-    ActiveSerial->println("ESPNOW initialized, add task in");
-    // xTaskCreatePinnedToCore(
-    //                     ESPNOW_SyncTask,   
-    //                     "ESPNOW_update_Task", 
-    //                     10000,  
-    //                     //STACK_SIZE_FOR_TASK_2,    
-    //                     NULL,      
-    //                     1,         
-    //                     &handle_espnowTask,    
-    //                     CORE_ID_ESPNOW_TASK);  
-                        
+    ActiveSerial->println("ESPNOW initialized, add task in");                         
     addScheduledTask(espNowCommunicationTaskTx, "ESPNOW_update_Task", REPETITION_INTERVAL_ESPNOW_TASK_IN_US, TASK_PRIORITY_ESPNOW_TASK, CORE_ID_ESPNOW_TASK, 10000);
     ActiveSerial->println("ESPNOW task added");
     delay(500);
