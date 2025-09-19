@@ -1337,7 +1337,7 @@ void updatePedalCalcParameters()
   dap_calculationVariables_st.updateStiffness();
 
   // tune the PID settings
-  tunePidValues(dap_config_st_local);
+  // tunePidValues(dap_config_st_local);
 }
 
 
@@ -1866,21 +1866,25 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       int32_t Position_Next = 0;
       int32_t Position_Next_2 = 0;
       // select control loop algo
-      switch (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.control_strategy_b) {
-        case 0:
-          // static PID
-          Position_Next = MoveByPidStrategy(filteredReading, stepperPosFraction, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity);
-          break;
-        case 1:
-          // dynamic PID
-          Position_Next = MoveByPidStrategy(filteredReading, stepperPosFraction, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity);
-          break;
-        default:
-          // MPC
-          Position_Next = MoveByForceTargetingStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity, d_phi_d_x, d_x_hor_d_phi);
-          // Position_Next = MoveByForceTargetingStrategy_old(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0/*effect_force*/, changeVelocity, d_phi_d_x, d_x_hor_d_phi);
-          break;
-      }
+      // switch (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.control_strategy_b) {
+      //   case 0:
+      //     // static PID
+      //     Position_Next = MoveByPidStrategy(filteredReading, stepperPosFraction, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity);
+      //     break;
+      //   case 1:
+      //     // dynamic PID
+      //     Position_Next = MoveByPidStrategy(filteredReading, stepperPosFraction, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity);
+      //     break;
+      //   default:
+      //     // MPC
+      //     Position_Next = MoveByForceTargetingStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity, d_phi_d_x, d_x_hor_d_phi);
+      //     // Position_Next = MoveByForceTargetingStrategy_old(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0/*effect_force*/, changeVelocity, d_phi_d_x, d_x_hor_d_phi);
+      //     break;
+      // }
+
+
+      Position_Next = MoveByPidStrategy(filteredReading, stepperPosFraction, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity);
+
 
       Position_Next_2 = Position_Next;
 

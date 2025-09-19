@@ -11,7 +11,7 @@
 float Setpoint, Input, Output;
 
 //Specify the links and initial tuning parameters
-float Kp=0.3f, Ki=50.0f, Kd=0.000f;
+float Kp=0.02f, Ki=0.5f, Kd=0.000f;
 uint8_t control_strategy_u8 = 0;
 QuickPID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd,  /* OPTIONS */
                myPID.pMode::pOnError,                   /* pOnError, pOnMeas, pOnErrorMeas */
@@ -53,16 +53,16 @@ int32_t MoveByInterpolatedStrategy(float filteredLoadReadingKg, float stepperPos
 /*                                                                                            */
 /**********************************************************************************************/
 
-void tunePidValues(DAP_config_st& config_st)
-{
-  Kp=config_st.payLoadPedalConfig_.PID_p_gain;
-  Ki=config_st.payLoadPedalConfig_.PID_i_gain;
-  Kd=config_st.payLoadPedalConfig_.PID_d_gain;
+// void tunePidValues(DAP_config_st& config_st)
+// {
+//   Kp=config_st.payLoadPedalConfig_.PID_p_gain;
+//   Ki=config_st.payLoadPedalConfig_.PID_i_gain;
+//   Kd=config_st.payLoadPedalConfig_.PID_d_gain;
 
-  control_strategy_u8 = config_st.payLoadPedalConfig_.control_strategy_b;
+//   control_strategy_u8 = config_st.payLoadPedalConfig_.control_strategy_b;
 
-  myPID.SetTunings(config_st.payLoadPedalConfig_.PID_p_gain, config_st.payLoadPedalConfig_.PID_i_gain, config_st.payLoadPedalConfig_.PID_d_gain);
-}
+//   myPID.SetTunings(config_st.payLoadPedalConfig_.PID_p_gain, config_st.payLoadPedalConfig_.PID_i_gain, config_st.payLoadPedalConfig_.PID_d_gain);
+// }
 
 int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, float stepperPosFraction, StepperWithLimits* stepper, ForceCurve_Interpolated* forceCurve, const DAP_calculationVariables_st* calc_st, DAP_config_st* config_st, float absForceOffset_fl32, float changeVelocity) {
 
@@ -77,13 +77,12 @@ int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, float stepperP
 
 
     pidWasInitialized = true;
-    myPID.SetSampleTimeUs(PUT_TARGET_CYCLE_TIME_IN_US);
+    myPID.SetSampleTimeUs(REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US);
     //myPID.SetOutputLimits(-1.0,0.0);
     myPID.SetOutputLimits(-PID_OUTPUT_LIMIT_FL32, PID_OUTPUT_LIMIT_FL32); // allow the PID to only change the position a certain amount per cycle
 
     myPID.SetTunings(config_st->payLoadPedalConfig_.PID_p_gain, config_st->payLoadPedalConfig_.PID_i_gain, config_st->payLoadPedalConfig_.PID_d_gain);
   }
-
 
   // clamp the stepper position to prevent problems with the spline 
   float stepperPosFraction_constrained = constrain(stepperPosFraction, 0.0f, 1.0f);
@@ -104,8 +103,6 @@ int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, float stepperP
     myPID.SetOutputLimits(-PID_OUTPUT_LIMIT_FL32, PID_OUTPUT_LIMIT_FL32);
   }
 
-  
-
   // read target force at spline position
   float loadCellTargetKg = forceCurve->EvalForceCubicSpline(config_st, calc_st, stepperPosFraction_constrained);
 
@@ -117,36 +114,30 @@ int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, float stepperP
   float loadCellTargetKg_clip = constrain(loadCellTargetKg, calc_st->Force_Min, calc_st->Force_Max);
 
 
-  // dynamically scale the PID values depending on the force curve gradient
-  if (control_strategy_u8 == 1)
-  {
-    float gradient_orig_fl32 = forceCurve->EvalForceGradientCubicSpline(config_st, calc_st, stepperPosFraction_constrained, true); // determine gradient to modify the PID gain. The steeper the gradient, the less gain should be used
+  // // dynamically scale the PID values depending on the force curve gradient
+  // if (control_strategy_u8 == 1)
+  // {
+  //   float gradient_orig_fl32 = forceCurve->EvalForceGradientCubicSpline(config_st, calc_st, stepperPosFraction_constrained, true); // determine gradient to modify the PID gain. The steeper the gradient, the less gain should be used
 
-    // normalize gradient
-    float gradient_fl32 = gradient_orig_fl32;
-    float gradient_abs_fl32 = fabs(gradient_fl32);
+  //   // normalize gradient
+  //   float gradient_fl32 = gradient_orig_fl32;
+  //   float gradient_abs_fl32 = fabs(gradient_fl32);
 
-    float gain_modifier_fl32 = 10.0f;
-    if (gradient_abs_fl32 > 1e-5f)
-    {
-       gain_modifier_fl32 = 1.0f / pow( gradient_abs_fl32 , 1.0f);
-    }
-    gain_modifier_fl32 = constrain( gain_modifier_fl32, 0.1f, 10.0f);
+  //   float gain_modifier_fl32 = 10.0f;
+  //   if (gradient_abs_fl32 > 1e-5f)
+  //   {
+  //      gain_modifier_fl32 = 1.0f / pow( gradient_abs_fl32 , 1.0f);
+  //   }
+  //   gain_modifier_fl32 = constrain( gain_modifier_fl32, 0.1f, 10.0f);
 
-    myPID.SetTunings(gain_modifier_fl32 * Kp, gain_modifier_fl32 * Ki, gain_modifier_fl32 * Kd);
-  }
-  else
-  {
-    myPID.SetTunings(Kp, Ki, Kd);
-  }
-
-
-
- 
+  //   myPID.SetTunings(gain_modifier_fl32 * Kp, gain_modifier_fl32 * Ki, gain_modifier_fl32 * Kd);
+  // }
+  // else
+  // {
+  //   myPID.SetTunings(Kp, Ki, Kd);
+  // }
 
 
-  
-  
   
   // ToDO
   // - Min and Max force need to be identified from forceCurve->forceAtPosition() as they migh differ from calc_st.Force_Min & calc_st.Force_Max
