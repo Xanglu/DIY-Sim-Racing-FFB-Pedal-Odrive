@@ -64,9 +64,9 @@ namespace User.PluginSdkDemo
                 var tmp_struct = dap_config_st[indexOfSelectedPedal_u];
                 Misc_Tab.dap_config_st = tmp_struct;
                 KF_Tab.dap_config_st = tmp_struct;
-                ControlStrategy_Tab.dap_config_st = tmp_struct;
-                PID_Tab.dap_config_st = tmp_struct;
-                MPC_tab.dap_config_st = tmp_struct;
+                //ControlStrategy_Tab.dap_config_st = tmp_struct;
+                //PID_Tab.dap_config_st = tmp_struct;
+                //MPC_tab.dap_config_st = tmp_struct;
                 EffectsABS_Tab.dap_config_st = tmp_struct;
                 EffectsRPM_Tab.dap_config_st = tmp_struct;
                 EffectsBitePoint_Tab.dap_config_st = tmp_struct;

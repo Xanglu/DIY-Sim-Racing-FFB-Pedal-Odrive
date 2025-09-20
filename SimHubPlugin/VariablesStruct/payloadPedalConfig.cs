@@ -122,34 +122,6 @@ namespace User.PluginSdkDemo
         //Custom Vibration 2
         public byte CV_amp_2;
         public byte CV_freq_2;
-        // cubic spline params
-        /*
-        public float cubic_spline_param_a_0;
-        public float cubic_spline_param_a_1;
-        public float cubic_spline_param_a_2;
-        public float cubic_spline_param_a_3;
-        public float cubic_spline_param_a_4;
-
-        public float cubic_spline_param_b_0;
-        public float cubic_spline_param_b_1;
-        public float cubic_spline_param_b_2;
-        public float cubic_spline_param_b_3;
-        public float cubic_spline_param_b_4;
-        */
-        // PID settings
-        public float PID_p_gain;
-        public float PID_i_gain;
-        public float PID_d_gain;
-        public float PID_velocity_feedforward_gain;
-
-        // MPC settings
-        public float MPC_0th_order_gain;
-        public float MPC_1st_order_gain;
-        public float MPC_2nd_order_gain;
-
-
-
-        public byte control_strategy_b;
 
         public byte maxGameOutput;
 

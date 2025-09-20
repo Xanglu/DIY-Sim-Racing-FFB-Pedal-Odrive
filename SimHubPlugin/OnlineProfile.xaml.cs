@@ -140,30 +140,7 @@ namespace User.PluginSdkDemo
                     }
                     Textbox_Online_Profile_Description.Text += "KF :" + tmp_config.payloadPedalConfig_.kf_modelNoise + "\n";
                     Textbox_Online_Profile_Description.Text += "Serrvo smoothing :" + tmp_config.payloadPedalConfig_.positionSmoothingFactor_u8 + "\n";
-                    switch (tmp_config.payloadPedalConfig_.control_strategy_b)
-                    {
-                        case 0:
-                            Textbox_Online_Profile_Description.Text += "Control: Static PID\n";
-                            Textbox_Online_Profile_Description.Text += "P Gain:" + tmp_config.payloadPedalConfig_.PID_p_gain + "\n";
-                            Textbox_Online_Profile_Description.Text += "I Gain:" + tmp_config.payloadPedalConfig_.PID_i_gain + "\n";
-                            Textbox_Online_Profile_Description.Text += "D Gain:" + tmp_config.payloadPedalConfig_.PID_d_gain + "\n";
-                            Textbox_Online_Profile_Description.Text += "Feed Forward Gain:" + tmp_config.payloadPedalConfig_.PID_velocity_feedforward_gain + "\n";
-                            break;
-                        case 1:
-                            Textbox_Online_Profile_Description.Text += "Control: Dynamic PID\n";
-                            Textbox_Online_Profile_Description.Text += "P Gain:" + tmp_config.payloadPedalConfig_.PID_p_gain + "\n";
-                            Textbox_Online_Profile_Description.Text += "I Gain:" + tmp_config.payloadPedalConfig_.PID_i_gain + "\n";
-                            Textbox_Online_Profile_Description.Text += "D Gain:" + tmp_config.payloadPedalConfig_.PID_d_gain + "\n";
-                            Textbox_Online_Profile_Description.Text += "Feed Forward Gain:" + tmp_config.payloadPedalConfig_.PID_velocity_feedforward_gain + "\n";
-                            break;
-                        case 2:
-                            Textbox_Online_Profile_Description.Text += "Control: MPC Control\n";
-                            Textbox_Online_Profile_Description.Text += "MPC 0th Gain:" + tmp_config.payloadPedalConfig_.MPC_0th_order_gain + "\n";
-                            break;
-                    }
-
-
-
+                    
 
                 }
                 catch (Exception ex)

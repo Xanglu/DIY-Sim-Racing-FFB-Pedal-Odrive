@@ -115,31 +115,6 @@ void DAP_config_st::initialiseDefaults() {
   payLoadPedalConfig_.WS_freq=15;
   payLoadPedalConfig_.Road_multi = 50;
   payLoadPedalConfig_.Road_window=60;
-  /*
-  payLoadPedalConfig_.cubic_spline_param_a_array[0] = 0;
-  payLoadPedalConfig_.cubic_spline_param_a_array[1] = 0;
-  payLoadPedalConfig_.cubic_spline_param_a_array[2] = 0;
-  payLoadPedalConfig_.cubic_spline_param_a_array[3] = 0;
-  payLoadPedalConfig_.cubic_spline_param_a_array[4] = 0;
-
-  payLoadPedalConfig_.cubic_spline_param_b_array[0] = 0;
-  payLoadPedalConfig_.cubic_spline_param_b_array[1] = 0;
-  payLoadPedalConfig_.cubic_spline_param_b_array[2] = 0;
-  payLoadPedalConfig_.cubic_spline_param_b_array[3] = 0;
-  payLoadPedalConfig_.cubic_spline_param_b_array[4] = 0;
-  */
-
-  payLoadPedalConfig_.PID_p_gain = 0.3f;
-  payLoadPedalConfig_.PID_i_gain = 50.0f;
-  payLoadPedalConfig_.PID_d_gain = 0.0f;
-  payLoadPedalConfig_.PID_velocity_feedforward_gain = 0.0f;
-
-
-  payLoadPedalConfig_.MPC_0th_order_gain = 10.0f;
-  payLoadPedalConfig_.MPC_1st_order_gain = 0.0f;
-  payLoadPedalConfig_.MPC_2nd_order_gain = 0.0f;
-
-  payLoadPedalConfig_.control_strategy_b = 0;
 
   payLoadPedalConfig_.maxGameOutput = 100;
 

@@ -183,30 +183,6 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadPedalConfig_.kf_modelOrder = 0;
 
             dap_config_st[pedalIdx].payloadPedalConfig_.positionSmoothingFactor_u8 = 20;
-            
-            /*
-            dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_a_0 = 0;
-            dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_a_1 = 0;
-            dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_a_2 = 0;
-            dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_a_3 = 0;
-            dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_a_4 = 0;
-
-            dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_b_0 = 0;
-            dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_b_1 = 0;
-            dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_b_2 = 0;
-            dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_b_3 = 0;
-            dap_config_st[pedalIdx].payloadPedalConfig_.cubic_spline_param_b_4 = 0;
-            */
-
-            dap_config_st[pedalIdx].payloadPedalConfig_.PID_p_gain = 0.1f;
-            dap_config_st[pedalIdx].payloadPedalConfig_.PID_i_gain = 1.0f;
-            dap_config_st[pedalIdx].payloadPedalConfig_.PID_d_gain = 0.0f;
-            dap_config_st[pedalIdx].payloadPedalConfig_.PID_velocity_feedforward_gain = 0.0f;
-
-            dap_config_st[pedalIdx].payloadPedalConfig_.MPC_0th_order_gain = 10.0f;
-            dap_config_st[pedalIdx].payloadPedalConfig_.MPC_1st_order_gain = 0.0f;
-
-            dap_config_st[pedalIdx].payloadPedalConfig_.control_strategy_b = 2;
 
             dap_config_st[pedalIdx].payloadPedalConfig_.loadcell_rating = 150;
 
@@ -329,29 +305,6 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.kf_modelOrder = 2;
 
             dap_config_st_rudder.payloadPedalConfig_.positionSmoothingFactor_u8 = 20;
-            /*
-            dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_a_0 = 0;
-            dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_a_1 = 0;
-            dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_a_2 = 0;
-            dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_a_3 = 0;
-            dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_a_4 = 0;
-
-            dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_b_0 = 0;
-            dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_b_1 = 0;
-            dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_b_2 = 0;
-            dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_b_3 = 0;
-            dap_config_st_rudder.payloadPedalConfig_.cubic_spline_param_b_4 = 0;
-            */
-
-            dap_config_st_rudder.payloadPedalConfig_.PID_p_gain = 0.01f;
-            dap_config_st_rudder.payloadPedalConfig_.PID_i_gain = 1.0f;
-            dap_config_st_rudder.payloadPedalConfig_.PID_d_gain = 0.0002f;
-            dap_config_st_rudder.payloadPedalConfig_.PID_velocity_feedforward_gain = 0.0f;
-
-            dap_config_st_rudder.payloadPedalConfig_.MPC_0th_order_gain = 3.0f;
-            dap_config_st_rudder.payloadPedalConfig_.MPC_1st_order_gain = 0.0f;
-
-            dap_config_st_rudder.payloadPedalConfig_.control_strategy_b = 2;
 
             dap_config_st_rudder.payloadPedalConfig_.loadcell_rating = 100;
 
@@ -1355,7 +1308,6 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.preloadForce = Plugin.Settings.rudderMinForce;
             dap_config_st_rudder.payloadPedalConfig_.pedalStartPosition = Plugin.Settings.rudderMinTravel;
             dap_config_st_rudder.payloadPedalConfig_.pedalEndPosition = Plugin.Settings.rudderMaxTravel;
-            dap_config_st_rudder.payloadPedalConfig_.MPC_0th_order_gain = Plugin.Settings.rudderMPCGain;
             dap_config_st_rudder.payloadPedalConfig_.RPM_max_freq= Plugin.Settings.rudderRPMMaxFrequency;
             dap_config_st_rudder.payloadPedalConfig_.RPM_min_freq = Plugin.Settings.rudderRPMMinFrequency;
             dap_config_st_rudder.payloadPedalConfig_.RPM_AMP = Plugin.Settings.rudderRPMAmp;
@@ -1392,7 +1344,6 @@ namespace User.PluginSdkDemo
             Plugin.Settings.rudderMinForce = dap_config_st_rudder.payloadPedalConfig_.preloadForce;
             Plugin.Settings.rudderMinTravel = dap_config_st_rudder.payloadPedalConfig_.pedalStartPosition;
             Plugin.Settings.rudderMaxTravel = dap_config_st_rudder.payloadPedalConfig_.pedalEndPosition;
-            Plugin.Settings.rudderMPCGain = dap_config_st_rudder.payloadPedalConfig_.MPC_0th_order_gain;
             Plugin.Settings.rudderRPMMaxFrequency = dap_config_st_rudder.payloadPedalConfig_.RPM_max_freq;
             Plugin.Settings.rudderRPMMinFrequency = dap_config_st_rudder.payloadPedalConfig_.RPM_min_freq;
             Plugin.Settings.rudderRPMAmp = dap_config_st_rudder.payloadPedalConfig_.RPM_AMP;

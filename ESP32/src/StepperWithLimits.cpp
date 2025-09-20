@@ -461,13 +461,13 @@ void StepperWithLimits::correctPos()
 			// tune the current servo position to compesnate the position offset
 			int32_t stepOffset =(int32_t)constrain(servo_offset_compensation_steps_i32, -10, 10);
 
-			// if (stepOffset != 0)
-			// {
-			// 	ActiveSerial->print("Position compensation: ");
-			// 	ActiveSerial->print(servo_offset_compensation_steps_i32);
-			// 	ActiveSerial->print(",   ");
-			// 	ActiveSerial->println(stepOffset);
-			// }
+			if (stepOffset != 0)
+			{
+				ActiveSerial->print("Position compensation: ");
+				ActiveSerial->print(servo_offset_compensation_steps_i32);
+				ActiveSerial->print(",   ");
+				ActiveSerial->println(stepOffset);
+			}
 
 			// offset = ESPs position - servos position
 			// new ESP pos = ESPs position - offset = ESPs position - ESPs position + servos position = servos position
