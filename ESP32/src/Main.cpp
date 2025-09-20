@@ -2024,17 +2024,21 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
       // if pedal in min position, recalibrate position --> automatic step loss compensation
       // stepper->configSteplossRecovAndCrashDetection(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.stepLossFunctionFlags_u8);
-      if (stepper->isAtMinPos())
+      if( (stepper->getLifelineSignal()==true) && (stepper->servoStatus==SERVO_CONNECTED) )
       {
-        #if defined(OTA_update_ESP32) || defined(OTA_update)
-          if(OTA_status==false)
-          {
+        if (stepper->isAtMinPos())
+        {
+          #if defined(OTA_update_ESP32) || defined(OTA_update)
+            if(OTA_status==false)
+            {
+              stepper->correctPos();
+            }
+          #else
             stepper->correctPos();
-          }
-        #else
-          stepper->correctPos();
-        #endif
+          #endif
+        }
       }
+      
 
       
 
