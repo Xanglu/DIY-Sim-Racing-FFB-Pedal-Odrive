@@ -68,7 +68,7 @@
 //#define MOTOR_INVERT_MOTOR_DIR false
 static const uint32_t MAXIMUM_STEPPER_RPM = 4000;     
 static const uint32_t SECONDS_PER_MINUTE = 60;
-#define MAXIMUM_STEPPER_SPEED (uint32_t)250000//  max steps per second, see https://github.com/gin66/FastAccelStepper
+#define MAXIMUM_STEPPER_SPEED (uint32_t)MAX_SPEED_IN_HZ//100000//  max steps per second, see https://github.com/gin66/FastAccelStepper
 
 
 /********************************************************************/

@@ -28,6 +28,8 @@ private:
   long _lastCallTimeMillis = 0;
 
 public:
+  float absOscillation_Force_offset = 0.0f;
+  float absOscillation_Position_offset = 0.0f;
   ABSOscillation()
     : _timeLastTriggerMillis(0)
   {}
@@ -37,7 +39,7 @@ public:
     _timeLastTriggerMillis = millis();
   }
   
-  void IRAM_ATTR_FLAG forceOffset(DAP_calculationVariables_st* calcVars_st, uint8_t absPattern, uint8_t absForceOrTarvelBit, float * absForceOffset, float * absPosOffset) {
+  void IRAM_ATTR_FLAG forceOffset(DAP_calculationVariables_st* calcVars_st, uint8_t absPattern, uint8_t absForceOrTarvelBit) {
 
     long timeNowMillis = millis();
     float timeSinceTrigger = (timeNowMillis - _timeLastTriggerMillis);
@@ -47,8 +49,8 @@ public:
     if (timeSinceTrigger > ABS_ACTIVE_TIME_PER_TRIGGER_MILLIS)
     {
       _absTimeMillis = 0;
-      *absForceOffset = 0.0f;
-      *absPosOffset = 0.0f;
+      absOscillation_Force_offset = 0.0f;
+      absOscillation_Position_offset = 0.0f;
     }
     else
     {
@@ -68,7 +70,7 @@ public:
           absAmp_fl32 = calcVars_st->absAmplitude; 
           break;
         case 1:
-          absAmp_fl32 = calcVars_st->stepperPosRange * calcVars_st->absAmplitude * 0.01f;
+          absAmp_fl32 = calcVars_st->stepperPosRange * calcVars_st->absAmplitude * 0.01f; // since absAmplitude is given in percent, needs to be scaled to from intervall [0%, 100%] to intervall [0, 1]
           break;
         default:
           break;
@@ -80,14 +82,14 @@ public:
         case 0:
           // sine wave pattern
           sineArgInDeg_fl32 = 360.0f * absFreq * absTimeSeconds;
-          absForceOffset_local =  absAmp_fl32 * isin(sineArgInDeg_fl32);
+          absForceOffset_local =  isin(sineArgInDeg_fl32);
           break;
         case 1:
           // sawtooth pattern
           if (calcVars_st->absFrequency > 0.0f)
           {
-            absForceOffset_local = absAmp_fl32 * fmodf(absTimeSeconds, 1.0f / (float)absFreq) * (float)absFreq;
-            absForceOffset_local -= absAmp_fl32 * 0.5f; // make it symmetrical around 0
+            absForceOffset_local = fmodf(absTimeSeconds, 1.0f / (float)absFreq) * (float)absFreq;
+            absForceOffset_local -= 0.5f; // make it symmetrical around 0
           }
           break;
         default:
@@ -96,12 +98,12 @@ public:
       
       switch (absForceOrTarvelBit) {
         case 0:
-          *absForceOffset = absForceOffset_local;
-          *absPosOffset = 0.0f;
+          absOscillation_Force_offset = absAmp_fl32 * absForceOffset_local;
+          absOscillation_Position_offset = 0.0f;
           break;
         case 1:
-          *absForceOffset = 0.0f;
-          *absPosOffset = absForceOffset_local;
+          absOscillation_Force_offset = 0.0f;
+          absOscillation_Position_offset = absAmp_fl32 * absForceOffset_local;
           break;
         default:
           break;
@@ -110,6 +112,8 @@ public:
     }
 
     _lastCallTimeMillis = timeNowMillis;
+
+    // ActiveSerial->printf("%0.3f, %0.3f\n", absForceOffset, absPosOffset);
 
     return;
     

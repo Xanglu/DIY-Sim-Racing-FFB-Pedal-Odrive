@@ -10,11 +10,6 @@
 
 #define BRAKE_RESISTOR_DEACTIVATION_TIME_IN_MS 1000
 
-//uint32_t speed_in_hz = TICKS_PER_S / ticks;
-// TICKS_PER_S = 16000000L
-// ticks = TICKS_PER_S / speed_in_hz
-#define maxSpeedInTicks  (TICKS_PER_S / MAXIMUM_STEPPER_SPEED)
-
 static const uint8_t LIMIT_TRIGGER_VALUE = LOW;                                   // does endstop trigger high or low
 static const int32_t ENDSTOP_MOVEMENT = (float)100; // how much to move between trigger checks
 static const int32_t ENDSTOP_MOVEMENT_SENSORLESS = ENDSTOP_MOVEMENT * 5;
@@ -350,13 +345,16 @@ void StepperWithLimits::moveSlowlyToPos(int32_t targetPos_ui32) {
   uint32_t prevSpeed_u32 = _stepper->getMaxSpeed();
 
   // reduce speed
-  _stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED / 16);
+  _stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED / 8);
 
   // move to min
   _stepper->moveTo(targetPos_ui32, true);
 
   // reset speed to previous speedlevel
-  _stepper->setMaxSpeed(prevSpeed_u32);
+//   _stepper->setMaxSpeed(prevSpeed_u32);
+  delay(1);
+  _stepper->setMaxSpeed(MAXIMUM_STEPPER_SPEED);
+  delay(1);
 }
 
 

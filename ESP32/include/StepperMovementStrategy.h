@@ -23,7 +23,7 @@ bool pidWasInitialized = false;
 #define PID_OUTPUT_LIMIT_FL32 0.5f
 
 
-int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, float stepperPosFraction, StepperWithLimits* stepper, ForceCurve_Interpolated* forceCurve, const DAP_calculationVariables_st* calc_st, DAP_config_st* config_st, float absForceOffset_fl32, float changeVelocity) {
+int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, StepperWithLimits* stepper, ForceCurve_Interpolated* forceCurve, const DAP_calculationVariables_st* calc_st, DAP_config_st* config_st, float absForceOffset_fl32, float absPosOffset_fl32) {
 
   if (pidWasInitialized == false)
   {
@@ -39,8 +39,16 @@ int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, float stepperP
     myPID.SetOutputLimits(-PID_OUTPUT_LIMIT_FL32, PID_OUTPUT_LIMIT_FL32); // allow the PID to only change the position a certain amount per cycle
   }
 
+  // get current position
+  int32_t currentPosFromMinInSteps_i32 = stepper->getCurrentPositionFromMin();
+
+  // apply offset
+  int32_t currentPosWithOffset_i32 = currentPosFromMinInSteps_i32 + absPosOffset_fl32;
+  float stepperPosFraction = stepper->getCurrentPositionFractionFromExternalPos(currentPosWithOffset_i32);
+
   // clamp the stepper position to prevent problems with the spline 
   float stepperPosFraction_constrained = constrain(stepperPosFraction, 0.0f, 1.0f);
+
 
   // constrain the output to the correct positioning interval to prevent PID windup 
   float neg_output_limit_fl32 = 1.0f - stepperPosFraction_constrained;
@@ -62,7 +70,7 @@ int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, float stepperP
   float loadCellTargetKg = forceCurve->EvalForceCubicSpline(config_st, calc_st, stepperPosFraction_constrained);
 
   // apply effect force offset
-  loadCellTargetKg -=absForceOffset_fl32;
+  loadCellTargetKg -= absForceOffset_fl32;
 
   // clip to min & max force to prevent Ki to overflow
   float loadCellReadingKg_clip = constrain(loadCellReadingKg, calc_st->Force_Min, calc_st->Force_Max);
