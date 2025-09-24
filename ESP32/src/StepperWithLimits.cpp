@@ -15,7 +15,7 @@ static const int32_t ENDSTOP_MOVEMENT = (float)100; // how much to move between 
 static const int32_t ENDSTOP_MOVEMENT_SENSORLESS = ENDSTOP_MOVEMENT * 5;
 
 
-#define MAX_ESTIMATED_SERVO_OFFSET (int16_t)1000
+#define MAX_ESTIMATED_SERVO_OFFSET (int16_t)5000
 
 TaskHandle_t task_iSV_Communication;
 unsigned long cycleTimeLastCall_lifelineCheck = 0;//micros();
@@ -934,7 +934,7 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 					
 					
 					// estimate position offset between ESPs target position and true servo position
-					int16_t estServoOffsetInSteps_i16 = stepper_cl->getServosInternalPositionCorrected() - stepper_cl->getCurrentPosition();
+					int16_t estServoOffsetInSteps_i16 = stepper_cl->getServosInternalPositionCorrected() + stepper_cl->getServosPosError() - stepper_cl->getCurrentPosition();
 					estServoOffsetInSteps_i16 = constrain(estServoOffsetInSteps_i16, -MAX_ESTIMATED_SERVO_OFFSET, MAX_ESTIMATED_SERVO_OFFSET );
 					stepper_cl->isv57.isv57dynamicStates_.estimated_pos_error_i16 = estServoOffsetInSteps_i16;
 					// stepper_cl->isv57.isv57dynamicStates_.estimated_pos_error_currentStepperPos_i16 = stepper_cl->getCurrentPosition();

@@ -219,6 +219,22 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   bool retValue_b = false;
 
 
+  
+// #define ADAPTIVE_SERVO_PARAMS
+// #ifdef ADAPTIVE_SERVO_PARAMS
+//   // see https://atbautomation.eu/uploads/User_Manual_Leadshine_iSV2-RS.pdf, p.22, Pr0.00
+//   // 1) Pr0.01 = 0 --> position mode
+//   // 2) Pr0.02 = 1 --> interpolation mode
+//   // 3) Pr0.04 inertia ratio
+//   // 4) Pr0.03 machine stiffness
+//   // 5) Pr0.00 = 1 --> adaptive bandwidth
+//   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+0, 1); // adaptive bandwidth modell following controll
+//   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+2, 1); // positioning mode with auto tuning
+//   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+3, 9); // machine stiffness
+//   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+4, 1); // inertia
+//   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+0, 2); // adaptive filter on all the time
+// #endif
+
 
   // Pr0 register
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+0, tuned_parameters[pr_0_00+0]); // control mode #
@@ -238,17 +254,15 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+18, tuned_parameters[pr_0_00+18]); // vibration suppression
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+19, tuned_parameters[pr_0_00+19]);
 
-  
-
   // Pr1 register
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+0, tuned_parameters[pr_1_00+0]); // 1st position gain
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+1, tuned_parameters[pr_1_00+1]); // 1st velocity loop gain
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+2, tuned_parameters[pr_1_00+2]); // 1st time constant of velocity loop
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+3, tuned_parameters[pr_1_00+3]); // 1st filter of velocity detection
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+4, tuned_parameters[pr_1_00+4]); // 1st torque filter
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+10, tuned_parameters[pr_1_00+10]); // velocity feed forward gain
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+11, tuned_parameters[pr_1_00+11]); // velocity feed forward filter
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+12, tuned_parameters[pr_1_00+12]); // torque feed forward gain
+  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+0, tuned_parameters[pr_1_00+0]); // 1st position gain
+  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+1, tuned_parameters[pr_1_00+1]); // 1st velocity loop gain
+  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+2, tuned_parameters[pr_1_00+2]); // 1st time constant of velocity loop
+  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+3, tuned_parameters[pr_1_00+3]); // 1st filter of velocity detection
+  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+4, tuned_parameters[pr_1_00+4]); // 1st torque filter
+  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+10, tuned_parameters[pr_1_00+10]); // velocity feed forward gain
+  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+11, tuned_parameters[pr_1_00+11]); // velocity feed forward filter
+  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+12, tuned_parameters[pr_1_00+12]); // torque feed forward gain
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+13, tuned_parameters[pr_1_00+13]); // torque feed forward filter
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+15, tuned_parameters[pr_1_00+15]); // control switching mode
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+33, tuned_parameters[pr_1_00+33]); // speed given filter
@@ -267,9 +281,12 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   // 0x20: =0: dial input function not assignable; =0x20: dial input function assignable
   // 0x40: =0: Mask drive disable Er260 alarm; =0x40: Enable drive disable Er260 alarm
   // 0x400: =0: Mask undervoltage Er0D0 alarm; =0x400: Enable undervoltage Er0D0 alarm
+  
 
+  
   // Pr2 register
   // vibration suppression 
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00, tuned_parameters[pr_2_00]);
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+1, tuned_parameters[pr_2_00+1]);
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+2, tuned_parameters[pr_2_00+2]);
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+3, tuned_parameters[pr_2_00+3]);
@@ -311,20 +328,7 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_7_00+33, tuned_parameters[pr_7_00+33]); // bleeder hysteresis voltage; Contrary to the manual this seems to be an offset voltage, thus Braking disabling voltage = Pr7.32 + Pr.33
 
 
-// #define ADAPTIVE_SERVO_PARAMS
-#ifdef ADAPTIVE_SERVO_PARAMS
-  // see https://atbautomation.eu/uploads/User_Manual_Leadshine_iSV2-RS.pdf, p.22, Pr0.00
-  // 1) Pr0.01 = 0 --> position mode
-  // 2) Pr0.02 = 1 --> interpolation mode
-  // 3) Pr0.04 inertia ratio
-  // 4) Pr0.03 machine stiffness
-  // 5) Pr0.00 = 1 --> adaptive bandwidth
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+0, 1); // adaptive bandwidth modell following controll
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+2, 1); // positioning mode with auto tuning
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+3, 9); // machine stiffness
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+4, 1); // inertia
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+0, 2); // adaptive filter on all the time
-#endif
+
 
   
 

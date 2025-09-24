@@ -7,9 +7,9 @@
 const int32_t tuned_parameters[ISV57_NMB_OF_REGISTERS] = {
     1,     // Pr0.00: Reserved parameters
     0,     // Pr0.01: Control mode
-    0,     // Pr0.02: Real-time auto-gain tuning mode
-    10,    // Pr0.03: Selection of machine stiffness at real-time...
-    80,    // Pr0.04: Ratio of inertia
+    1,     // Pr0.02: Real-time auto-gain tuning mode
+    9,    // Pr0.03: Selection of machine stiffness at real-time...
+    1,    // Pr0.04: Ratio of inertia
     0,     // Pr0.05: Command pulse input selection
     0,     // Pr0.06: Motor rotational direction setup
     3,     // Pr0.07: Reserved parameters
@@ -70,7 +70,7 @@ const int32_t tuned_parameters[ISV57_NMB_OF_REGISTERS] = {
     1052,  // Pr1.37: Special function register
     0,     // Pr1.38: Reserved parameter
     0,     // Pr1.39: Reserved parameter
-    0,     // Pr2.00: Adaptive filter mode setup
+    2,     // Pr2.00: Adaptive filter mode setup
     50,    // Pr2.01: 1st notch frequency
     20,    // Pr2.02: 1st notch width
     99,    // Pr2.03: 1st notch depth
