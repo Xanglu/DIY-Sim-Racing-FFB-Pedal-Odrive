@@ -219,7 +219,9 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   bool retValue_b = false;
 
 
+
   // Pr0 register
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+0, tuned_parameters[pr_0_00+0]); // control mode #
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+1, tuned_parameters[pr_0_00+1]); // control mode #
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+2, tuned_parameters[pr_0_00+2]); // deactivate auto gain
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+3, tuned_parameters[pr_0_00+3]); // machine stiffness
@@ -308,6 +310,21 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   retValue_b |= setServoVoltage(SERVO_MAX_VOLTAGE_IN_V_36V);
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_7_00+33, tuned_parameters[pr_7_00+33]); // bleeder hysteresis voltage; Contrary to the manual this seems to be an offset voltage, thus Braking disabling voltage = Pr7.32 + Pr.33
 
+
+// #define ADAPTIVE_SERVO_PARAMS
+#ifdef ADAPTIVE_SERVO_PARAMS
+  // see https://atbautomation.eu/uploads/User_Manual_Leadshine_iSV2-RS.pdf, p.22, Pr0.00
+  // 1) Pr0.01 = 0 --> position mode
+  // 2) Pr0.02 = 1 --> interpolation mode
+  // 3) Pr0.04 inertia ratio
+  // 4) Pr0.03 machine stiffness
+  // 5) Pr0.00 = 1 --> adaptive bandwidth
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+0, 1); // adaptive bandwidth modell following controll
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+2, 1); // positioning mode with auto tuning
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+3, 9); // machine stiffness
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+4, 1); // inertia
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+0, 2); // adaptive filter on all the time
+#endif
 
   
 
