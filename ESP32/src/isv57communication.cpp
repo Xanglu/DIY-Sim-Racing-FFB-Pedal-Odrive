@@ -471,7 +471,7 @@ void isv57communication::readServoStates() {
     modbus.RxRaw(raw,  len);
     for (uint8_t regIdx = 0; regIdx < numberOfRegistersToRead_u8; regIdx++)
     { 
-      regArray[regIdx] = modbus.uint16(regIdx);
+      regArray[regIdx] = modbus.int16(regIdx);
     }
   }
 
@@ -538,7 +538,7 @@ bool isv57communication::readCurrentAlarm() {
     modbus.RxRaw(raw,  len);
     for (uint8_t regIdx = 0; regIdx < 1; regIdx++)
     { 
-      uint16_t tmp = modbus.uint16(regIdx) && 0x0FFF; // mask the first half byte as it does not contain info
+      uint16_t tmp = modbus.int16(regIdx) && 0x0FFF; // mask the first half byte as it does not contain info
       ActiveSerial->print("Current iSV57 alarm: ");
       ActiveSerial->println( tmp, HEX);
     }
@@ -565,7 +565,7 @@ bool isv57communication::readAlarmHistory() {
       modbus.RxRaw(raw,  len);
       for (uint8_t regIdx = 0; regIdx < 1; regIdx++)
       { 
-        uint16_t alarm_code = modbus.uint16(regIdx) & 0x0FFF; // mask the first half byte as it does not contain info
+        uint16_t alarm_code = modbus.int16(regIdx) & 0x0FFF; // mask the first half byte as it does not contain info
 
         if (alarm_code > 0)
         {

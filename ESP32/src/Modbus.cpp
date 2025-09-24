@@ -86,7 +86,7 @@ void Modbus::readParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress)
   if(requestFrom(slaveId_local_u16, 0x03, parameterAdress,  2) > 0)
   {
     RxRaw(raw2,  len);
-    regArray[0] = uint16(0);
+    regArray[0] = int16(0);
   }
   
   // write to public variables
@@ -106,7 +106,7 @@ void Modbus::readParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress)
 
 
 // check target values at register address. If target value was already present, return 0. If target value has to be set, return 1.
-bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress, long value) {
+bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, int16_t parameterAdress, long value) {
 
   bool registerWritten_b = false;
   bool registerValueAsTarget_b = false;
@@ -136,7 +136,7 @@ bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t param
     if(requestFrom(slaveId_local_u16, 0x03, parameterAdress,  2) > 0)
     {
       RxRaw(raw2,  len);
-      regArray[0] = uint16(0);
+      regArray[0] = int16(0);
     }
     
     // write to public variables
@@ -425,34 +425,44 @@ int Modbus::ReadInputReg(int slaveId, int add, int nbyte)
     return 0;
 }
 
-int8_t Modbus::uint8(int add)
-{
-    return rawRx[add*2+3];
-}
+// int8_t Modbus::uint8(int add)
+// {
+//     return rawRx[add*2+3];
+// }
 
 
 
 
-uint16_t Modbus::uint16(int add)
+// uint16_t Modbus::uint16(int add)
+// {
+//     int add_ = (add)*2 + 3;
+ 
+//     return (rawRx[add_] << 8 | rawRx[add_+1]);
+// }
+
+
+int16_t Modbus::int16(int add)
 {
     int add_ = (add)*2 + 3;
  
-    return (rawRx[add_] << 8 | rawRx[add_+1]);
+    // return (int16_t)((uint8_t)rawRx[add_] << 8 | (uint8_t)rawRx[add_+1]);
+    return (int16_t)(((int16_t)rawRx[add_] << 8) | rawRx[add_+1]);
+
 }
 
-uint32_t Modbus::uint32(int add, bool byteHL)
-{
-    uint32_t val ;
-    if (byteHL)
-    {
-      val = uint16(add) << 16 | uint16(add+1);
-    }
-    else
-    {
-      val = uint16(add+1)<< 16 | uint16(add);
-    }
-    return val;
-}
+// uint32_t Modbus::uint32(int add, bool byteHL)
+// {
+//     uint32_t val ;
+//     if (byteHL)
+//     {
+//       val = uint16(add) << 16 | uint16(add+1);
+//     }
+//     else
+//     {
+//       val = uint16(add+1)<< 16 | uint16(add);
+//     }
+//     return val;
+// }
 
 void Modbus::RxRaw(uint8_t*raw, uint8_t &rlen)
 {
