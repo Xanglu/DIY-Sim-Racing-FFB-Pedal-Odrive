@@ -22,7 +22,7 @@
                     <Label Content="General Setting" Height="15" Width="150" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial Black" HorizontalAlignment="Left" Margin="70,0,0,0"/>
                 </StackPanel>
                 <localUI:SliderWithLabel x:Name="Slider_damping_rudder" Width="400" Height="40" SliderLength="400" TickFrequency="0.00015" MaxValue="0.0375" SliderName="Damping factor" Unit="s" SliderValueChanged="Slider_damping_rudder_SliderValueChanged"/>
-                <localUI:SliderWithLabel x:Name="Slider_MPC_0th_gain_rudder" Width="400" Height="40" SliderLength="400" TickFrequency="0.1" MaxValue="10" SliderName="Foot spring stiffness" Unit="kg/mm" SliderValueChanged="Slider_MPC_0th_gain_rudder_SliderValueChanged"/>
+                
 
             </StackPanel>
         </Border>

@@ -91,7 +91,7 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 if (Settings != null)
                 {
-                    if (Slider_MPC_0th_gain_rudder != null) Slider_MPC_0th_gain_rudder.SliderValue = Settings.rudderMPCGain;
+                    
                     if (Slider_damping_rudder != null) Slider_damping_rudder.SliderValue = (double)Settings.rudderDamping * (double)Slider_damping_rudder.TickFrequency;
                 }
             }
@@ -151,17 +151,6 @@ namespace User.PluginSdkDemo.UIFunction
             ConfigChangedEvent(dap_config_st);
             */
             Settings.rudderDamping= (byte)((double)e.NewValue / (double)Slider_damping_rudder.TickFrequency);
-        }
-
-        private void Slider_MPC_0th_gain_rudder_SliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            /*
-            var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.MPC_0th_order_gain = (float)e.NewValue;
-            dap_config_st = tmp;
-            ConfigChangedEvent(dap_config_st);
-            */
-            Settings.rudderMPCGain= (float)e.NewValue;
         }
     }
 }

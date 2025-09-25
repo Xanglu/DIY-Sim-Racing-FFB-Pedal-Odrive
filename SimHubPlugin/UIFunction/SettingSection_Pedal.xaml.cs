@@ -109,7 +109,7 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 if (Settings != null)
                 {
-                    Label_Pedal_interval_trigger.Content = "Effect FPS: " + Settings.Pedal_action_fps[Settings.table_selected] ;
+                    Label_Pedal_interval_trigger.Content = "Effects Update Rate:" + Settings.Pedal_action_fps[Settings.table_selected]+"Hz";
                     Slider_Pedal_interval_trigger.Value = Settings.Pedal_action_fps[Settings.table_selected];
                     if (Settings.reading_config == 1)
                     {
@@ -252,7 +252,7 @@ namespace User.PluginSdkDemo.UIFunction
         private void Slider_Pedal_interval_trigger_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             Settings.Pedal_action_fps[Settings.table_selected] = (byte)e.NewValue;
-            Label_Pedal_interval_trigger.Content = "Effect FPS: " + Settings.Pedal_action_fps[Settings.table_selected] ;
+            Label_Pedal_interval_trigger.Content = "Effects Update Rate:" + Settings.Pedal_action_fps[Settings.table_selected]+"Hz";
             SettingsChangedEvent(Settings);
         }
 

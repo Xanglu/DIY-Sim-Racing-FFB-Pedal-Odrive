@@ -68,7 +68,6 @@ namespace User.PluginSdkDemo
         public byte[] rudderTravel = new byte[11] { 0, 20, 40, 60, 80, 100, 0, 0, 0, 0, 0 };
         public byte rudderControlQuantity = 6;
         public byte rudderDamping = 0;
-        public float rudderMPCGain = 6.0f;
         public byte rudderRPMAmp = 1;
         public byte rudderRPMMaxFrequency = 40;
         public byte rudderRPMMinFrequency = 15;
