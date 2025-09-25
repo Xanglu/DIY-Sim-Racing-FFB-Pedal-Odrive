@@ -1,5 +1,5 @@
 #pragma once
-#define Rudder_timeout 1500
+#define Rudder_timeout 3000
 #include "DiyActivePedal_types.h"
 #include <MovingAverageFilter.h>
 #include "SignalFilter_1st_order.h"

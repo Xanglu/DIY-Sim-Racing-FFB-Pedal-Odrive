@@ -1454,6 +1454,12 @@ void loop() {
 /*                         pedal update task                                                  */
 /*                                                                                            */
 /**********************************************************************************************/
+//#define ESPNow_debug_rudder
+
+#ifdef ESPNow_debug_rudder
+  unsigned long debugMessageLast=0;
+#endif 
+
 void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 {
 
@@ -1716,14 +1722,23 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
         dap_calculationVariables_st.update_stepperMinpos(helicopterRudder_.offset_filter);
       }
       #ifdef ESPNow_debug_rudder
-        if(millis()-debugMessageLast>500)
+      if(dap_calculationVariables_st.Rudder_status || dap_calculationVariables_st.helicopterRudderStatus)
+      {
+        if(millis()-debugMessageLast>500 )
         {
           debugMessageLast=millis();
           ActiveSerial->print("Center offset:");
           ActiveSerial->println(_rudder.offset_filter);
           ActiveSerial->print("min default:");
           ActiveSerial->println(dap_calculationVariables_st.stepperPosMin_default);
+          ActiveSerial->print("max Force:");
+          ActiveSerial->print(dap_calculationVariables_st.Force_Max);
+          ActiveSerial->print(" min Force:");
+          ActiveSerial->println(dap_calculationVariables_st.Force_Min);
+          ActiveSerial->print("Force:");
+          ActiveSerial->println(filteredReading);
         }
+      }
       #endif
 
       //_rudder.force_offset_calculate(&dap_calculationVariables_st);
@@ -1918,7 +1933,10 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
       // compute next position with PID strategy
       Position_Next = MoveByPidStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, effect_force_fl32, effect_pos_fl32);
-
+      if(dap_calculationVariables_st.Rudder_status || dap_calculationVariables_st.helicopterRudderStatus)
+      {
+        Position_Next = MoveByForceTargetingStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity, d_phi_d_x, d_x_hor_d_phi);
+      }
       // end profiler 4, movement strategy
       profiler_pedalUpdateTask.end(5);
 

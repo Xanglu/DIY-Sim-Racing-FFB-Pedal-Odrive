@@ -304,7 +304,7 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.kf_modelNoise = 200;
             dap_config_st_rudder.payloadPedalConfig_.kf_modelOrder = 2;
 
-            dap_config_st_rudder.payloadPedalConfig_.positionSmoothingFactor_u8 = 20;
+            dap_config_st_rudder.payloadPedalConfig_.positionSmoothingFactor_u8 = 0;
 
             dap_config_st_rudder.payloadPedalConfig_.loadcell_rating = 100;
 
@@ -317,9 +317,10 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.pedal_type = (byte)4;
             //dap_config_st[pedalIdx].payloadPedalConfig_.OTA_flag = 0;
             dap_config_st_rudder.payloadPedalConfig_.stepLossFunctionFlags_u8 = 0b11;
-            dap_config_st_rudder.payloadPedalConfig_.kf_modelNoise_joystick = 1;
+            dap_config_st_rudder.payloadPedalConfig_.kf_modelNoise_joystick = 128;
             dap_config_st_rudder.payloadPedalConfig_.kf_Joystick_u8 = 1;
             dap_config_st_rudder.payloadPedalConfig_.servoIdleTimeout = 0;
+            dap_config_st_rudder.payloadPedalConfig_.debug_flags_0 = 0;
         }
         public byte[] getBytesPayload(payloadPedalConfig aux)
         {
