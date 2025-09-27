@@ -64,6 +64,11 @@ enum bridgeAction{
   BRIDGE_ACTION_JOYSTICK_DEBUG 
 };
 
+enum otaAction{
+  OTA_ACTION_NORMAL,
+  OTA_ACTION_FORCE_UPDATE,
+  OTA_ACTION_PLATFORMIO_DIRECT_UPLOAD
+};
 struct payloadHeader{
   // start of frame indicator
   uint8_t startOfFrame0_u8;

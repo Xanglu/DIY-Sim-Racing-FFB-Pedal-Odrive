@@ -60,6 +60,7 @@ namespace User.PluginSdkDemo
         public bool IsJoystickInitialized = false;
         public uint rudderType;
         public bool IsTestBuild = false;
+        public bool IsOtaUploadFromPlatformIO = false;
         public uint RSSI_Value
         {
             get => _rssi_value;

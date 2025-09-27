@@ -3,6 +3,10 @@
 #include <Arduino.h>
 #include "ESPNowW.h"
 #include "DiyActivePedal_types.h"
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
 
 //#define ESPNow_debug_rudder
 //#define ESPNow_debug
@@ -678,20 +682,31 @@ void ESPNow_initialize()
   
 }
 
-void sendESPNOWLog(const char *log, uint8_t logLen)
+void sendESPNOWLog(const char *log,...)
 {
   uint8_t buffer[250];
   uint8_t payloadType = DAP_PAYLOAD_TYPE_ESPNOW_LOG;
   //uint8_t logLen = strlen(log); 
-
-  if (logLen > 240)
-  {
-    logLen = 240;
-  }
+  va_list args;
+  char* result = NULL;
+  int needed_size;
+  va_start(args, log); // initialized va_list
+  needed_size = vsnprintf(NULL, 0, log, args);
+  va_end(args); 
+  if (needed_size < 0) return;
+  result = (char*)malloc(needed_size + 1);
+  // malloc error
+  if (result == NULL) return;
+  va_start(args, log); 
+  vsnprintf(result, needed_size + 1, log, args);
+  va_end(args); 
+  int logLen=strlen(result);
+  if (logLen > 240) logLen = 240;
   buffer[0] = payloadType;
   buffer[1] = ESPNOW_LOG_MAGIC_KEY;
   buffer[2] = ESPNOW_LOG_MAGIC_KEY_2;
   buffer[3] = logLen;
-  memcpy(&buffer[4], log, logLen);
+  memcpy(&buffer[4], result, logLen);
   ESPNow.send_message(broadcast_mac, (uint8_t *)buffer, 4 + logLen);
+  free(result);
 }

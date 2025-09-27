@@ -838,7 +838,11 @@ namespace User.PluginSdkDemo
                 bool SSID_PASS_check = true;
                 if (Plugin._calculations.ForceUpdate_b == true)
                 {
-                    tmp_2.payloadOtaInfo_.ota_action = 1;
+                    tmp_2.payloadOtaInfo_.ota_action = (byte) otaAction.OTA_ACTION_FORCE_UPDATE;
+                }
+                if (Plugin._calculations.IsOtaUploadFromPlatformIO)
+                {
+                    tmp_2.payloadOtaInfo_.ota_action = (byte)otaAction.OTA_ACTION_UPLOAD_FROM_PLATFORMIO;
                 }
                 if (Plugin.Settings.updateChannel == 0)
                 {

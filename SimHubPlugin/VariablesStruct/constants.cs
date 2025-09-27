@@ -42,6 +42,12 @@ namespace User.PluginSdkDemo
         BRIDGE_ACTION_JOYSTICK_FLASHING_MODE,
         BRIDGE_ACTION_JOYSTICK_DEBUG
     };
+    public enum otaAction
+    {
+        OTA_ACTION_NORMAL,
+        OTA_ACTION_FORCE_UPDATE,
+        OTA_ACTION_UPLOAD_FROM_PLATFORMIO
+    };
 
     public enum PedalSystemAction
     {

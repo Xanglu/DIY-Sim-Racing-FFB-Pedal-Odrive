@@ -10,7 +10,7 @@ float filteredOutput = 0.0f;
 bool expFilterHasBeenInitialized = false;
 // Filter-Variablen
 float RC = 1.0f / (2.0f * 3.14159f * 100.0f); // RC für 20 Hz Eckfrequenz
-
+float MPC_0_gain=6.2f;
 int printStep = 0;
 
 float posArray[10] = {0.0f};
@@ -96,7 +96,7 @@ int32_t MoveByForceTargetingStrategy(float loadCellReadingKg, StepperWithLimits*
   float stepperPos_initial = stepperPos;
 
   // foot spring stiffness
-  float d_f_d_x_hor = -6.2f;
+  float d_f_d_x_hor = -1.0f*MPC_0_gain;
 
   // velocity dependent foot spring stiffness 
   float d_f_t_d_x_hor = 0.0f;

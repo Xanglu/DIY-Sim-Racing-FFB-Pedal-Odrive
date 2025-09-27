@@ -167,5 +167,15 @@ namespace User.PluginSdkDemo.UIFunction
         {
             _calculations.IsTestBuild = false;
         }
+
+        private void Checkbox_platformIo_upload_Checked(object sender, RoutedEventArgs e)
+        {
+            _calculations.IsOtaUploadFromPlatformIO = true;
+        }
+
+        private void Checkbox_platformIo_upload_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _calculations.IsOtaUploadFromPlatformIO = false;
+        }
     }
 }

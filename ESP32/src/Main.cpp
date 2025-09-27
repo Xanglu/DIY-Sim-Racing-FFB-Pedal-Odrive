@@ -291,7 +291,7 @@ bool moveSlowlyToPosition_b = true;
 #ifdef OTA_update
 //#include "ota.h"
 #include "OTA_Pull.h"
-TaskHandle_t Task4;
+#include "OTA_ArduinoOTA.h"
 char* APhost;
 #endif
 #ifdef OTA_update_ESP32
@@ -1270,6 +1270,7 @@ xTaskCreatePinnedToCore(
   {
     ActiveSerial->println("ESPNOW task did not started due to Assignment error, please usb connect to Simhub and finish Assignment.");
   }
+  sendESPNOWLog("Pedal:%d espnow is ready",dap_config_st_local.payLoadPedalConfig_.pedal_type);
   #endif
   
   #if defined(CONTROLLER_SPECIFIC_VIDPID) && defined(USB_JOYSTICK) && !defined(USE_CDC_INSTEAD_OF_UART)
@@ -1277,14 +1278,6 @@ xTaskCreatePinnedToCore(
     SetupController_USB(dap_config_st_local.payLoadPedalConfig_.pedal_type);
     delay(500);
   #endif
-
-
-
-
-  
-
-
-
   ActiveSerial->println("Setup end");
   #ifdef USING_LED
       //pixels.setBrightness(20);
@@ -1932,10 +1925,16 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       }
 
       // compute next position with PID strategy
-      Position_Next = MoveByPidStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, effect_force_fl32, effect_pos_fl32);
+      // MPC control strategy for rudder
       if(dap_calculationVariables_st.Rudder_status || dap_calculationVariables_st.helicopterRudderStatus)
       {
+        // Rudder only
         Position_Next = MoveByForceTargetingStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity, d_phi_d_x, d_x_hor_d_phi);
+      }
+      else 
+      {
+        // Pedal control
+        Position_Next = MoveByPidStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, effect_force_fl32, effect_pos_fl32);
       }
       // end profiler 4, movement strategy
       profiler_pedalUpdateTask.end(5);
@@ -2917,6 +2916,7 @@ void IRAM_ATTR_FLAG serialCommunicationTaskTx( void * pvParameters )
 void otaUpdateTask( void * pvParameters )
 {
   uint16_t OTA_count=0;
+  unsigned long ota_debug_messaage_last=0;
   bool message_out_b=false;
   int OTA_update_status=99;
 
@@ -2957,17 +2957,32 @@ void otaUpdateTask( void * pvParameters )
             }
             else
             {
-              #ifdef USING_BUZZER
-                Buzzer.single_beep_tone(770,100);
-              #endif
-              #ifdef USING_LED
-              pixels.setPixelColor(0,0xff,0x00,0x00);//red
-              pixels.show(); 
-              delay(500);
-              pixels.setPixelColor(0,0x00,0x00,0x00);//no color
-              pixels.show();
-              delay(500);    
-              #endif 
+              if(dap_action_ota_st.payloadOtaInfo_.ota_action==OTA_ACTION_PLATFORMIO_DIRECT_UPLOAD)
+              {
+                //updload ota from platformio
+                ArduinoOTA.handle(); 
+                if(millis()-ota_debug_messaage_last>1000)
+                {
+                  ActiveSerial->println("Wait for ota update...");
+                }
+                
+              }
+              else
+              {
+                //show ota error
+                #ifdef USING_BUZZER
+                  Buzzer.single_beep_tone(770,100);
+                #endif
+                #ifdef USING_LED
+                  pixels.setPixelColor(0,0xff,0x00,0x00);//red
+                  pixels.show(); 
+                  delay(500);
+                  pixels.setPixelColor(0,0x00,0x00,0x00);//no color
+                  pixels.show();
+                  delay(500);    
+                #endif 
+              }
+
             }
 
           #endif
@@ -2976,9 +2991,13 @@ void otaUpdateTask( void * pvParameters )
         }
         else
         {
+
           ActiveSerial->println("de-initialize espnow");
           ActiveSerial->println("wait...");
           #ifdef ESPNOW_Enable
+            sendESPNOWLog("OTA enabled, de-initialize espnow");
+            sendESPNOWLog("wait...");
+            delay(1000);
             esp_err_t result= esp_now_deinit();
             ESPNow_initial_status=false;
             ESPNOW_status=false;
@@ -3005,52 +3024,59 @@ void otaUpdateTask( void * pvParameters )
             #ifdef OTA_update
             wifi_initialized(SSID,PASS);
             delay(2000);
-            ESP32OTAPull ota;
-            int ret;
-            ota.SetCallback(OTAcallback);
-            ota.OverrideBoard(CONTROL_BOARD);
-            char* version_tag;
-            if(dap_action_ota_st.payloadOtaInfo_.ota_action==1)
+            if(dap_action_ota_st.payloadOtaInfo_.ota_action!=OTA_ACTION_PLATFORMIO_DIRECT_UPLOAD)
             {
-              const char* str;
-              if(PCB_VERSION==3||PCB_VERSION==5||PCB_VERSION==9) str ="0.90.16";// for those board which change the partition table
-              else str ="0.0.0";
-              version_tag=new char[strlen(str) + 1];
-              strcpy(version_tag, str);
-              ActiveSerial->println("Force update");
-            }
+              ESP32OTAPull ota;
+              int ret;
+              ota.SetCallback(OTAcallback);
+              ota.OverrideBoard(CONTROL_BOARD);
+              char* version_tag;
+              if(dap_action_ota_st.payloadOtaInfo_.ota_action==OTA_ACTION_FORCE_UPDATE)
+              {
+                const char* str;
+                if(PCB_VERSION==3||PCB_VERSION==5||PCB_VERSION==9) str ="0.90.16";// for those board which change the partition table
+                else str ="0.0.0";
+                version_tag=new char[strlen(str) + 1];
+                strcpy(version_tag, str);
+                ActiveSerial->println("Force update");
+              }
+              if(dap_action_ota_st.payloadOtaInfo_.ota_action==OTA_ACTION_NORMAL)
+              {
+                version_tag=new char[strlen(DAP_FIRMWARE_VERSION) + 1];
+                strcpy(version_tag, DAP_FIRMWARE_VERSION);
+                //version_tag=DAP_FIRMWARE_VERSION;
+              }
+              switch (dap_action_ota_st.payloadOtaInfo_.mode_select)
+              {
+                case 1:
+                  ActiveSerial->printf("Flashing to latest release, checking %s to see if an update is available...\n", OTA_JSON_URL_MAIN);
+                  ret = ota.CheckForOTAUpdate(OTA_JSON_URL_MAIN, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
+                  ActiveSerial->printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
+                  OTA_update_status=ret;
+                  break;
+                case 2:
+                  ActiveSerial->printf("Flashing to latest dev build, checking %s to see if an update is available...\n", OTA_JSON_URL_DEV);
+                  ret = ota.CheckForOTAUpdate(OTA_JSON_URL_DEV, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
+                  ActiveSerial->printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
+                  OTA_update_status=ret;
+                  break;
+                case 3:
+                  ActiveSerial->printf("Flashing to test build, checking %s to see if an update is available...\n", OTA_JSON_URL_TEST);
+                  ret = ota.CheckForOTAUpdate(OTA_JSON_URL_TEST, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
+                  ActiveSerial->printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
+                  OTA_update_status=ret;
+                  break;
+                default:
+                break;
+                delete[] version_tag; 
+              }
+            }  
             else
             {
-              version_tag=new char[strlen(DAP_FIRMWARE_VERSION) + 1];
-              strcpy(version_tag, DAP_FIRMWARE_VERSION);
-              //version_tag=DAP_FIRMWARE_VERSION;
-            }
-            switch (dap_action_ota_st.payloadOtaInfo_.mode_select)
-            {
-              case 1:
-                ActiveSerial->printf("Flashing to latest release, checking %s to see if an update is available...\n", OTA_JSON_URL_MAIN);
-                ret = ota.CheckForOTAUpdate(OTA_JSON_URL_MAIN, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
-                ActiveSerial->printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
-                OTA_update_status=ret;
-                break;
-              case 2:
-                ActiveSerial->printf("Flashing to latest dev build, checking %s to see if an update is available...\n", OTA_JSON_URL_DEV);
-                ret = ota.CheckForOTAUpdate(OTA_JSON_URL_DEV, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
-                ActiveSerial->printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
-                OTA_update_status=ret;
-                break;
-              case 3:
-                ActiveSerial->printf("Flashing to test build, checking %s to see if an update is available...\n", OTA_JSON_URL_TEST);
-                ret = ota.CheckForOTAUpdate(OTA_JSON_URL_TEST, version_tag, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
-                ActiveSerial->printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
-                OTA_update_status=ret;
-                break;
-              default:
-              break;
-              delete[] version_tag; 
-            }
+              // initialize ota for platformIO upload
+              ota_arduinoota_initialize();
+            }         
             #endif
-
             delay(3000);
           }
 
@@ -3416,12 +3442,12 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             ActiveSerial->println(logString);
             sendESPNOWLog(logString, strnlen(logString, sizeof(logString)));
             */
-            pedalInfoBuilder.BuildString(espnow_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage()/10.0f),dap_calculationVariables_st.stepperPosMaxEndstop,dap_calculationVariables_st.current_pedal_position);
-            sendESPNOWLog(pedalInfoBuilder.logString, strnlen(pedalInfoBuilder.logString, sizeof(pedalInfoBuilder.logString)));
+            pedalInfoBuilder.BuildInfoString(espnow_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage()/10.0f),dap_calculationVariables_st.stepperPosMaxEndstop,dap_calculationVariables_st.current_pedal_position);
+            sendESPNOWLog(pedalInfoBuilder.logString);
             ActiveSerial->println(pedalInfoBuilder.logString);
             delay(3);
             pedalInfoBuilder.BuildESPNOWInfo(espnow_dap_config_st.payLoadPedalConfig_.pedal_type,rssi);
-            sendESPNOWLog(pedalInfoBuilder.logESPNOWString, strnlen(pedalInfoBuilder.logESPNOWString, sizeof(pedalInfoBuilder.logESPNOWString)));
+            sendESPNOWLog(pedalInfoBuilder.logESPNOWString);
             ActiveSerial->println(pedalInfoBuilder.logESPNOWString);
 
           }

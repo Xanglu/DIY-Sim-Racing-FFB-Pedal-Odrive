@@ -33,9 +33,15 @@
                 <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal" Width="400" Height="20">
                     <Label x:Name="Label_update_channel_notice" HorizontalAlignment="Center" Margin="2,0,0,0" Width="400" FontFamily="Arial" Foreground="Red" FontSize="8" Padding="0,0,0,0" />
                 </StackPanel>
-                <StackPanel Height="20" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <styles:SHToggleButton x:Name="Checkbox_Force_flash" Content="" IsChecked="False" FontSize="10" Width="35" Height="15" HorizontalAlignment="Left" FontFamily="Arial" ToolTip="Force update to the selected version" RenderTransformOrigin="0.5,0.5" Margin="-10,0,0,0" Checked="Checkbox_Force_flash_Checked" Unchecked="Checkbox_Force_flash_Unchecked"/>
-                    <Label Content="Force Flash Firmware" Height="20" Width="130" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" FontSize="10" Margin="4,0,0,0"/>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Height="20" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <styles:SHToggleButton x:Name="Checkbox_Force_flash" Content="" IsChecked="False" FontSize="10" Width="35" Height="15" HorizontalAlignment="Left" FontFamily="Arial" ToolTip="Force update to the selected version" RenderTransformOrigin="0.5,0.5" Margin="-10,0,0,0" Checked="Checkbox_Force_flash_Checked" Unchecked="Checkbox_Force_flash_Unchecked"/>
+                        <Label Content="Force Flash Firmware" Height="20" Width="130" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" FontSize="10" Margin="4,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Height="20" Width="160" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <styles:SHToggleButton x:Name="Checkbox_PlatformIO_upload" Content="" IsChecked="False" FontSize="10" Width="35" Height="15" HorizontalAlignment="Left" FontFamily="Arial" ToolTip="DO NOT USE, not use in Bridge, Pedal only" RenderTransformOrigin="0.5,0.5" Margin="-10,0,0,0" Checked="Checkbox_platformIo_upload_Checked" Unchecked="Checkbox_platformIo_upload_Unchecked"/>
+                        <Label Content="Upload from PlatformIO" Height="20" Width="130" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" FontSize="10" Margin="4,0,0,0"/>
+                    </StackPanel>
                 </StackPanel>
                 <TextBox x:Name="textBox_changelog" Width="400" Height="150" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
                 <StackPanel Height="25" Width="400" Orientation="Horizontal" Margin="0,5,0,0">
