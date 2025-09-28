@@ -38,7 +38,7 @@ namespace User.PluginSdkDemo
 
         public bool sendAbsSignal = false;
 		public DAP_config_st dap_config_initial_st;
-        public byte rpm_last_value = 0 ;
+        public byte[] rpm_last_value = new byte[4] { 0, 0, 0, 0 };
         public double g_force_last_value = 128;
         public byte Road_impact_last = 0;
         public byte game_running_index = 0 ;
@@ -597,7 +597,7 @@ namespace User.PluginSdkDemo
                     tmp.payloadHeader_.payloadType = (byte)Constants.pedalActionPayload_type;
                     tmp.payloadHeader_.PedalTag = (byte)pedalIdx;
                     tmp.payloadPedalAction_.triggerAbs_u8 = 0;
-                    tmp.payloadPedalAction_.RPM_u8 = (Byte)rpm_last_value;
+                    tmp.payloadPedalAction_.RPM_u8 = (Byte)rpm_last_value[pedalIdx];
 
                     tmp.payloadPedalAction_.WS_u8 = 0;
                     tmp.payloadPedalAction_.impact_value = 0;
@@ -616,17 +616,22 @@ namespace User.PluginSdkDemo
 
 
                     if (Settings.RPM_enable_flag[pedalIdx] == 1)
-                    {   
-                        if (Math.Abs(RPM_value - rpm_last_value) > 3)
+                    {
+                        if (Math.Abs(RPM_value - rpm_last_value[pedalIdx]) > 3)
                         {
                             tmp.payloadPedalAction_.RPM_u8 = (Byte)RPM_value;
                             update_flag = true;
-                            rpm_last_value = (Byte)RPM_value;
+                            rpm_last_value[pedalIdx] = (Byte)RPM_value;
                         }
                     }
                     else
                     {
                         tmp.payloadPedalAction_.RPM_u8 = 0;
+                        if (rpm_last_value[pedalIdx] != 0)
+                        {
+                            update_flag = true;
+                        }
+                        rpm_last_value[pedalIdx] = 0;
                     }
 
                     //G force effect only effect on brake
@@ -1208,12 +1213,14 @@ namespace User.PluginSdkDemo
                 tmp.payloadPedalAction_.Trigger_CV_2 = 0;
                 tmp.payloadPedalAction_.Rudder_action = 0;
                 tmp.payloadPedalAction_.Rudder_brake_action = 0;
-                rpm_last_value = 0;
+                
                 Road_impact_last = 0;
                 debug_value = 0;
 
                 for (uint pedalIdx = 0; pedalIdx < 3; pedalIdx++)
                 {
+                    rpm_last_value[pedalIdx] = 0;
+
                     tmp.payloadHeader_.PedalTag = (byte)pedalIdx;
                     DAP_action_st* v = &tmp;
                     tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
