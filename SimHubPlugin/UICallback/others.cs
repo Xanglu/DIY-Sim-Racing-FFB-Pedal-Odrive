@@ -179,7 +179,7 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadPedalConfig_.CV_amp_2 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.CV_freq_2 = 10;
             dap_config_st[pedalIdx].payloadPedalConfig_.maxGameOutput = 100;
-            dap_config_st[pedalIdx].payloadPedalConfig_.kf_modelNoise = 128;
+            dap_config_st[pedalIdx].payloadPedalConfig_.kf_modelNoise = 90;
             dap_config_st[pedalIdx].payloadPedalConfig_.kf_modelOrder = 0;
 
             dap_config_st[pedalIdx].payloadPedalConfig_.positionSmoothingFactor_u8 = 20;
@@ -301,7 +301,7 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.CV_freq_2 = 10;
 
             dap_config_st_rudder.payloadPedalConfig_.maxGameOutput = 100;
-            dap_config_st_rudder.payloadPedalConfig_.kf_modelNoise = 200;
+            dap_config_st_rudder.payloadPedalConfig_.kf_modelNoise = 90;
             dap_config_st_rudder.payloadPedalConfig_.kf_modelOrder = 2;
 
             dap_config_st_rudder.payloadPedalConfig_.positionSmoothingFactor_u8 = 0;

@@ -93,7 +93,7 @@ namespace User.PluginSdkDemo.UIFunction
                     if (Rangeslider_RPM_freq_rudder != null) Rangeslider_RPM_freq_rudder.UpperValue = Settings.rudderRPMMaxFrequency;
                     if (label_RPM_freq_max_rudder != null) label_RPM_freq_max_rudder.Content = "MAX:" + Settings.rudderRPMMaxFrequency + "Hz";
                     if (label_RPM_freq_min_rudder != null) label_RPM_freq_min_rudder.Content = "MIN:" + Settings.rudderRPMMinFrequency + "Hz";
-                    if (Slider_RPM_AMP_rudder != null) Slider_RPM_AMP_rudder.SliderValue = (double)(Settings.rudderRPMAmp) / (double)100.0f;
+                    if (Slider_RPM_AMP_rudder != null) Slider_RPM_AMP_rudder.SliderValue = (double)(Settings.rudderRPMAmp) * 100.0d / 4000.0d;
               
                 }
             }
@@ -165,7 +165,7 @@ namespace User.PluginSdkDemo.UIFunction
             dap_config_st = tmp;
             ConfigChangedEvent(dap_config_st);
             */
-            Settings.rudderRPMAmp = (Byte)(e.NewValue * 100);
+            Settings.rudderRPMAmp = (Byte)(e.NewValue *4000.0d/100.0d);
         }
 
         private void Rangeslider_RPM_freq_rudder_LowerValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)

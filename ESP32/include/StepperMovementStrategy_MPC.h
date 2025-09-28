@@ -10,7 +10,7 @@ float filteredOutput = 0.0f;
 bool expFilterHasBeenInitialized = false;
 // Filter-Variablen
 float RC = 1.0f / (2.0f * 3.14159f * 100.0f); // RC für 20 Hz Eckfrequenz
-float MPC_0_gain=6.2f;
+float MPC_0_gain=8.2f;
 int printStep = 0;
 
 float posArray[10] = {0.0f};

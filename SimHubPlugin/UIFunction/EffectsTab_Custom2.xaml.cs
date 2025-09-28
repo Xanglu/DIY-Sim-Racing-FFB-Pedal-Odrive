@@ -120,7 +120,7 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 try
                 {
-                    control.Slider_CV2_AMP.SliderValue = (double)control.dap_config_st.payloadPedalConfig_.CV_amp_2 / (double)20.0f;
+                    control.Slider_CV2_AMP.SliderValue = (double)control.dap_config_st.payloadPedalConfig_.CV_amp_2 / 1000.0d * 100.0d;
                     control.Slider_CV2_freq.SliderValue = control.dap_config_st.payloadPedalConfig_.CV_freq_2;
                 }
                 catch
@@ -231,7 +231,7 @@ namespace User.PluginSdkDemo.UIFunction
         private void Slider_CV2_AMP_SliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.CV_amp_2 = (Byte)(e.NewValue * 20);
+            tmp.payloadPedalConfig_.CV_amp_2 = (Byte)(e.NewValue * 1000.0d / 100.0d);
             dap_config_st = tmp;
             ConfigChangedEvent(dap_config_st);
         }

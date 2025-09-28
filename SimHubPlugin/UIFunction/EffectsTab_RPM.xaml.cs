@@ -129,7 +129,7 @@ namespace User.PluginSdkDemo.UIFunction
                     control.Rangeslider_RPM_freq.UpperValue = control.dap_config_st.payloadPedalConfig_.RPM_max_freq;
                     control.label_RPM_freq_max.Content = "MAX:" + control.dap_config_st.payloadPedalConfig_.RPM_max_freq + "Hz";
                     control.label_RPM_freq_min.Content = "MIN:" + control.dap_config_st.payloadPedalConfig_.RPM_min_freq + "Hz";
-                    control.Slider_RPM_AMP.SliderValue = (double)(control.dap_config_st.payloadPedalConfig_.RPM_AMP) / (double)100.0f;
+                    control.Slider_RPM_AMP.SliderValue = (double)(control.dap_config_st.payloadPedalConfig_.RPM_AMP) * (double)100.0d/ 4000.0d;
                     control.update_plot_RPM();
                 }
                 catch
@@ -175,7 +175,7 @@ namespace User.PluginSdkDemo.UIFunction
         private void Slider_RPM_AMP_SliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.RPM_AMP = (Byte)(e.NewValue * 100);
+            tmp.payloadPedalConfig_.RPM_AMP = (Byte)(e.NewValue *4000.0d/100.0d);
             dap_config_st = tmp;
             ConfigChangedEvent(dap_config_st);
             update_plot_RPM();

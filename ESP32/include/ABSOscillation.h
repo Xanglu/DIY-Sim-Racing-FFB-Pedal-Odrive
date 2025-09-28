@@ -322,13 +322,14 @@ class Road_impact_effect
 
   }
 };
-//Wheel slip
+//Custom effects
 class Custom_vibration {
 private:
   long _timeLastTriggerMillis;
   long _CVTimeMillis;
   long _lastCallTimeMillis = 0;
-  
+  float CV_amp = 0.0f;
+
 
 public:
   Custom_vibration()
@@ -341,13 +342,12 @@ public:
     _timeLastTriggerMillis = millis();
   }
   
-  void forceOffset(float CV_freq, float CV_amp) {
-
-
+  void forceOffset(float CV_freq, float CV_amp_in_percent, float force_range) 
+  {
     long timeNowMillis = millis();
     float timeSinceTrigger = (timeNowMillis - _timeLastTriggerMillis);
     float CVForceOffset = 0.0f;
-
+    CV_amp = CV_amp_in_percent * 0.001f *force_range;
 
     if (timeSinceTrigger > CV_ACTIVE_TIME_PER_TRIGGER_MILLIS)
     {

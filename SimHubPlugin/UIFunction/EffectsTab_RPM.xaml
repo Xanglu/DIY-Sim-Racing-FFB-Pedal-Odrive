@@ -36,7 +36,7 @@
 
 
 
-                <localUI:SliderWithLabel x:Name="Slider_RPM_AMP" Width="400" Height="40" TickFrequency="0.01" MaxValue="2" SliderLength="400" Unit="kg" SliderName="Effect Amplitude" SliderValueChanged="Slider_RPM_AMP_SliderValueChanged"/>
+                <localUI:SliderWithLabel x:Name="Slider_RPM_AMP" Width="400" Height="40" TickFrequency="0.025" MaxValue="5" SliderLength="400" Unit="% of Force Range" SliderName="Effect Amplitude" SliderValueChanged="Slider_RPM_AMP_SliderValueChanged"/>
                 <StackPanel Width="400" Height="50">
                     <StackPanel Width="400" Height="12" Orientation="Horizontal">
                         <Label x:Name="label_RPM_freq"  Width="250" Foreground="White" RenderTransformOrigin="0.5,0.5" Canvas.Top="3" FontSize="10" FontFamily="Arial" Canvas.Left="5" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Effect Frequency:" Height="12" Padding="0,0,0,0"/>

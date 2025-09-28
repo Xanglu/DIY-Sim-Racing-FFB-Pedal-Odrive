@@ -27,7 +27,7 @@
 
                 </Canvas>
 
-                <localUI:SliderWithLabel x:Name="Slider_BP_AMP" Width="400" Height="40" TickFrequency="0.01" SliderLength="400" MaxValue="2" SliderName="Bite Point Amplitude" Unit="kg" SliderValueChanged="Slider_BP_AMP_SliderValueChanged"/>
+                <localUI:SliderWithLabel x:Name="Slider_BP_AMP" Width="400" Height="40" TickFrequency="0.1" SliderLength="400" MaxValue="20" SliderName="Bite Point Amplitude" Unit="% of Force Range" SliderValueChanged="Slider_BP_AMP_SliderValueChanged"/>
                 <localUI:SliderWithLabel x:Name="Slider_BP_freq" Width="400" Height="40" Unit="Hz" SliderLength="400" MinValue="10" MaxValue="50" SliderName="Bite Point Frequency" SliderValueChanged="Slider_BP_freq_SliderValueChanged"/>
 
             </StackPanel>
