@@ -125,7 +125,7 @@ namespace User.PluginSdkDemo.UIFunction
                     switch (newData.payloadPedalConfig_.absForceOrTarvelBit)
                     {
                         case 0:
-                            control.Slider_ABS_AMP.Unit = "kg";
+                            control.Slider_ABS_AMP.Unit = "%";
                             break;
                         case 1:
                             control.Slider_ABS_AMP.Unit = "%";
