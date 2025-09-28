@@ -121,7 +121,7 @@ namespace User.PluginSdkDemo.UIFunction
                 try
                 {
                     control.Slider_ABS_freq.SliderValue = newData.payloadPedalConfig_.absFrequency;
-                    control.Slider_ABS_AMP.SliderValue = ((double)newData.payloadPedalConfig_.absAmplitude) / (double)20.0f;
+                    control.Slider_ABS_AMP.SliderValue = ((double)newData.payloadPedalConfig_.absAmplitude) /1000.0d *100.0d;
                     switch (newData.payloadPedalConfig_.absForceOrTarvelBit)
                     {
                         case 0:
@@ -198,13 +198,13 @@ namespace User.PluginSdkDemo.UIFunction
         private void Slider_ABS_AMP_SliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.absAmplitude = (Byte)(e.NewValue * 20);
+            tmp.payloadPedalConfig_.absAmplitude = (Byte)(e.NewValue * 1000.0d / 100.0d);
             dap_config_st = tmp;
             
             switch (dap_config_st.payloadPedalConfig_.absForceOrTarvelBit)
             {
                 case 0:
-                    Slider_ABS_AMP.Unit = "kg";
+                    Slider_ABS_AMP.Unit = "%";
                     //label_ABS_AMP.Content = "ABS/TC Amplitude: " + (float)dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_.absAmplitude / 20.0f + "kg";
                     break;
                 case 1:
@@ -262,7 +262,7 @@ namespace User.PluginSdkDemo.UIFunction
                     switch (dap_config_st.payloadPedalConfig_.absForceOrTarvelBit)
                     {
                         case 0:
-                            Slider_ABS_AMP.Unit = "kg";
+                            Slider_ABS_AMP.Unit = "%";
                             break;
                         case 1:
                             Slider_ABS_AMP.Unit = "%";                          

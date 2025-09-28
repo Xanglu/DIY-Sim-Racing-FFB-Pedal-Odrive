@@ -197,6 +197,8 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadPedalConfig_.stepLossFunctionFlags_u8 = 0b11;
             dap_config_st[pedalIdx].payloadPedalConfig_.kf_modelNoise_joystick = 1;
             dap_config_st[pedalIdx].payloadPedalConfig_.kf_Joystick_u8 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.positionSmoothingFactor_u8 = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.minForceForEffects = 0;
         }
 
         public void DAP_config_set_default_rudder()
@@ -321,6 +323,7 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.kf_Joystick_u8 = 1;
             dap_config_st_rudder.payloadPedalConfig_.servoIdleTimeout = 0;
             dap_config_st_rudder.payloadPedalConfig_.debug_flags_0 = 0;
+            dap_config_st_rudder.payloadPedalConfig_.minForceForEffects = 0;
         }
         public byte[] getBytesPayload(payloadPedalConfig aux)
         {

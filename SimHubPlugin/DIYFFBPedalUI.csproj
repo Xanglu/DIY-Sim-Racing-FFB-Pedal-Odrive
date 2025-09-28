@@ -232,6 +232,9 @@
     <Compile Include="UIFunction\EffectsTab_WheelSlip.xaml.cs">
       <DependentUpon>EffectsTab_WheelSlip.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UIFunction\GeneralSetting_GlobalEffects.xaml.cs">
+      <DependentUpon>GeneralSetting_GlobalEffects.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UIFunction\GeneralSetting_KF.xaml.cs">
       <DependentUpon>GeneralSetting_KF.xaml</DependentUpon>
     </Compile>
@@ -377,6 +380,10 @@
     <Page Include="UIFunction\EffectsTab_WheelSlip.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UIFunction\GeneralSetting_GlobalEffects.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="UIFunction\GeneralSetting_KF.xaml">
       <SubType>Designer</SubType>

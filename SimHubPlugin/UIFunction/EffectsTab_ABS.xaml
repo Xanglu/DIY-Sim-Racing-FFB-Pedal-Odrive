@@ -53,7 +53,7 @@
                 </StackPanel>
 
 
-                <localUI:SliderWithLabel x:Name="Slider_ABS_AMP" Width="400" Height="40" SliderLength="400" MaxValue="12.5" TickFrequency="0.05" SliderName="ABS/TC Amplitude" Unit="kg" SliderValueChanged="Slider_ABS_AMP_SliderValueChanged" />
+                <localUI:SliderWithLabel x:Name="Slider_ABS_AMP" Width="400" Height="40" SliderLength="400" MaxValue="20" TickFrequency="0.1" SliderName="ABS/TC Amplitude" Unit="%" SliderValueChanged="Slider_ABS_AMP_SliderValueChanged" />
                 <localUI:SliderWithLabel x:Name="Slider_ABS_freq" Width="400" Height="40" SliderLength="400" SliderName="ABS/TC Frequency" MaxValue="50" Unit="Hz" SliderValueChanged="Slider_ABS_freq_SliderValueChanged"/>
 
             </StackPanel>

@@ -703,43 +703,18 @@
                                                 </Border>
                                             </TabItem.Header>
                                             <localFunction:GeneralSetting_KF x:Name="KF_Tab" KF_value="8" KF_selection="2" ConfigChanged="Tab_ConfigChanged"/>
-
+                                        </TabItem>
+                                        <TabItem Width="108" Height="30" Padding="0,0,0,0">
+                                            <TabItem.Header>
+                                                <Border  Width="108" Height="30" Margin="0,0,0,0" >
+                                                    <Label Content="Global Effects"  FontFamily="Arial Black" FontSize="10" Height="30" Width="108" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" ToolTip="Filter used in pedal"  />
+                                                </Border>
+                                            </TabItem.Header>
+                                            <localFunction:GeneralSetting_GlobalEffects x:Name="GlobalEffects_Tab" ConfigChanged="Tab_ConfigChanged"/>
                                         </TabItem>
 
-                                        <!--<TabItem Width="108" Height="30" Padding="0,0,0,0">
-                                            <TabItem.Header>
-                                                <Border  Width="108" Height="30" Margin="0,0,0,0" >
-                                                    <Label Content="Control"  FontFamily="Arial Black" FontSize="10" Height="30" Width="108" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" ToolTip="Control stretegy for Pedal"  />
-                                                </Border>
-                                            </TabItem.Header>
-                                            <localFunction:GeneralSetting_ControlStrategy x:Name="ControlStrategy_Tab" ConfigChanged="Tab_ConfigChanged" />
-                                        </TabItem>-->
 
 
-
-                                        <!--<TabItem Width="108" Height="30" Padding="0,0,0,0">
-                                            <TabItem.Header>
-                                                <Border  Width="108" Height="30" Margin="0,0,0,0" >
-                                                    <Label Content="PID"  FontFamily="Arial Black" FontSize="10" Height="30" Width="108" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" ToolTip="PID control tuning was here"  />
-                                                </Border>
-                                            </TabItem.Header>
-                                            <localFunction:GeneralSetting_PID x:Name="PID_Tab" ConfigChanged="Tab_ConfigChanged"/>
-                                        </TabItem>-->
-
-
-                                        <!--<TabItem Width="108" Height="30" Padding="0,0,0,0">
-                                            <TabItem.Header>
-                                                <Border  Width="108" Height="30" Margin="0,0,0,0" >
-                                                    <Label Content="MPC"  FontFamily="Arial Black" FontSize="10" Width="108" Padding="0,0,0,0" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True"  />
-                                                </Border>
-                                            </TabItem.Header>
-
-
-                                            <localFunction:GeneralSetting_MPC x:Name="MPC_tab" ConfigChanged="Tab_ConfigChanged"/>
-
-                                        </TabItem>-->
-                                        
-                                        
                                     </TabControl>
                                     <TabControl Grid.Column="0" SelectionChanged="TabControl_SelectionChanged_1" HorizontalAlignment="Left" Height="272" Grid.Row="5" VerticalAlignment="Center" Width="540" Padding="0,0,0,0" BorderThickness="0,0,0,0" Background="#00252525" Foreground="Transparent" Margin="0,3,0,0">
                                         <TabControl.Resources>

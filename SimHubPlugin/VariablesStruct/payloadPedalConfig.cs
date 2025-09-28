@@ -162,6 +162,7 @@ namespace User.PluginSdkDemo
 
 
         public byte positionSmoothingFactor_u8;
+        public byte minForceForEffects;
 
     }
 }

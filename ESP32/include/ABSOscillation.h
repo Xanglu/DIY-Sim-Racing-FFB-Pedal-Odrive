@@ -67,10 +67,10 @@ public:
       float absAmp_fl32 = 0.0f;
       switch (absForceOrTarvelBit) {
         case 0:
-          absAmp_fl32 = calcVars_st->absAmplitude; 
+          absAmp_fl32 = calcVars_st->absAmplitude* calcVars_st->Force_Range; 
           break;
         case 1:
-          absAmp_fl32 = calcVars_st->stepperPosRange * calcVars_st->absAmplitude * 0.01f; // since absAmplitude is given in percent, needs to be scaled to from intervall [0%, 100%] to intervall [0, 1]
+          absAmp_fl32 = calcVars_st->stepperPosRange * calcVars_st->absAmplitude; // since absAmplitude is given in percent, needs to be scaled to from intervall [0%, 100%] to intervall [0, 1]
           break;
         default:
           break;

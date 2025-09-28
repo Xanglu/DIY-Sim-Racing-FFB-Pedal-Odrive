@@ -1903,7 +1903,23 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       effect_force_fl32 = 0.0f;
 
       // only add force when not at min position 
-      if(filteredReading >= dap_calculationVariables_st.Force_Min)
+      if(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.minForceForEffects_u8!=0)
+      {
+        if(filteredReading >= (float)dap_config_pedalUpdateTask_st.payLoadPedalConfig_.minForceForEffects_u8)
+        {
+          // accumulate force offsets
+          effect_force_fl32 += absOscillation.absOscillation_Force_offset;
+          effect_force_fl32 += _BitePointOscillation.BitePoint_Force_offset;
+          effect_force_fl32 += _WSOscillation.WS_Force_offset;
+          effect_force_fl32 += CV1.CV_Force_offset;
+          effect_force_fl32 += CV2.CV_Force_offset;
+
+          // accumulate position offsets
+          effect_pos_fl32 += absOscillation.absOscillation_Position_offset;
+          effect_pos_fl32 += _RPMOscillation.RPM_position_offset;
+        }
+      }
+      else
       {
         // accumulate force offsets
         effect_force_fl32 += absOscillation.absOscillation_Force_offset;
