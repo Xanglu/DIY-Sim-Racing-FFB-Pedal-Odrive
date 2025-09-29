@@ -297,7 +297,7 @@ void DAP_calculationVariables_st::updateFromConfig(DAP_config_st& config_st)
   dampingPress = ((float)config_st.payLoadPedalConfig_.dampingPress) * 0.00015f;
   RPM_max_freq = ((float)config_st.payLoadPedalConfig_.RPM_max_freq);
   RPM_min_freq = ((float)config_st.payLoadPedalConfig_.RPM_min_freq);
-  RPM_AMP = ((float)config_st.payLoadPedalConfig_.RPM_AMP) * Force_Range / 4000.0f;//in kg, max 5% of force range
+  RPM_AMP = ((float)config_st.payLoadPedalConfig_.RPM_AMP) * Force_Range / 5000.0f;//in kg, max 4% of force range
   // Bite point effect;
 
   BP_trigger_value = (float)config_st.payLoadPedalConfig_.BP_trigger_value;

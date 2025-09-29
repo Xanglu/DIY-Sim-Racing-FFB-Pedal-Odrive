@@ -1270,13 +1270,26 @@ xTaskCreatePinnedToCore(
   {
     ActiveSerial->println("ESPNOW task did not started due to Assignment error, please usb connect to Simhub and finish Assignment.");
   }
-  sendESPNOWLog("Pedal:%d espnow is ready",dap_config_st_local.payLoadPedalConfig_.pedal_type);
   #endif
   
   #if defined(CONTROLLER_SPECIFIC_VIDPID) && defined(USB_JOYSTICK) && !defined(USE_CDC_INSTEAD_OF_UART)
     ActiveSerial->println("Setup Controller");
     SetupController_USB(dap_config_st_local.payLoadPedalConfig_.pedal_type);
     delay(500);
+  #endif
+  #ifdef ESPNOW_Enable
+    //print out basic pedal info via espnow
+    sendESPNOWLog("Pedal:%d DAP version: %d", dap_config_st_local.payLoadPedalConfig_.pedal_type, DAP_VERSION_CONFIG);
+    delay(2);
+    sendESPNOWLog("Pedal:%d Control Board: %s, Firmware: %s", dap_config_st_local.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, DAP_FIRMWARE_VERSION);
+    delay(2);
+    sendESPNOWLog("Pedal:%d Servo Voltage: %.0f V, Rail pitch set to %d mm.",dap_config_st_local.payLoadPedalConfig_.pedal_type, (float)stepper->getServosVoltage()/10.0f , dap_config_st_local.payLoadPedalConfig_.spindlePitch_mmPerRev_u8);
+    delay(2);
+    sendESPNOWLog("Pedal:%d Loadcell shifting: %.3f kg, Stdev: %.4f",dap_config_st_local.payLoadPedalConfig_.pedal_type, loadcell->getShiftingEstimate(),loadcell->getSTDEstimate());
+    delay(2);
+    sendESPNOWLog("Pedal:%d Min pos: %d, Max pos: %d, Current pos: %d",dap_config_st_local.payLoadPedalConfig_.pedal_type, stepper->getLimitMin(), stepper->getLimitMax(), stepper->getCurrentPosition());
+    delay(2);
+    sendESPNOWLog("Pedal:%d Setup end.",dap_config_st_local.payLoadPedalConfig_.pedal_type);
   #endif
   ActiveSerial->println("Setup end");
   #ifdef USING_LED
@@ -3141,12 +3154,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
   {
       if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0) {
 
-        //restart from espnow
-        if(ESPNow_restart)
-        {
-          ActiveSerial->println("ESP restart by ESP now request");
-          ESP.restart();
-        }
+
 
         
         //basic state sendout interval
@@ -3158,7 +3166,14 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
         }
         DAP_config_st espnow_dap_config_st;
         global_dap_config_class.getConfig(&espnow_dap_config_st, 500);
-
+        //restart from espnow
+        if(ESPNow_restart)
+        {
+          ActiveSerial->println("ESP restart by ESPnow request");
+          sendESPNOWLog("Pedal:%d restarted by request", espnow_dap_config_st.payLoadPedalConfig_.pedal_type);
+          delay(2);
+          ESP.restart();
+        }
         //entend state send out interval
         if((millis()-extend_state_update_last>extendStateUpdateInterval) && espnow_dap_config_st.payLoadPedalConfig_.debug_flags_0 == DEBUG_INFO_0_STATE_EXTENDED_INFO_STRUCT)
         {
@@ -3399,6 +3414,8 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             dap_config_st_local_ptr->payloadFooter_.checkSum = crc;
             ESPNow.send_message(broadcast_mac,(uint8_t *) & espnow_dap_config_st, sizeof(espnow_dap_config_st));
             ESPNow_config_request=false;
+            sendESPNOWLog("Pedal:%d Config returned by user request", espnow_dap_config_st.payLoadPedalConfig_.pedal_type);
+            delay(2);
           }
 
 
@@ -3487,6 +3504,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
           {
             #ifdef ESPNow_S3
               ActiveSerial->println("Restart into Download mode");
+              sendESPNOWLog("Pedal:%d restart into Download mode", espnow_dap_config_st.payLoadPedalConfig_.pedal_type);
               delay(1000);
               REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
               ESP.restart();
@@ -3602,6 +3620,9 @@ void miscTask( void * pvParameters )
       else
       {
         ActiveSerial->println("Auto save: save config in pedal");
+        #ifdef ESPNOW_Enable
+          sendESPNOWLog("Pedal:%d Auto save config in pedal", misc_dap_config_st.payLoadPedalConfig_.pedal_type);
+        #endif
         global_dap_config_class.storeConfigToEprom();
         previewConfigGet_b=false;
         #ifdef USING_BUZZER
