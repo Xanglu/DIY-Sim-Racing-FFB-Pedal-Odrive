@@ -845,31 +845,25 @@ namespace User.PluginSdkDemo
                     
                 }
 
-                if (((string)pluginManager.GetPropertyValue("DataCorePlugin.CurrentGame")) == "FlightSimulator2020" || ((string)pluginManager.GetPropertyValue("DataCorePlugin.CurrentGame")) == "FlightSimulator2024")
+                if (((string)pluginManager.GetPropertyValue("DataCorePlugin.CurrentGame")) == "FlightSimulator2020" || ((string)pluginManager.GetPropertyValue("DataCorePlugin.CurrentGame")) == "FlightSimulator2024"|| ((string)pluginManager.GetPropertyValue("DataCorePlugin.CurrentGame")) == "DCS")
                 {
-                    MSFS_RPM_Value_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.GeneralEngPctMaxRPM1"));
-                    //RUDDER_DEFLECTION_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.RUDDER_DEFLECTION")); 
-                    RELATIVE_WIND_VELOCITY_BODY_Z_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.AircraftWindZ"));
-                    ACCELERATION_BODY_Z_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.AccelerationBodyZ"));
-                    ACCELERATION_BODY_Y_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.AccelerationBodyY"));
-                    Flight_running_simhub = true;
-                }
-                else
-                {
-                    MSFS_RPM_Value_Simhub = 0;
-                    //RUDDER_DEFLECTION_Simhub = 0; 
-                    RELATIVE_WIND_VELOCITY_BODY_Z_Simhub = 0;
-                    ACCELERATION_BODY_Z_Simhub = 0;
-                    ACCELERATION_BODY_Y_Simhub = 0;
-                    Flight_running_simhub = false;
-                }
-                if (((string)pluginManager.GetPropertyValue("DataCorePlugin.CurrentGame")) == "DCS")
-                {
-                    MSFS_RPM_Value_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.EngineInfo.Rpm.Left"));
-                    //RUDDER_DEFLECTION_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.RUDDER_DEFLECTION")); 
-                    RELATIVE_WIND_VELOCITY_BODY_Z_Simhub = 0;
-                    ACCELERATION_BODY_Z_Simhub = 0;
-                    ACCELERATION_BODY_Y_Simhub = 0;
+                    if (((string)pluginManager.GetPropertyValue("DataCorePlugin.CurrentGame")) == "FlightSimulator2020" || ((string)pluginManager.GetPropertyValue("DataCorePlugin.CurrentGame")) == "FlightSimulator2024")
+                    {
+                        MSFS_RPM_Value_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.GeneralEngPctMaxRPM1"));
+                        //RUDDER_DEFLECTION_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.RUDDER_DEFLECTION")); 
+                        RELATIVE_WIND_VELOCITY_BODY_Z_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.AircraftWindZ"));
+                        ACCELERATION_BODY_Z_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.AccelerationBodyZ"));
+                        ACCELERATION_BODY_Y_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.AccelerationBodyY"));
+                    }
+                    else
+                    {
+                        MSFS_RPM_Value_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.EngineInfo.Rpm.Left"));
+                        //RUDDER_DEFLECTION_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.RUDDER_DEFLECTION")); 
+                        RELATIVE_WIND_VELOCITY_BODY_Z_Simhub = 0;
+                        ACCELERATION_BODY_Z_Simhub = 0;
+                        ACCELERATION_BODY_Y_Simhub = 0;
+                    }
+
                     Flight_running_simhub = true;
                 }
                 else
@@ -1133,11 +1127,11 @@ namespace User.PluginSdkDemo
                                 {
                                     uint PIDX = Rudder_Pedal_idx[i];
                                     tmp.payloadHeader_.PedalTag = (byte)PIDX;
-                                    DAP_action_st* v = &tmp;
                                     tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
                                     tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
                                     tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
                                     tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
+                                    DAP_action_st* v = &tmp;
                                     byte* p = (byte*)v;
                                     tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
                                     SendPedalAction(tmp, (byte)PIDX);

@@ -1959,6 +1959,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       {
         // Rudder only
         Position_Next = MoveByForceTargetingStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity, d_phi_d_x, d_x_hor_d_phi);
+        Position_Next -= effect_pos_fl32;
       }
       else 
       {

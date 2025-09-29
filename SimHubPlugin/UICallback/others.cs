@@ -303,7 +303,7 @@ namespace User.PluginSdkDemo
             dap_config_st_rudder.payloadPedalConfig_.CV_freq_2 = 10;
 
             dap_config_st_rudder.payloadPedalConfig_.maxGameOutput = 100;
-            dap_config_st_rudder.payloadPedalConfig_.kf_modelNoise = 90;
+            dap_config_st_rudder.payloadPedalConfig_.kf_modelNoise = 30;
             dap_config_st_rudder.payloadPedalConfig_.kf_modelOrder = 2;
 
             dap_config_st_rudder.payloadPedalConfig_.positionSmoothingFactor_u8 = 0;
