@@ -19,3 +19,5 @@ SimHubPlugin/obj/Debug/User.PluginSdkDemo.Properties.Resources.resources
 SimHubPlugin/obj/Release/DiyActivePedal.dll
 SimHubPlugin/obj/Release/DiyActivePedal.pdb
 SimHubPlugin/SettingsControlDemo.xaml.cs
+/Firmware_for_V3/SimHubPlugin/obj
+/Firmware_for_V3/SimHubPlugin/.vs
