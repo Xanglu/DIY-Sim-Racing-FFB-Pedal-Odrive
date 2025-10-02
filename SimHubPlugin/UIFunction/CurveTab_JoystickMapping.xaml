@@ -23,7 +23,7 @@
                     <Label Content="JOYSTICK MAPPING" Width="200" Foreground="White" FontFamily="Arial Black" HorizontalAlignment="Center" Margin="70,0,0,0" Height="20" VerticalAlignment="Top" Padding="0,0,0,0" VerticalContentAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Height="220" Width="540" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,5,0,0">
-                    <Canvas x:Name="mainCanvas" Height="200" Width="400" Background="#7F20232F" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="70,0,0,0" MouseRightButtonDown="Canvas_MouseRightButtonDown">
+                    <Canvas x:Name="mainCanvas" Height="200" Width="400" Background="#7F20232F" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="70,0,0,0" MouseRightButtonDown="Canvas_MouseRightButtonDown" ToolTip="Right-click on the canvas to add a control point, right-click a point to remove it">
                         <TextBlock x:Name="textDebug" Width="200" Height="10" Foreground="#7FFFFFFF" Text="" FontSize="8" FontFamily="Arial"/>
                         <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" Text="MAPPING" Width="80" Foreground="#7F7D7D7D" RenderTransformOrigin="0.5,0.5" Canvas.Left="-35" Canvas.Top="85" FontFamily="Arial Black" Height="13">
                             <TextBlock.RenderTransform>
