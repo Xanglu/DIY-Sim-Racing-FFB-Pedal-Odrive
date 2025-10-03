@@ -319,7 +319,7 @@ namespace User.PluginSdkDemo.UIFunction
             writeForceAndTravelToConfig();
         }
 
-        private void btn_10xcurve_Click(object sender, RoutedEventArgs e)
+        private void btn_logcurve_Click(object sender, RoutedEventArgs e)
         {
             force[0] = 0;
             force[1] = 43;
@@ -342,7 +342,7 @@ namespace User.PluginSdkDemo.UIFunction
             writeForceAndTravelToConfig();
         }
 
-        private void btn_logcurve_Click(object sender, RoutedEventArgs e)
+        private void btn_10xcurve_Click(object sender, RoutedEventArgs e)
         {
             force[0] = 0;
             force[1] = 6;

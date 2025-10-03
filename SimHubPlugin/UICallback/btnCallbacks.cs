@@ -293,7 +293,8 @@ namespace User.PluginSdkDemo
         {
             if (_serial_monitor_window == null || !_serial_monitor_window.IsVisible)
             {
-                if (Pedal_Log_warning_1st_show_b)
+
+                if (Pedal_Log_warning_1st_show_b && Plugin._calculations.BridgeSerialConnectionStatus)
                 {
                     System.Windows.MessageBox.Show("Please connect Pedal via USB to Simhub to get Logs");
                     Pedal_Log_warning_1st_show_b = false;
