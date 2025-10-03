@@ -977,45 +977,7 @@ X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0830\SimHubPlugin\obj\Debu
 X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0830\SimHubPlugin\obj\Debug\DIYFFBPe.469A4AA0.Up2Date
 X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0830\SimHubPlugin\obj\Debug\DiyActivePedal.dll
 X:\AC MOD\private works\ActivePedal\simhub_plugin\V90-0830\SimHubPlugin\obj\Debug\DiyActivePedal.pdb
-C:\Program Files (x86)\SimHub\DiyActivePedal.dll.config
-C:\Program Files (x86)\SimHub\DiyActivePedal.dll
-C:\Program Files (x86)\SimHub\DiyActivePedal.pdb
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DIYFFBPedalUI.csproj.AssemblyReference.cache
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\OnlineProfile.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\SerialMonitor.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DIYFFBPedalControlUI.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIElement\CheckboxWithLabel.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIElement\RSSIBar.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIElement\SliderWithLabel.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_JoystickMapping.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_PedalForceTravel_Modified.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_PedalForceTravel.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_Rudder.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_ABS.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_BitePoint.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_Custom1.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_Custom2.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_GForce.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_RoadImpact.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_RPM.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_RPMRudder.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_RudderACC.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_WheelSlip.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_KF.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_PedalSetting.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_RudderSetting.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\InfoSection_Pedal.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\InfoSection_Rudder.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\InfoSection_System.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\KinematicsTab_Pedal.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SettingSection_Pedal.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SettingSection_Rudder.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SettingSection_System.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SystemSetting_License.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SystemSetting_OTA.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SystemSetting_Profiles.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\UpdateSettingWindow.baml
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIStyles\DefaultStyles.baml
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\OnlineProfile.g.cs
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\SerialMonitor.g.cs
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DIYFFBPedalControlUI.g.cs
@@ -1036,6 +998,7 @@ C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_RPMRudder.g.cs
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_RudderACC.g.cs
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_WheelSlip.g.cs
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_GlobalEffects.g.cs
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_KF.g.cs
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_PedalSetting.g.cs
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_RudderSetting.g.cs
@@ -1053,6 +1016,45 @@ C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\GeneratedInternalTypeHelper.g.cs
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DiyActivePedal_MarkupCompile.cache
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DiyActivePedal_MarkupCompile.lref
+C:\Program Files (x86)\SimHub\DiyActivePedal.dll.config
+C:\Program Files (x86)\SimHub\DiyActivePedal.dll
+C:\Program Files (x86)\SimHub\DiyActivePedal.pdb
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\OnlineProfile.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\SerialMonitor.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DIYFFBPedalControlUI.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIElement\CheckboxWithLabel.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIElement\RSSIBar.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIElement\SliderWithLabel.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_JoystickMapping.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_PedalForceTravel_Modified.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_PedalForceTravel.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\CurveTab_Rudder.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_ABS.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_BitePoint.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_Custom1.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_Custom2.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_GForce.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_RoadImpact.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_RPM.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_RPMRudder.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_RudderACC.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\EffectsTab_WheelSlip.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_GlobalEffects.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_KF.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_PedalSetting.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_RudderSetting.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\InfoSection_Pedal.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\InfoSection_Rudder.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\InfoSection_System.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\KinematicsTab_Pedal.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SettingSection_Pedal.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SettingSection_Rudder.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SettingSection_System.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SystemSetting_License.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SystemSetting_OTA.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\SystemSetting_Profiles.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\UpdateSettingWindow.baml
+C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIStyles\DefaultStyles.baml
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DiyActivePedal.g.resources
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\User.PluginSdkDemo.Properties.Resources.resources
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DIYFFBPedalUI.csproj.GenerateResource.cache
@@ -1060,5 +1062,3 @@ C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DIYFFBPedalUI.csproj.CopyComplete
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DiyActivePedal.dll
 C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\DiyActivePedal.pdb
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_GlobalEffects.g.cs
-C:\Users\chris\OneDrive\Desktop\GIT\DIY-Sim-Racing-Active-Pedal\SimHubPlugin\obj\Debug\UIFunction\GeneralSetting_GlobalEffects.baml

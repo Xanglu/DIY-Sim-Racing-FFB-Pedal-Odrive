@@ -158,7 +158,9 @@ namespace User.PluginSdkDemo
             InitializeComponent();
             
             //setting drawing color with Simhub theme workaround
-            SolidColorBrush buttonBackground_ = btn_update.Background as SolidColorBrush;
+            //SolidColorBrush buttonBackground_ = btn_update.Background as SolidColorBrush;
+            SolidColorBrush buttonBackground_ = btn_SendConfig.Background as SolidColorBrush;
+            
 
             Color color = Color.FromArgb(150, buttonBackground_.Color.R, buttonBackground_.Color.G, buttonBackground_.Color.B);
             Color color_2 = Color.FromArgb(200, buttonBackground_.Color.R, buttonBackground_.Color.G, buttonBackground_.Color.B);
@@ -242,8 +244,95 @@ namespace User.PluginSdkDemo
         double[] timeCollector = { 0, 0, 0,0 };
 
 
-        
-        
+
+        private void SerialPortSelection_DropDownOpened(object sender, EventArgs e)
+        {
+            // 1. Store the currently selected value, if any.
+            var currentSelectedValue = SerialPortSelection.SelectedValue;
+
+            // 2. Your logic to get the updated list of items.
+            //    For example, querying for available serial ports.
+            var updatedPortList = GetAvailableSerialPorts(); // This is your custom method.
+
+            //UpdateSerialPortList_click();
+
+            // 3. Assign the new list to the ComboBox's ItemsSource.
+            SerialPortSelection.ItemsSource = updatedPortList;
+
+            // 4. (Optional but recommended) Restore the previous selection 
+            //    if it still exists in the new list.
+            if (currentSelectedValue != null)
+            {
+                SerialPortSelection.SelectedValue = currentSelectedValue;
+            }
+        }
+
+        private void ESPNow_SerialPortSelection_DropDownOpened(object sender, EventArgs e)
+        {
+            // 1. Store the currently selected value, if any.
+            var currentSelectedValue = SerialPortSelection.SelectedValue;
+
+            // 2. Your logic to get the updated list of items.
+            //    For example, querying for available serial ports.
+            var updatedPortList = GetAvailableSerialPorts(); // This is your custom method.
+
+            //UpdateSerialPortList_click();
+
+            // 3. Assign the new list to the ComboBox's ItemsSource.
+            SerialPortSelection_ESPNow.ItemsSource = updatedPortList;
+
+            // 4. (Optional but recommended) Restore the previous selection 
+            //    if it still exists in the new list.
+            if (currentSelectedValue != null)
+            {
+                SerialPortSelection_ESPNow.SelectedValue = currentSelectedValue;
+            }
+        }
+
+        // The method that gets called from the DropDownOpened event
+        private List<SerialPortChoice> GetAvailableSerialPorts()
+        {
+            // This is the list we will return
+            var portChoices = new List<SerialPortChoice>();
+
+            // Your logic starts here:
+            //string[] comPorts = System.IO.Ports.SerialPort.GetPortNames();
+
+            // After (guaranteed to be unique)
+            string[] comPorts = System.IO.Ports.SerialPort.GetPortNames().Distinct().ToArray();
+
+            if (comPorts.Length > 0)
+            {
+                // Use a simple loop, Distinct() is good but GetPortNames()
+                // usually doesn't return duplicates anyway.
+                foreach (string portName in comPorts)
+                {
+                    // Get additional details about the port (your helper method)
+                    // Example: ComPortHelper.GetVidPidFromComPort(portName) might return
+                    // an object with a DeviceName property like "USB-SERIAL CH340".
+                    var parseResult = ComPortHelper.GetVidPidFromComPort(portName);
+
+                    // Create a user-friendly display name, e.g., "COM3 USB-SERIAL CH340"
+                    string friendlyName = $"{portName} ({parseResult.DeviceName})";
+
+                    // Add the new object to our list.
+                    // The first parameter is what the user sees.
+                    // The second parameter is the value used by the program.
+                    portChoices.Add(new SerialPortChoice(friendlyName, portName));
+                }
+            }
+            else
+            {
+                // Handle the case where no ports are found
+                portChoices.Add(new SerialPortChoice("No ports found", "NA"));
+            }
+
+            return portChoices;
+        }
+
+
+        // NOTE: You will also need your ComPortHelper class and any other
+        // dependencies like the `Plugin.comportList` if you still need it for other purposes.
 
         public void SerialPortSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
