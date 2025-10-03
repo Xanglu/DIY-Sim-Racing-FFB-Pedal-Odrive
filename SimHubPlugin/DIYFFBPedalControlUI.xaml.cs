@@ -301,6 +301,24 @@ namespace User.PluginSdkDemo
             // After (guaranteed to be unique)
             string[] comPorts = System.IO.Ports.SerialPort.GetPortNames().Distinct().ToArray();
 
+            // 🌟 MODIFIED SECTION STARTS HERE 🌟
+            // Use LINQ to sort the COM ports numerically.
+            comPorts = comPorts
+                .Select(port => new
+                {
+                    Name = port,
+                    // Use Regex to extract the number from the string (e.g., "COM17" -> 17)
+                    Number = int.TryParse(
+                        System.Text.RegularExpressions.Regex.Match(port, @"\d+").Value,
+                        out int num) ? num : int.MaxValue
+                })
+                // Order by the extracted number
+                .OrderBy(p => p.Number)
+                // Select just the port name string back
+                .Select(p => p.Name)
+                .ToArray();
+            // 🌟 MODIFIED SECTION ENDS HERE 🌟
+
             if (comPorts.Length > 0)
             {
                 // Use a simple loop, Distinct() is good but GetPortNames()
