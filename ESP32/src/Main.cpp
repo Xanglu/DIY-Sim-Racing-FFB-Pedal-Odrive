@@ -1200,7 +1200,7 @@ xTaskCreatePinnedToCore(
   #endif
 
   //print pedal role assignment
-  if(dap_config_st_local.payLoadPedalConfig_.pedal_type!=4)
+  if(dap_config_st_local.payLoadPedalConfig_.pedal_type!=PEDAL_ID_UNKNOWN)
   {
     ActiveSerial->print("Pedal Assignment: ");
     ActiveSerial->println(dap_config_st_local.payLoadPedalConfig_.pedal_type);
@@ -1222,13 +1222,13 @@ xTaskCreatePinnedToCore(
     uint8_t CFG1_reading=digitalRead(CFG1);
     uint8_t CFG2_reading=digitalRead(CFG2);
     uint8_t Pedal_assignment=CFG1_reading*2+CFG2_reading*1;//00=clutch 01=brk  02=gas
-    if(Pedal_assignment==3)
+    if(Pedal_assignment==PEDAL_ID_ASSIGNMENT_ERROR)
     {
       ActiveSerial->println("Pedal Type:3, assignment error, please adjust dip switch on control board to finish role assignment.");
     }
     else
     {
-      if(Pedal_assignment!=4)
+      if(Pedal_assignment!=PEDAL_ID_UNKNOWN)
         {
           //ActiveSerial->print("Pedal Type");
           //ActiveSerial->println(Pedal_assignment);

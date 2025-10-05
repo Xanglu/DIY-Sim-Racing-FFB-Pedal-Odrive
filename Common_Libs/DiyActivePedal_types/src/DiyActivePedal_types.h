@@ -17,6 +17,7 @@
 #define DAP_PAYLOAD_TYPE_BRIDGE_STATE 210
 #define DAP_PAYLOAD_TYPE_ACTION_OTA 220
 #define DAP_PAYLOAD_TYPE_ESPNOW_LOG 225
+#define DAP_PAYLOAD_TYPE_ASSIGNMENT 230
 
 
 
@@ -34,7 +35,12 @@ enum pedalStatus{
 enum pedalID{
   PEDAL_ID_CLUTCH,
   PEDAL_ID_BRAKE,
-  PEDAL_ID_THROTTLE
+  PEDAL_ID_THROTTLE,
+  PEDAL_ID_ASSIGNMENT_ERROR,
+  PEDAL_ID_UNKNOWN,
+  PEDAL_ID_TEMP_1,
+  PEDAL_ID_TEMP_2,
+  PEDAL_ID_TEMP_3
 };
 enum class PedalSystemAction{
   NONE,
@@ -43,7 +49,10 @@ enum class PedalSystemAction{
   ENABLE_OTA,     // not in use
   ENABLE_PAIRING, // not in use
   ESP_BOOT_INTO_DOWNLOAD_MODE,
-  PRINT_PEDAL_INFO
+  PRINT_PEDAL_INFO,
+  SET_ASSIGNMENT_0,
+  SET_ASSIGNMENT_1,
+  SET_ASSIGNMENT_2
 };
 enum class RudderAction{
   NONE,
@@ -310,6 +319,12 @@ struct payloadOtaInfo{
     uint8_t WIFI_SSID[30];
     uint8_t WIFI_PASS[30];
 };
+
+struct payloadAssignment{
+  uint8_t device_ID;
+  uint8_t occupy2;
+};
+
 struct payloadFooter {
   // To check if structure is valid
   uint16_t checkSum;
@@ -365,10 +380,25 @@ struct DAP_ESPPairing_st {
   payloadESPNowInfo payloadESPNowInfo_;
   payloadFooter payloadFooter_; 
 };
+
+struct DAP_Assignment_st {
+  payloadHeader payLoadHeader_;
+  payloadAssignment payloadAssignment_;
+  payloadFooter payloadFooter_; 
+};
 struct DAP_Rudder_st {
   payloadHeader payLoadHeader_;
   payloadRudderState payloadRudderState_;
   payloadFooter payloadFooter_; 
+};
+
+struct DAP_Assignement_reg
+{
+  uint8_t payloadType;
+  uint8_t magicKey;
+  uint8_t isAssigned;
+  uint8_t deviceID;
+  uint16_t crc;
 };
 
 struct DAP_calculationVariables_st
