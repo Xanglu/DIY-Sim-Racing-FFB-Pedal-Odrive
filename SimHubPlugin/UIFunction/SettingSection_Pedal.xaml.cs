@@ -147,14 +147,6 @@ namespace User.PluginSdkDemo.UIFunction
                         CheckBox_Pedal_ESPNow_SyncFlag.IsChecked = false;
                     }
 
-                    if (Settings.USING_ESP32S3[Settings.table_selected] == true)
-                    {
-                        CheckBox_USINGESP32S3.IsChecked = true;
-                    }
-                    else
-                    {
-                        CheckBox_USINGESP32S3.IsChecked = false;
-                    }
                     if (Settings.auto_connect_flag[Settings.table_selected] == 1)
                     {
                         checkbox_auto_connect.IsChecked = true;
@@ -352,17 +344,6 @@ namespace User.PluginSdkDemo.UIFunction
             SettingsChangedEvent(Settings);
         }
 
-        private void CheckBox_USINGESP32S3_Checked(object sender, RoutedEventArgs e)
-        {
-            Settings.USING_ESP32S3[Settings.table_selected] = true;
-            SettingsChangedEvent(Settings);
-        }
-
-        private void CheckBox_USINGESP32S3_Unchecked(object sender, RoutedEventArgs e)
-        {
-            Settings.USING_ESP32S3[Settings.table_selected] = false;
-            SettingsChangedEvent(Settings);
-        }
 
         private void dump_pedal_response_to_file_Checked(object sender, RoutedEventArgs e)
         {

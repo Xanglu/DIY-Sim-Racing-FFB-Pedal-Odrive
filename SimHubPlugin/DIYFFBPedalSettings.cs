@@ -38,7 +38,7 @@ namespace User.PluginSdkDemo
         public double kinematicDiagram_zeroPos_OX = 100;
         public double kinematicDiagram_zeroPos_OY = 20;
         public double kinematicDiagram_zeroPos_scale = 1.5;
-        public bool[] USING_ESP32S3 = new bool[3] { false, false, false };
+        //public bool[] USING_ESP32S3 = new bool[3] { false, false, false };
         public bool[] CV1_enable_flag = new bool[3] { false, false, false };
         public int[] CV1_trigger = new int[3] { 0, 0, 0 };
         public string[] CV1_bindings = new string[3] { "", "", "" };

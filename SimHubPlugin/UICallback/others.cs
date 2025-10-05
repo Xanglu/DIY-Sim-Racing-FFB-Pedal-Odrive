@@ -716,6 +716,13 @@ namespace User.PluginSdkDemo
                 // serial port settings
                 //Plugin._serialPort[pedalIdx].BaudRate = 921600;
                 var serialInfo = ComPortHelper.GetVidPidFromComPort(Plugin._serialPort[pedalIdx].PortName);
+                if (serialInfo.Vid == "303A" && serialInfo.Pid == "1001")
+                {
+                    //CDC serial enabled
+                    Plugin.isCdcSerial[pedalIdx] = true;
+                    //MessageBox.Show("CDC connected");
+                }
+
                 if (serialInfo.Vid == "1A86" && serialInfo.Pid == "55D3")
                 {
                     //target CH343
@@ -783,7 +790,7 @@ namespace User.PluginSdkDemo
                         */
                         //
 
-                        if (Plugin.Settings.USING_ESP32S3[pedalIdx] == true)
+                        if (Plugin.isCdcSerial[pedalIdx])
                         {
                             // ESP32 S3
                             Plugin._serialPort[pedalIdx].RtsEnable = false;
@@ -859,7 +866,7 @@ namespace User.PluginSdkDemo
             {
                 // ESP32 S3
                 // RTS/DTR to false before closing port, otherwise device will stall
-                if (Plugin.Settings.USING_ESP32S3[pedalIdx] == true)
+                if (Plugin.isCdcSerial[pedalIdx] == true)
                 {
                     // ESP32 S3
                     Plugin._serialPort[pedalIdx].RtsEnable = false;

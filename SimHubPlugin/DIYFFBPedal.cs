@@ -84,6 +84,7 @@ namespace User.PluginSdkDemo
         public string Current_Game = "";
         public byte TrackSurfaceCondition = 0;
         public bool[] PedalConfigRead_b = new bool[3] { false, false, false };
+        public bool[] isCdcSerial = new bool[3] { false, false, false };
         public List<VidPidResult> comportList = new List<VidPidResult>();
         private const float actionIntervalTolerance = 0.5f;
         //public vJoyInterfaceWrap.vJoy joystick;
