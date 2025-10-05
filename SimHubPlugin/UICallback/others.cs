@@ -722,6 +722,10 @@ namespace User.PluginSdkDemo
                     Plugin.isCdcSerial[pedalIdx] = true;
                     //MessageBox.Show("CDC connected");
                 }
+                else
+                {
+                    Plugin.isCdcSerial[pedalIdx] = false;
+                }
 
                 if (serialInfo.Vid == "1A86" && serialInfo.Pid == "55D3")
                 {
