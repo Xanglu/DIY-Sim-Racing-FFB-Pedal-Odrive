@@ -52,7 +52,9 @@ enum class PedalSystemAction{
   PRINT_PEDAL_INFO,
   SET_ASSIGNMENT_0,
   SET_ASSIGNMENT_1,
-  SET_ASSIGNMENT_2
+  SET_ASSIGNMENT_2,
+  CLEAR_ASSIGNMENT,
+  ASSIGNMENT_CHECK_BEEP
 };
 enum class RudderAction{
   NONE,
@@ -320,9 +322,8 @@ struct payloadOtaInfo{
     uint8_t WIFI_PASS[30];
 };
 
-struct payloadAssignment{
-  uint8_t device_ID;
-  uint8_t occupy2;
+struct payloadAssignmentRequest{
+  uint8_t macAddress[6];
 };
 
 struct payloadFooter {
@@ -381,9 +382,9 @@ struct DAP_ESPPairing_st {
   payloadFooter payloadFooter_; 
 };
 
-struct DAP_Assignment_st {
+struct DAP_AssignmentBoarcast_st {
   payloadHeader payLoadHeader_;
-  payloadAssignment payloadAssignment_;
+  payloadAssignmentRequest payloadAssignmentRequest_;
   payloadFooter payloadFooter_; 
 };
 struct DAP_Rudder_st {
@@ -397,6 +398,7 @@ struct DAP_Assignement_reg
   uint8_t payloadType;
   uint8_t magicKey;
   uint8_t isAssigned;
+  uint8_t isAdvancedPaired;
   uint8_t deviceID;
   uint16_t crc;
 };

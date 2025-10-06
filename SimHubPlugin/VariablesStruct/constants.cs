@@ -57,7 +57,12 @@ namespace User.PluginSdkDemo
         ENABLE_OTA,//not in use
         ENABLE_PAIRING,//not in use
         ESP_BOOT_INTO_DOWNLOAD_MODE,
-        PRINT_PEDAL_INFO
+        PRINT_PEDAL_INFO,
+        SET_ASSIGNMENT_0,
+        SET_ASSIGNMENT_1,
+        SET_ASSIGNMENT_2,
+        CLEAR_ASSIGNMENT,
+        ASSIGNMENT_CHECK_BEEP
     };
     public enum RudderAction
     {
