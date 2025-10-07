@@ -3643,13 +3643,37 @@ void miscTask( void * pvParameters )
       //saveToEEPRomDuration=0;
 
     }
+    #ifdef ESPNOW_Enable
+      //software assignment
+      if(assignmentUpdate_b)
+      {
+        assignmentUpdate_b = false;
+        writeAssignmentToEeprom();
+        delay(1000);
+        //restart after aassignment
+        ESP.restart();
+      }
+      if (assignmentClear_b)
+      {
+        assignmentClear_b = false;
+        clearAssignmentToEeprom();
+        delay(1000);
+        // restart after aassignment
+        ESP.restart();
+      }
+#endif
     #ifdef USING_BUZZER
-      //make buzzer sound actions here
+    // make buzzer sound actions here
       #ifdef ESPNOW_Enable
-        if(Config_update_Buzzer_b)
+        if (Config_update_Buzzer_b)
         {
-          Buzzer.single_beep_tone(700,50);
-          Config_update_Buzzer_b=false;
+          Buzzer.single_beep_tone(700, 50);
+          Config_update_Buzzer_b = false;
+        }
+        if (assignmentUpdateBuzzer_b)
+        {
+          Buzzer.single_beep_tone(700, 50);
+          assignmentUpdateBuzzer_b = false;
         }
       #endif
       if(buzzerBeepAction_b)

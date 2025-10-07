@@ -397,9 +397,10 @@ struct DAP_Assignement_reg
 {
   uint8_t payloadType;
   uint8_t magicKey;
-  uint8_t isAssigned;
   uint8_t isAdvancedPaired;
   uint8_t deviceID;
+  uint8_t pairstatus[4];
+  uint8_t pairedMac[4][6];
   uint16_t crc;
 };
 

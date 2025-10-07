@@ -12,6 +12,8 @@
 //#define ESPNow_debug
 #define ESPNOW_LOG_MAGIC_KEY 0x99
 #define ESPNOW_LOG_MAGIC_KEY_2 0x97
+#define ESPNOW_ASSIGNMENT_MAGIC_KEY 0x99
+#define ASSIGNMENT_EEPROM_OFFSET 9
 uint8_t esp_master[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x31};
 //uint8_t esp_master[] = {0xdc, 0xda, 0x0c, 0x22, 0x8f, 0xd8}; // S3
 //uint8_t esp_master[] = {0x48, 0x27, 0xe2, 0x59, 0x48, 0xc0}; // S2 mini
@@ -50,8 +52,11 @@ bool Get_Rudder_action_b=false;
 bool Get_HeliRudder_action_b=false;
 bool printPedalInfo_b=false;
 bool Config_update_Buzzer_b = false;
+bool assignmentUpdateBuzzer_b = false;
+bool assignmentUpdate_b = false;
+bool assignmentClear_b = false;
 unsigned long Rudder_initialized_time=0;
-
+DAP_Assignement_reg dap_assignement_reg;
 DAP_Rudder_st dap_rudder_receiving;
 DAP_Rudder_st dap_rudder_sending;
 /*
@@ -293,223 +298,235 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
       DAP_actions_st dap_actions_st;
       if(data_len==sizeof(dap_actions_st))
       {
-              
-              memcpy(&dap_actions_st, data, sizeof(DAP_actions_st));
-              //ActiveSerial->readBytes((char*)&dap_actions_st, sizeof(DAP_actions_st));
-              if (dap_actions_st.payLoadHeader_.PedalTag == dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type)
+        memcpy(&dap_actions_st, data, sizeof(DAP_actions_st));
+        // ActiveSerial->readBytes((char*)&dap_actions_st, sizeof(DAP_actions_st));
+        if (dap_actions_st.payLoadHeader_.PedalTag == dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type)
+        {
+          bool structChecker = true;
+          uint16_t crc;
+          if (dap_actions_st.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_ACTION)
+          {
+            structChecker = false;
+            if (ESPNow_error_code == 0)
+            {
+              ESPNow_error_code = 111;
+            }
+          }
+          if (dap_actions_st.payLoadHeader_.version != DAP_VERSION_CONFIG)
+          {
+            structChecker = false;
+            if (ESPNow_error_code == 0)
+            {
+              ESPNow_error_code = 112;
+            }
+          }
+          crc = checksumCalculator((uint8_t *)(&(dap_actions_st.payLoadHeader_)), sizeof(dap_actions_st.payLoadHeader_) + sizeof(dap_actions_st.payloadPedalAction_));
+          if (crc != dap_actions_st.payloadFooter_.checkSum)
+          {
+            structChecker = false;
+            if (ESPNow_error_code == 0)
+            {
+              ESPNow_error_code = 113;
+            }
+          }
+
+          if (structChecker == true)
+          {
+
+            // 2= restart pedal
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::PEDAL_RESTART)
+            {
+              ESPNow_restart = true;
+            }
+            // 3= Wifi OTA
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::ENABLE_OTA)
+            {
+              ESPNow_OTA_enable = true;
+            }
+            // 5= Boot into download mode
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::ESP_BOOT_INTO_DOWNLOAD_MODE)
+            {
+              ESPNOW_BootIntoDownloadMode = true;
+            }
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::PRINT_PEDAL_INFO)
+            {
+              printPedalInfo_b = true;
+            }
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_0)
+            {
+              dap_assignement_reg.deviceID=PEDAL_ID_CLUTCH;
+              assignmentUpdate_b = true;
+            }
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_1)
+            {
+              dap_assignement_reg.deviceID = PEDAL_ID_BRAKE;
+              assignmentUpdate_b = true;
+            }
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_2)
+            {
+              dap_assignement_reg.deviceID = PEDAL_ID_THROTTLE;
+              assignmentUpdate_b = true;
+            }
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::ASSIGNMENT_CHECK_BEEP)
+            {
+              assignmentUpdateBuzzer_b = true;
+            }
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::CLEAR_ASSIGNMENT)
+            {
+              assignmentClear_b = true;
+            }
+            // trigger ABS effect
+            if (dap_actions_st.payloadPedalAction_.triggerAbs_u8 > 0)
+            {
+              absOscillation.trigger();
+              if (dap_actions_st.payloadPedalAction_.triggerAbs_u8 > 1)
               {
-                bool structChecker = true;
-                uint16_t crc;
-                if ( dap_actions_st.payLoadHeader_.payloadType != DAP_PAYLOAD_TYPE_ACTION )
-                { 
-                  structChecker = false;
-                  if(ESPNow_error_code==0)
-                  {
-                    ESPNow_error_code=111;
-                  }
-
-                }
-                if ( dap_actions_st.payLoadHeader_.version != DAP_VERSION_CONFIG ){ 
-                  structChecker = false;
-                  if(ESPNow_error_code==0)
-                  {
-                    ESPNow_error_code=112;
-                  }
-
-                }
-                crc = checksumCalculator((uint8_t*)(&(dap_actions_st.payLoadHeader_)), sizeof(dap_actions_st.payLoadHeader_) + sizeof(dap_actions_st.payloadPedalAction_));
-                if (crc != dap_actions_st.payloadFooter_.checkSum){ 
-                  structChecker = false;
-                  if(ESPNow_error_code==0)
-                  {
-                    ESPNow_error_code=113;
-                  }
-
-                }
-
-
-                if (structChecker == true)
+                dap_calculationVariables_st.TrackCondition = dap_actions_st.payloadPedalAction_.triggerAbs_u8 - 1;
+              }
+              else
+              {
+                dap_calculationVariables_st.TrackCondition = dap_actions_st.payloadPedalAction_.triggerAbs_u8 = 0;
+              }
+            }
+            // RPM effect
+            _RPMOscillation.RPM_value = dap_actions_st.payloadPedalAction_.RPM_u8;
+            // G force effect
+            _G_force_effect.G_value = dap_actions_st.payloadPedalAction_.G_value - 128;
+            // wheel slip
+            if (dap_actions_st.payloadPedalAction_.WS_u8)
+            {
+              _WSOscillation.trigger();
+            }
+            // Road impact && Rudder G impact
+            if (dap_calculationVariables_st.Rudder_status == false)
+            {
+              _Road_impact_effect.Road_Impact_value = dap_actions_st.payloadPedalAction_.impact_value_u8;
+            }
+            else
+            {
+              _rudder_g_force.G_value = dap_actions_st.payloadPedalAction_.impact_value_u8;
+            }
+            // trigger system identification
+            if (dap_actions_st.payloadPedalAction_.startSystemIdentification_u8)
+            {
+              systemIdentificationMode_b = true;
+            }
+            // trigger Custom effect effect 1
+            if (dap_actions_st.payloadPedalAction_.Trigger_CV_1)
+            {
+              CV1.trigger();
+            }
+            // trigger Custom effect effect 2
+            if (dap_actions_st.payloadPedalAction_.Trigger_CV_2)
+            {
+              CV2.trigger();
+            }
+            // trigger return pedal position
+            if (dap_actions_st.payloadPedalAction_.returnPedalConfig_u8)
+            {
+              ESPNow_config_request = true;
+              /*
+              DAP_config_st * dap_config_st_local_ptr;
+              dap_config_st_local_ptr = &dap_config_st;
+              //uint16_t crc = checksumCalculator((uint8_t*)(&(dap_config_st.payLoadHeader_)), sizeof(dap_config_st.payLoadHeader_) + sizeof(dap_config_st.payLoadPedalConfig_));
+              crc = checksumCalculator((uint8_t*)(&(dap_config_st.payLoadHeader_)), sizeof(dap_config_st.payLoadHeader_) + sizeof(dap_config_st.payLoadPedalConfig_));
+              dap_config_st_local_ptr->payloadFooter_.checkSum = crc;
+              ActiveSerial->write((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
+              ActiveSerial->print("\r\n");
+              */
+            }
+            if (dap_actions_st.payloadPedalAction_.Rudder_action == (uint8_t)RudderAction::RUDDER_THROTTLE_AND_BRAKE || dap_actions_st.payloadPedalAction_.Rudder_action == (uint8_t)RudderAction::RUDDER_THROTTLE_AND_CLUTCH)
+            {
+              Get_Rudder_action_b = true;
+              if (dap_actions_st.payloadPedalAction_.Rudder_action == (uint8_t)RudderAction::RUDDER_THROTTLE_AND_CLUTCH)
+              {
+                if (dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type == 2)
                 {
-
-                  
-                  //2= restart pedal
-                  if (dap_actions_st.payloadPedalAction_.system_action_u8==(uint8_t)PedalSystemAction::PEDAL_RESTART)
-                  {
-                    ESPNow_restart = true;
-                  }
-                  //3= Wifi OTA
-                  if (dap_actions_st.payloadPedalAction_.system_action_u8==(uint8_t)PedalSystemAction::ENABLE_OTA)
-                  {
-                    ESPNow_OTA_enable = true;
-                  }
-                  //5= Boot into download mode
-                  if (dap_actions_st.payloadPedalAction_.system_action_u8==(uint8_t)PedalSystemAction::ESP_BOOT_INTO_DOWNLOAD_MODE)
-                  {
-                    ESPNOW_BootIntoDownloadMode = true;
-                  }
-                  if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::PRINT_PEDAL_INFO)
-                  {
-                    printPedalInfo_b = true;
-                  }
-
-                  // trigger ABS effect
-                  if (dap_actions_st.payloadPedalAction_.triggerAbs_u8>0)
-                  {
-                    absOscillation.trigger();
-                    if(dap_actions_st.payloadPedalAction_.triggerAbs_u8>1)
-                    {
-                      dap_calculationVariables_st.TrackCondition=dap_actions_st.payloadPedalAction_.triggerAbs_u8-1;
-                    }
-                    else
-                    {
-                      dap_calculationVariables_st.TrackCondition=dap_actions_st.payloadPedalAction_.triggerAbs_u8=0;
-                    }
-                    
-                  }
-                  //RPM effect
-                  _RPMOscillation.RPM_value=dap_actions_st.payloadPedalAction_.RPM_u8;
-                  //G force effect
-                  _G_force_effect.G_value=dap_actions_st.payloadPedalAction_.G_value-128;       
-                  //wheel slip
-                  if (dap_actions_st.payloadPedalAction_.WS_u8)
-                  {
-                    _WSOscillation.trigger();
-                  }     
-                  //Road impact && Rudder G impact
-                  if(dap_calculationVariables_st.Rudder_status==false)
-                  {
-                    _Road_impact_effect.Road_Impact_value=dap_actions_st.payloadPedalAction_.impact_value_u8;
-                  }
-                  else
-                  {
-                    _rudder_g_force.G_value=dap_actions_st.payloadPedalAction_.impact_value_u8;
-                  }
-                  // trigger system identification
-                  if (dap_actions_st.payloadPedalAction_.startSystemIdentification_u8)
-                  {
-                    systemIdentificationMode_b = true;
-                  }
-                  // trigger Custom effect effect 1
-                  if (dap_actions_st.payloadPedalAction_.Trigger_CV_1)
-                  {
-                    CV1.trigger();
-                  }
-                  // trigger Custom effect effect 2
-                  if (dap_actions_st.payloadPedalAction_.Trigger_CV_2)
-                  {
-                    CV2.trigger();
-                  }
-                  // trigger return pedal position
-                  if (dap_actions_st.payloadPedalAction_.returnPedalConfig_u8)
-                  {
-                    ESPNow_config_request=true;
-                    /*
-                    DAP_config_st * dap_config_st_local_ptr;
-                    dap_config_st_local_ptr = &dap_config_st;
-                    //uint16_t crc = checksumCalculator((uint8_t*)(&(dap_config_st.payLoadHeader_)), sizeof(dap_config_st.payLoadHeader_) + sizeof(dap_config_st.payLoadPedalConfig_));
-                    crc = checksumCalculator((uint8_t*)(&(dap_config_st.payLoadHeader_)), sizeof(dap_config_st.payLoadHeader_) + sizeof(dap_config_st.payLoadPedalConfig_));
-                    dap_config_st_local_ptr->payloadFooter_.checkSum = crc;
-                    ActiveSerial->write((char*)dap_config_st_local_ptr, sizeof(DAP_config_st));
-                    ActiveSerial->print("\r\n");
-                    */
-                  }
-                  if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::RUDDER_THROTTLE_AND_BRAKE || dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::RUDDER_THROTTLE_AND_CLUTCH)
-                  {
-                    Get_Rudder_action_b=true;
-                    if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::RUDDER_THROTTLE_AND_CLUTCH)
-                    {
-                      if (dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type == 2)
-                      {
-                        //Recv_mac=Clu_mac;
-                        memcpy(Recv_mac, Clu_mac, 6);
-                        //ESPNow.add_peer(Recv_mac);
-                      }
-                    }
-                    if(dap_calculationVariables_st.Rudder_status==false)
-                    {
-                      dap_calculationVariables_st.Rudder_status=true;
-                      Rudder_initializing=true;
-                      //ActiveSerial->println("Rudder on");
-                      moveSlowlyToPosition_b=true;
-                      //ActiveSerial->print("status:");
-                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
-                    }
-                    else
-                    {
-                      dap_calculationVariables_st.Rudder_status=false;
-                      //ActiveSerial->println("Rudder off");
-                      Rudder_deinitializing=true;
-                      moveSlowlyToPosition_b=true;
-                      //ActiveSerial->print("status:");
-                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
-                    }
-                  }
-                  if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_BRAKE || dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_CLUTCH)
-                  {
-                    Get_HeliRudder_action_b=true;
-                    if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_CLUTCH)
-                    {
-                      if (dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type == 2)
-                      {
-                        memcpy(Recv_mac, Clu_mac, 6);
-                        //ESPNow.add_peer(Recv_mac);
-                      }
-                    }
-                    if(dap_calculationVariables_st.helicopterRudderStatus==false)
-                    {
-                      dap_calculationVariables_st.helicopterRudderStatus=true;
-                      HeliRudder_initializing=true;
-                      //ActiveSerial->println("Rudder on");
-                      moveSlowlyToPosition_b=true;
-                      //ActiveSerial->print("status:");
-                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
-                    }
-                    else
-                    {
-                      dap_calculationVariables_st.helicopterRudderStatus=false;
-                      //ActiveSerial->println("Rudder off");
-                      HeliRudder_deinitializing=true;
-                      moveSlowlyToPosition_b=true;
-                      //ActiveSerial->print("status:");
-                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
-                    }
-                  }
-                  if(dap_actions_st.payloadPedalAction_.Rudder_brake_action==1)
-                  {
-                    Get_Rudder_action_b=true;
-                    if(dap_calculationVariables_st.rudder_brake_status==false&&dap_calculationVariables_st.Rudder_status==true)
-                    {
-                      dap_calculationVariables_st.rudder_brake_status=true;
-                      //ActiveSerial->println("Rudder brake on");
-                      //ActiveSerial->print("status:");
-                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
-                    }
-                    else
-                    {
-                      dap_calculationVariables_st.rudder_brake_status=false;
-                      //ActiveSerial->println("Rudder brake off");
-                      //ActiveSerial->print("status:");
-                      //ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
-                    }
-                  }
-                  //clear rudder status
-                  if(dap_actions_st.payloadPedalAction_.Rudder_action==(uint8_t)RudderAction::RUDDER_CLEAR_RUDDER_STATUS)
-                  {
-                    dap_calculationVariables_st.Rudder_status=false;
-                    dap_calculationVariables_st.helicopterRudderStatus=false;
-                    dap_calculationVariables_st.rudder_brake_status=false;
-                    //ActiveSerial->println("Rudder Status Clear");
-                    Rudder_deinitializing=true;
-                    HeliRudder_deinitializing=true;
-                    moveSlowlyToPosition_b=true;
-                  }
+                  // Recv_mac=Clu_mac;
+                  memcpy(Recv_mac, Clu_mac, 6);
+                  // ESPNow.add_peer(Recv_mac);
                 }
               }
-
-              
-
-            
-              
+              if (dap_calculationVariables_st.Rudder_status == false)
+              {
+                dap_calculationVariables_st.Rudder_status = true;
+                Rudder_initializing = true;
+                // ActiveSerial->println("Rudder on");
+                moveSlowlyToPosition_b = true;
+                // ActiveSerial->print("status:");
+                // ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
+              }
+              else
+              {
+                dap_calculationVariables_st.Rudder_status = false;
+                // ActiveSerial->println("Rudder off");
+                Rudder_deinitializing = true;
+                moveSlowlyToPosition_b = true;
+                // ActiveSerial->print("status:");
+                // ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
+              }
+            }
+            if (dap_actions_st.payloadPedalAction_.Rudder_action == (uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_BRAKE || dap_actions_st.payloadPedalAction_.Rudder_action == (uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_CLUTCH)
+            {
+              Get_HeliRudder_action_b = true;
+              if (dap_actions_st.payloadPedalAction_.Rudder_action == (uint8_t)RudderAction::HELIRUDDER_THROTTLE_AND_CLUTCH)
+              {
+                if (dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type == 2)
+                {
+                  memcpy(Recv_mac, Clu_mac, 6);
+                  // ESPNow.add_peer(Recv_mac);
+                }
+              }
+              if (dap_calculationVariables_st.helicopterRudderStatus == false)
+              {
+                dap_calculationVariables_st.helicopterRudderStatus = true;
+                HeliRudder_initializing = true;
+                // ActiveSerial->println("Rudder on");
+                moveSlowlyToPosition_b = true;
+                // ActiveSerial->print("status:");
+                // ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
+              }
+              else
+              {
+                dap_calculationVariables_st.helicopterRudderStatus = false;
+                // ActiveSerial->println("Rudder off");
+                HeliRudder_deinitializing = true;
+                moveSlowlyToPosition_b = true;
+                // ActiveSerial->print("status:");
+                // ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
+              }
+            }
+            if (dap_actions_st.payloadPedalAction_.Rudder_brake_action == 1)
+            {
+              Get_Rudder_action_b = true;
+              if (dap_calculationVariables_st.rudder_brake_status == false && dap_calculationVariables_st.Rudder_status == true)
+              {
+                dap_calculationVariables_st.rudder_brake_status = true;
+                // ActiveSerial->println("Rudder brake on");
+                // ActiveSerial->print("status:");
+                // ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
+              }
+              else
+              {
+                dap_calculationVariables_st.rudder_brake_status = false;
+                // ActiveSerial->println("Rudder brake off");
+                // ActiveSerial->print("status:");
+                // ActiveSerial->println(dap_calculationVariables_st.Rudder_status);
+              }
+            }
+            // clear rudder status
+            if (dap_actions_st.payloadPedalAction_.Rudder_action == (uint8_t)RudderAction::RUDDER_CLEAR_RUDDER_STATUS)
+            {
+              dap_calculationVariables_st.Rudder_status = false;
+              dap_calculationVariables_st.helicopterRudderStatus = false;
+              dap_calculationVariables_st.rudder_brake_status = false;
+              // ActiveSerial->println("Rudder Status Clear");
+              Rudder_deinitializing = true;
+              HeliRudder_deinitializing = true;
+              moveSlowlyToPosition_b = true;
+            }
+          }
+        }
       }
       if(data_len==sizeof(DAP_action_ota_st))
       {        
@@ -709,4 +726,86 @@ void sendESPNOWLog(const char *log,...)
   memcpy(&buffer[4], result, logLen);
   ESPNow.send_message(broadcast_mac, (uint8_t *)buffer, 4 + logLen);
   free(result);
+}
+
+void softwareAssignmentInitialize()
+{
+  DAP_Assignement_reg dap_assignement_reg_local;
+  EEPROM.get(ASSIGNMENT_EEPROM_OFFSET, dap_assignement_reg_local);
+  bool structChecker= true;
+  uint16_t crc = checksumCalculator((uint8_t *)(&dap_assignement_reg_local), sizeof(DAP_Assignement_reg) - sizeof(uint16_t));
+  if(dap_assignement_reg_local.payloadType!= DAP_PAYLOAD_TYPE_ASSIGNMENT) structChecker= false;
+  if(dap_assignement_reg_local.magicKey!= ESPNOW_ASSIGNMENT_MAGIC_KEY) structChecker= false;
+  if(crc!=dap_assignement_reg_local.crc) structChecker= false;
+  if (dap_assignement_reg_local.crc != PEDAL_ID_CLUTCH && dap_assignement_reg_local.crc != PEDAL_ID_BRAKE && dap_assignement_reg_local.crc != PEDAL_ID_THROTTLE)
+    structChecker = false;
+  if(structChecker) memcpy(&dap_assignement_reg, &dap_assignement_reg_local, sizeof(DAP_Assignement_reg));
+  else
+  {
+    ActiveSerial->println("Assignment error:");
+    ActiveSerial->print("Payload type expect:");
+    ActiveSerial->print(DAP_PAYLOAD_TYPE_ASSIGNMENT);
+    ActiveSerial->print(" Payload type get:");
+    ActiveSerial->println(dap_assignement_reg_local.payloadType);
+    ActiveSerial->print("Magic key expect:");
+    ActiveSerial->print(ESPNOW_ASSIGNMENT_MAGIC_KEY);
+    ActiveSerial->print(" Magic key get:");
+    ActiveSerial->println(dap_assignement_reg_local.magicKey);
+    ActiveSerial->print("crc expect:");
+    ActiveSerial->print(crc);
+    ActiveSerial->print(" crc get:");
+    ActiveSerial->println(dap_assignement_reg_local.crc);
+    ActiveSerial->print("Pedal ID get:");
+    ActiveSerial->println(dap_assignement_reg_local.deviceID);
+  }
+  if (structChecker)
+  {
+    ActiveSerial->print("Overwritting pedal assignment: ");
+    ActiveSerial->println(dap_assignement_reg_local.deviceID);
+    DAP_config_st dap_config_assignment_init_st;
+    global_dap_config_class.getConfig(&dap_config_assignment_init_st, 500);
+    dap_config_assignment_init_st.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
+    global_dap_config_class.setConfig(dap_config_assignment_init_st);
+    delay(1000);//delay for waiting the config write to global
+  } 
+}
+
+void writeAssignmentToEeprom()
+{
+  ActiveSerial->println("Writting assignment to eeprom.");
+  dap_assignement_reg.magicKey=ESPNOW_ASSIGNMENT_MAGIC_KEY;
+  dap_assignement_reg.payloadType=DAP_PAYLOAD_TYPE_ASSIGNMENT;
+  //refill the crc
+  dap_assignement_reg.crc = checksumCalculator((uint8_t *)(&dap_assignement_reg), sizeof(DAP_Assignement_reg) - sizeof(uint16_t));
+  // write assignment to eeprom
+  EEPROM.put(ASSIGNMENT_EEPROM_OFFSET, dap_assignement_reg);
+  EEPROM.commit();
+  delay(1000);
+  //check the data inside of eeprom
+  DAP_Assignement_reg dap_assignement_reg_local;
+  EEPROM.get(ASSIGNMENT_EEPROM_OFFSET, dap_assignement_reg_local);
+  //list those assignment
+  ActiveSerial->println("check the assignment in eeprom");
+  ActiveSerial->print("Assignment expected:");
+  ActiveSerial->print(dap_assignement_reg.deviceID);
+  ActiveSerial->print(" Assignment get:");
+  ActiveSerial->println(dap_assignement_reg_local.deviceID);
+  ActiveSerial->print("crc expected:");
+  ActiveSerial->print(dap_assignement_reg.crc);
+  ActiveSerial->print(" crc get:");
+  ActiveSerial->println(dap_assignement_reg_local.crc);
+  
+}
+void clearAssignmentToEeprom()
+{
+  ActiveSerial->println("clear assignment from eeprom.");
+  dap_assignement_reg.magicKey = 0;
+  dap_assignement_reg.payloadType = 0;
+  dap_assignement_reg.deviceID = 99;
+  // refill the crc
+  dap_assignement_reg.crc = 0;
+  // write assignment to eeprom
+  EEPROM.put(ASSIGNMENT_EEPROM_OFFSET, dap_assignement_reg);
+  EEPROM.commit();
+  delay(1000);
 }
