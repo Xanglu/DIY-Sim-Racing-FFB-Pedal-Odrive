@@ -1120,7 +1120,6 @@ xTaskCreatePinnedToCore(
 
 
   #if defined(OTA_update)  || defined(OTA_update_ESP32)
-  
     switch(dap_config_st_local.payLoadPedalConfig_.pedal_type)
     {
       case 0:
@@ -1143,55 +1142,10 @@ xTaskCreatePinnedToCore(
         strcpy(APhost, "FFBPedal");
         //APhost="FFBPedal";
         break;        
-
-    }   
-                   
+    }                    
     addScheduledTask(otaUpdateTask, "OTATask", REPETITION_INTERVAL_OTA_TASK_IN_US, TASK_PRIORITY_OTA_TASK, CORE_ID_OTA_TASK, 16000);
-
     delay(200);
   #endif
-
-  //MCP setup
-  #ifdef Using_analog_output_ESP32_S3
-    //Wire.begin(MCP_SDA,MCP_SCL,400000);
-    MCP4725_I2C.begin(MCP_SDA,MCP_SCL,400000);
-    uint8_t i2c_address[8]={0x60,0x61,0x62,0x63,0x64,0x65,0x66,0x67};
-    int index_address=0;
-    int found_address=0;
-    int error;
-    for(index_address=0;index_address<8;index_address++)
-    {
-      MCP4725_I2C.beginTransmission(i2c_address[index_address]);
-      error = MCP4725_I2C.endTransmission();
-      if (error == 0)
-      {
-        ActiveSerial->print("I2C device found at address");
-        ActiveSerial->print(i2c_address[index_address]);
-        ActiveSerial->println("  !");
-        found_address=index_address;
-        break;
-        
-      }
-      else
-      {
-        ActiveSerial->print("try address");
-        ActiveSerial->println(i2c_address[index_address]);
-      }
-    }
-    
-    if(dac.begin(i2c_address[found_address], &MCP4725_I2C)==false)
-    {
-      ActiveSerial->println("Couldn't find MCP, will not have analog output");
-      MCP_status=false;
-    }
-    else
-    {
-      ActiveSerial->println("MCP founded");
-      MCP_status=true;
-      //MCP.begin();
-    }
-  #endif
-
   #ifdef USING_LED
       //pixels.setBrightness(20);
       pixels.setPixelColor(0,0x00,0x00,0xff);//Blue
@@ -1209,87 +1163,85 @@ xTaskCreatePinnedToCore(
   {
     #ifdef PEDAL_HARDWARE_ASSIGNMENT
       ActiveSerial->println("Pedal Role Assignment:4, reading from CFG pins....");
-    #else
-      ActiveSerial->println("Pedal Role Assignment:4, Role assignment Error, Please send the config in to finish role assignment.");
     #endif
   }
-  
+  //enable software assignment reading
+  #if defined(PEDAL_SOFTWARE_ASSIGNMENT) && defined(ESPNOW_Enable)
+    softwareAssignmentInitialize();
+    dap_config_st_local.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
+  #endif
   #ifdef PEDAL_HARDWARE_ASSIGNMENT
     pinMode(CFG1, INPUT_PULLUP);
     pinMode(CFG2, INPUT_PULLUP);
     delay(50); // give the pin time to settle
     ActiveSerial->println("Overriding Pedal Role Assignment from Hardware switch......");
-    uint8_t CFG1_reading=digitalRead(CFG1);
-    uint8_t CFG2_reading=digitalRead(CFG2);
-    uint8_t Pedal_assignment=CFG1_reading*2+CFG2_reading*1;//00=clutch 01=brk  02=gas
-    if(Pedal_assignment==PEDAL_ID_ASSIGNMENT_ERROR)
+    uint8_t CFG1_reading = digitalRead(CFG1);
+    uint8_t CFG2_reading = digitalRead(CFG2);
+    uint8_t Pedal_assignment = CFG1_reading * 2 + CFG2_reading * 1; // 00=clutch 01=brk  02=gas
+    if (Pedal_assignment == PEDAL_ID_ASSIGNMENT_ERROR)
     {
       ActiveSerial->println("Pedal Type:3, assignment error, please adjust dip switch on control board to finish role assignment.");
     }
     else
     {
-      if(Pedal_assignment!=PEDAL_ID_UNKNOWN)
-        {
-          //ActiveSerial->print("Pedal Type");
-          //ActiveSerial->println(Pedal_assignment);
-          if(Pedal_assignment==PEDAL_ID_CLUTCH) ActiveSerial->println("Overriding Pedal as Clutch.");
-          if(Pedal_assignment==PEDAL_ID_BRAKE) ActiveSerial->println("Overriding Pedal as Brake.");
-          if(Pedal_assignment==PEDAL_ID_THROTTLE) ActiveSerial->println("Overriding Pedal as Throttle.");
-          DAP_config_st tmp;
-          global_dap_config_class.getConfig(&tmp, 500);
-          tmp.payLoadPedalConfig_.pedal_type = Pedal_assignment;
-          dap_config_st_local.payLoadPedalConfig_.pedal_type = Pedal_assignment;
-          //global_dap_config_class.setConfig(tmp);
+      if (Pedal_assignment != PEDAL_ID_UNKNOWN)
+      {
+        // ActiveSerial->print("Pedal Type");
+        // ActiveSerial->println(Pedal_assignment);
+        if (Pedal_assignment == PEDAL_ID_CLUTCH)
+          ActiveSerial->println("Overriding Pedal as Clutch.");
+        if (Pedal_assignment == PEDAL_ID_BRAKE)
+          ActiveSerial->println("Overriding Pedal as Brake.");
+        if (Pedal_assignment == PEDAL_ID_THROTTLE)
+          ActiveSerial->println("Overriding Pedal as Throttle.");
+        DAP_config_st tmp;
+        global_dap_config_class.getConfig(&tmp, 500);
+        tmp.payLoadPedalConfig_.pedal_type = Pedal_assignment;
+        dap_config_st_local.payLoadPedalConfig_.pedal_type = Pedal_assignment;
+        // global_dap_config_class.setConfig(tmp);
 
-          configDataPackage_t configPackage_st;
-          configPackage_st.config_st = tmp;
-          xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
-          delay(1000); //delay for writting config into global
-        }
-        else
-        {
-          ActiveSerial->println("Asssignment error, defective pin connection, pelase connect USB and send a config to finish assignment");
-        }
+        configDataPackage_t configPackage_st;
+        configPackage_st.config_st = tmp;
+        xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
+        delay(1000); // delay for writting config into global
+      }
+      else
+      {
+        ActiveSerial->println("Asssignment error, defective pin connection, pelase connect USB and send a config to finish assignment");
+      }
     }
-   
+
   #endif
 
-  //enable ESP-NOW
+    //enable ESP-NOW
   #ifdef ESPNOW_Enable
-  dap_calculationVariables_st.rudder_brake_status=false;
-  if(dap_config_st_local.payLoadPedalConfig_.pedal_type==0||dap_config_st_local.payLoadPedalConfig_.pedal_type==1||dap_config_st_local.payLoadPedalConfig_.pedal_type==2)
-  {
+    dap_calculationVariables_st.rudder_brake_status=false;
     ActiveSerial->println("Starting ESP now tasks");
     ESPNow_initialize();
-    ActiveSerial->println("ESPNOW initialized, add task in");                         
+    ActiveSerial->println("ESPNOW initialized, add task in");
     addScheduledTask(espNowCommunicationTaskTx, "ESPNOW_update_Task", REPETITION_INTERVAL_ESPNOW_TASK_IN_US, TASK_PRIORITY_ESPNOW_TASK, CORE_ID_ESPNOW_TASK, 10000);
     ActiveSerial->println("ESPNOW task added");
     delay(500);
-  }
-  else
-  {
-    ActiveSerial->println("ESPNOW task did not started due to Assignment error, please usb connect to Simhub and finish Assignment.");
-  }
   #endif
-  
+
   #if defined(CONTROLLER_SPECIFIC_VIDPID) && defined(USB_JOYSTICK) && !defined(USE_CDC_INSTEAD_OF_UART)
-    ActiveSerial->println("Setup Controller");
-    SetupController_USB(dap_config_st_local.payLoadPedalConfig_.pedal_type);
-    delay(500);
+      ActiveSerial->println("Setup Controller");
+      SetupController_USB(dap_config_st_local.payLoadPedalConfig_.pedal_type);
+      delay(500);
   #endif
   #ifdef ESPNOW_Enable
-    //print out basic pedal info via espnow
-    sendESPNOWLog("Pedal:%d DAP version: %d", dap_config_st_local.payLoadPedalConfig_.pedal_type, DAP_VERSION_CONFIG);
-    delay(2);
-    sendESPNOWLog("Pedal:%d Control Board: %s, Firmware: %s", dap_config_st_local.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, DAP_FIRMWARE_VERSION);
-    delay(2);
-    sendESPNOWLog("Pedal:%d Servo Voltage: %.0f V, Rail pitch set to %d mm.",dap_config_st_local.payLoadPedalConfig_.pedal_type, (float)stepper->getServosVoltage()/10.0f , dap_config_st_local.payLoadPedalConfig_.spindlePitch_mmPerRev_u8);
-    delay(2);
-    sendESPNOWLog("Pedal:%d Loadcell shifting: %.3f kg, Stdev: %.4f",dap_config_st_local.payLoadPedalConfig_.pedal_type, loadcell->getShiftingEstimate(),loadcell->getSTDEstimate());
-    delay(2);
-    sendESPNOWLog("Pedal:%d Min pos: %d, Max pos: %d, Current pos: %d",dap_config_st_local.payLoadPedalConfig_.pedal_type, stepper->getLimitMin(), stepper->getLimitMax(), stepper->getCurrentPosition());
-    delay(2);
-    sendESPNOWLog("Pedal:%d Setup end.",dap_config_st_local.payLoadPedalConfig_.pedal_type);
+      //print out basic pedal info via espnow
+      sendESPNOWLog("Pedal:%d DAP version: %d", dap_config_st_local.payLoadPedalConfig_.pedal_type, DAP_VERSION_CONFIG);
+      delay(2);
+      sendESPNOWLog("Pedal:%d Control Board: %s, Firmware: %s", dap_config_st_local.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, DAP_FIRMWARE_VERSION);
+      delay(2);
+      sendESPNOWLog("Pedal:%d Servo Voltage: %.0f V, Rail pitch set to %d mm.",dap_config_st_local.payLoadPedalConfig_.pedal_type, (float)stepper->getServosVoltage()/10.0f , dap_config_st_local.payLoadPedalConfig_.spindlePitch_mmPerRev_u8);
+      delay(2);
+      sendESPNOWLog("Pedal:%d Loadcell shifting: %.3f kg, Stdev: %.4f",dap_config_st_local.payLoadPedalConfig_.pedal_type, loadcell->getShiftingEstimate(),loadcell->getSTDEstimate());
+      delay(2);
+      sendESPNOWLog("Pedal:%d Min pos: %d, Max pos: %d, Current pos: %d",dap_config_st_local.payLoadPedalConfig_.pedal_type, stepper->getLimitMin(), stepper->getLimitMax(), stepper->getCurrentPosition());
+      delay(2);
+      sendESPNOWLog("Pedal:%d Setup end.",dap_config_st_local.payLoadPedalConfig_.pedal_type);
   #endif
   ActiveSerial->println("Setup end");
   #ifdef USING_LED
@@ -3133,6 +3085,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
   uint joystickPacketInterval=3;
   uint basicStateUpdateInterval=3;
   uint extendStateUpdateInterval=10;
+  uint assignmentPacketUpdateInterval = 100;
   bool Pairing_timeout_status=false;
   bool building_dap_esppairing_lcl =false;
   unsigned long Pairing_state_start;
@@ -3142,6 +3095,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
   unsigned long extend_state_update_last=0;
   unsigned long rudderPacketsUpdateLast=0;
   unsigned long joystickPacketsUpdateLast=0;
+  unsigned long assignmentPacketUpdateLast = 0;
   uint32_t espNowTask_stackSizeIdx_u32 = 0;
 
   int error_count=0;
@@ -3149,15 +3103,14 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
   int ESPNow_no_device_count=0;
   bool basic_state_send_b=false;
   bool extend_state_send_b=false;
+  bool noAssignmentStatus=false;
+  bool assignmentUpdatePacketSend_b=false;
   uint8_t error_out;
 
   for(;;)
   {
       if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0) {
 
-
-
-        
         //basic state sendout interval
         if(millis()-basic_state_update_last>basicStateUpdateInterval)
         {
@@ -3167,6 +3120,10 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
         }
         DAP_config_st espnow_dap_config_st;
         global_dap_config_class.getConfig(&espnow_dap_config_st, 500);
+        if (espnow_dap_config_st.payLoadPedalConfig_.pedal_type != PEDAL_ID_CLUTCH && espnow_dap_config_st.payLoadPedalConfig_.pedal_type != PEDAL_ID_BRAKE && espnow_dap_config_st.payLoadPedalConfig_.pedal_type != PEDAL_ID_THROTTLE)
+        {
+          noAssignmentStatus=true;
+        }
         //restart from espnow
         if(ESPNow_restart)
         {
@@ -3182,7 +3139,11 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
           extend_state_update_last=millis();
           
         }
-
+        if (millis() - assignmentPacketUpdateLast > assignmentPacketUpdateInterval)
+        {
+          assignmentUpdate_b = true;
+          assignmentPacketUpdateLast = millis();
+        }
         // activate profiler depending on pedal config
         if (espnow_dap_config_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) 
         {
@@ -3342,8 +3303,24 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
           profiler_espNow.end(1);
 
           profiler_espNow.start(2);
-
-          if(basic_state_send_b)
+          // assignment request packet send out
+          if(assignmentUpdate_b && noAssignmentStatus)
+          {
+            assignmentUpdate_b=false;
+            DAP_AssignmentBoardcast_st dap_assignmentBoardcast_st;
+            dap_assignmentBoardcast_st.payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
+            dap_assignmentBoardcast_st.payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
+            dap_assignmentBoardcast_st.payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
+            dap_assignmentBoardcast_st.payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
+            dap_assignmentBoardcast_st.payloadAssignmentRequest_.assignmentAction=1;
+            memcpy(dap_assignmentBoardcast_st.payloadAssignmentRequest_.macAddress,esp_Mac,6);
+            uint16_t crc = 0;
+            crc = checksumCalculator((uint8_t *)(&(dap_assignmentBoardcast_st.payLoadHeader_)), sizeof(dap_assignmentBoardcast_st.payLoadHeader_) + sizeof(dap_assignmentBoardcast_st.payloadAssignmentRequest_));
+            dap_assignmentBoardcast_st.payloadFooter_.checkSum=crc;
+            ESPNow.send_message(broadcast_mac, (uint8_t *)&dap_assignmentBoardcast_st, sizeof(DAP_AssignmentBoardcast_st));
+          }
+          // basic state packet send out  
+          if(basic_state_send_b && !noAssignmentStatus)
           {
             // update pedal states
             DAP_state_basic_st dap_state_basic_st_lcl;       
@@ -3373,7 +3350,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
 
           profiler_espNow.start(3);
 
-          if(extend_state_send_b)
+          if (extend_state_send_b && !noAssignmentStatus)
           {
             // update pedal states
             DAP_state_extended_st dap_state_extended_st_espNow; 
@@ -3401,8 +3378,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
 
           profiler_espNow.end(3);
 
-
-          if(ESPNow_config_request)
+          if (ESPNow_config_request && !noAssignmentStatus)
           {
             DAP_config_st * dap_config_st_local_ptr;
             dap_config_st_local_ptr = &espnow_dap_config_st;
@@ -3419,8 +3395,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             delay(2);
           }
 
-
-          if(ESPNow_OTA_enable)
+          if (ESPNow_OTA_enable && !noAssignmentStatus)
           {
             ActiveSerial->println("Get OTA command");
             
@@ -3429,8 +3404,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             ESPNow_OTA_enable=false;
           }
 
-
-          if(OTA_update_action_b)
+          if (OTA_update_action_b && !noAssignmentStatus)
           {
             ActiveSerial->println("Get OTA command");
             #ifdef USING_BUZZER
@@ -3461,8 +3435,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
 
           }
 
-
-          if(printPedalInfo_b)
+          if (printPedalInfo_b && !noAssignmentStatus)
           {
             printPedalInfo_b=false;
             #ifdef USING_BUZZER
@@ -3485,7 +3458,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             ActiveSerial->println(pedalInfoBuilder.logESPNOWString);
 
           }
-          if(Get_Rudder_action_b)
+          if (Get_Rudder_action_b && !noAssignmentStatus)
           {
             Get_Rudder_action_b=false;
             previewConfigGet_b=false;
@@ -3493,7 +3466,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             Buzzer.single_beep_tone(700,100);
             #endif
           }
-          if(Get_HeliRudder_action_b)
+          if (Get_HeliRudder_action_b && !noAssignmentStatus)
           {
             Get_HeliRudder_action_b=false;
             previewConfigGet_b=false;
@@ -3501,7 +3474,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             Buzzer.single_beep_tone(700,100);
             #endif
           }
-          if(ESPNOW_BootIntoDownloadMode)
+          if (ESPNOW_BootIntoDownloadMode && !noAssignmentStatus)
           {
             #ifdef ESPNow_S3
               ActiveSerial->println("Restart into Download mode");
@@ -3516,7 +3489,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             ESPNOW_BootIntoDownloadMode = false;
           }
           //send out rudder packet after rudder initialized
-          if(rudderPacketsUpdateLast-millis()>rudderPacketInterval)
+          if (rudderPacketsUpdateLast - millis() > rudderPacketInterval && !noAssignmentStatus)
           {
             if((dap_calculationVariables_st.Rudder_status || dap_calculationVariables_st.helicopterRudderStatus) && (!Rudder_initializing && !HeliRudder_initializing))
             {              
@@ -3534,8 +3507,8 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
               //if (result == ESP_OK) 
               //{
               //  ActiveSerial->println("Error sending the data");
-              //}                
-              if(ESPNow_Rudder_Update)
+              //}
+              if (ESPNow_Rudder_Update && !noAssignmentStatus)
               {
                 //dap_calculationVariables_st.sync_pedal_position=ESPNow_recieve;
                 dap_calculationVariables_st.sync_pedal_position=dap_rudder_receiving.payloadRudderState_.pedal_position;

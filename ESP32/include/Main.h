@@ -339,24 +339,25 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 
   // Pedal assignment pin
   #define PEDAL_HARDWARE_ASSIGNMENT
+  //#define PEDAL_SOFTWARE_ASSIGNMENT
   #define CFG1 1
   #define CFG2 2
 
-  //#define EMERGENCY_BUTTON
-  //#define ShutdownPin 6
+  // #define EMERGENCY_BUTTON
+  // #define ShutdownPin 6
   #define BuzzerPin 21
   // level shifter is present on this PCB design
   #define SENSORLESS_HOMING true
-  #define ISV57_TXPIN 10//27 //17
-  #define ISV57_RXPIN 9//26 // 16
+  #define ISV57_TXPIN 10 // 27 //17
+  #define ISV57_RXPIN 9  // 26 // 16
 
   #define USB_JOYSTICK
 
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
-  //#define ESPNow_Pairing_function
-  //#define Hardware_Pairing_button
+  // #define ESPNow_Pairing_function
+  // #define Hardware_Pairing_button
   #define Pairing_GPIO 33
-  //#define ESPNow_debug_rudder
+  // #define ESPNow_debug_rudder
   #define CONTROLLER_SPECIFIC_VIDPID
   #define USING_LED
   #define LED_GPIO 12

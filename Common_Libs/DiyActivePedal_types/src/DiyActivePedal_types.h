@@ -323,6 +323,8 @@ struct payloadOtaInfo{
 };
 
 struct payloadAssignmentRequest{
+  uint8_t assignmentAction;
+  uint8_t assignmentState;
   uint8_t macAddress[6];
 };
 
@@ -382,7 +384,7 @@ struct DAP_ESPPairing_st {
   payloadFooter payloadFooter_; 
 };
 
-struct DAP_AssignmentBoarcast_st {
+struct DAP_AssignmentBoardcast_st {
   payloadHeader payLoadHeader_;
   payloadAssignmentRequest payloadAssignmentRequest_;
   payloadFooter payloadFooter_; 
