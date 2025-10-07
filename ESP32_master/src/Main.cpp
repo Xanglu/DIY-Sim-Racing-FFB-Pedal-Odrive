@@ -806,7 +806,7 @@ void serialCommunicationRxTask( void * pvParameters)
                 */
               }
 
-              if (dap_action_ota_st.payloadOtaInfo_.device_ID == deviceID && structChecker_b == true)
+              if (dap_action_ota_st.payloadOtaInfo_.device_ID == DEVICE_ID && structChecker_b == true)
               {
                 OTA_enable_b = true;
                 ActiveSerial->println("[L] Bridge OTA begin.");

@@ -101,7 +101,7 @@
   //#define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 1
   //#define ESPNow_Pairing_function
-  #define deviceID 98
+  #define DEVICE_ID 98
   #define Pairing_GPIO 0
 #endif
 
@@ -149,7 +149,7 @@
   #define Pairing_GPIO 13
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
   //#define ESPNow_Pairing_function
-  #define deviceID 99
+  #define DEVICE_ID 99
   #define Fanatec_comunication
   #define Fanatec_serial_RX 18
   #define Fanatec_serial_TX 17
@@ -203,7 +203,7 @@
   #define Pairing_GPIO 12
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
   //#define ESPNow_Pairing_function
-  #define deviceID 99
+  #define DEVICE_ID 99
   #define OTA_Update
 #endif
 
@@ -247,7 +247,7 @@
   #define Pairing_GPIO 0
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
   //#define ESPNow_Pairing_function
-  #define deviceID 99
+  #define DEVICE_ID 99
   #define OTA_Update
 #endif
 
@@ -291,7 +291,7 @@
   #define Pairing_GPIO 12
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
   //#define ESPNow_Pairing_function
-  #define deviceID 99
+  #define DEVICE_ID 99
   #define OTA_Update
   #define External_RP2040
 #endif
@@ -311,7 +311,7 @@
   #define Pairing_GPIO 12
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
   //#define ESPNow_Pairing_function
-  #define deviceID 99
+  #define DEVICE_ID 99
   #define OTA_Update
 #endif
 

@@ -4,10 +4,15 @@
 #include "esp_now.h"
 #include "ESPNowW.h"
 #include "Main.h"
+#include <list>
+#include <iterator>
 
 //#define ESPNow_debug
 #define ESPNOW_LOG_MAGIC_KEY 0x99
 #define ESPNOW_LOG_MAGIC_KEY_2 0x97
+#define ESPNOW_ASSIGNMENT_MAGIC_KEY 0x99
+#define MAX_CAPACITY_OF_SCAN_PEDAL 3
+#define TIMEOUT_OF_UNASSIGNED_SCAN 1000
 uint8_t esp_master[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x31};
 uint8_t Clu_mac[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x32};
 uint8_t Gas_mac[] = {0x36, 0x33, 0x33, 0x33, 0x33, 0x33};
@@ -45,6 +50,8 @@ bool ESPNow_pairing_action_b = false;
 bool software_pairing_action_b = false;
 QueueHandle_t messageQueueHandle;
 
+
+
 bool MacCheck(uint8_t* Mac_A, uint8_t*  Mac_B)
 {
   uint8_t mac_i=0;
@@ -72,12 +79,18 @@ typedef struct ESP_pairing_reg
   uint8_t Pair_mac[4][6];
 } ESP_pairing_reg;
 
+struct UnassignedPeer 
+{
+  uint8_t mac[6];
+  unsigned long lastSeen; 
+};
 
 typedef struct ESPNOW_Message{
   char text[240];
 } ESPNOW_Message;
 
 ESP_pairing_reg _ESP_pairing_reg;
+std::list<UnassignedPeer> unassignedPeersList;
 
 void ESPNow_Pairing_callback(const uint8_t *mac_addr, const uint8_t *data, int data_len)
 {
@@ -110,6 +123,56 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
   if(ESPNow_pairing_action_b)
   {
     ESPNow_Pairing_callback(esp_now_info->src_addr, data, data_len);
+  }
+
+  //assignment request handling
+  if(data_len==sizeof(DAP_AssignmentBoardcast_st) && 
+  memcmp(esp_now_info->src_addr,Clu_mac,6)!=0 &&
+  memcmp(esp_now_info->src_addr,Brk_mac,6)!=0 &&
+  memcmp(esp_now_info->src_addr,Gas_mac,6)!=0)
+  {
+    DAP_AssignmentBoardcast_st dap_assignmentboardcast_st_lcl;
+    memcpy(&dap_assignmentboardcast_st_lcl, data, sizeof(DAP_AssignmentBoardcast_st));
+    bool structChecker=false;
+    if(dap_assignmentboardcast_st_lcl.payLoadHeader_.version!=DAP_VERSION_CONFIG) 
+      structChecker=false;
+    if(dap_assignmentboardcast_st_lcl.payLoadHeader_.payloadType!=DAP_PAYLOAD_TYPE_ASSIGNMENT) 
+      structChecker=false;
+    uint16_t crcChecker = checksumCalculator((uint8_t*)(&(dap_assignmentboardcast_st_lcl.payLoadHeader_)), sizeof(dap_assignmentboardcast_st_lcl.payLoadHeader_) + sizeof(dap_assignmentboardcast_st_lcl.payloadAssignmentRequest_));
+    if(crcChecker!=dap_assignmentboardcast_st_lcl.payloadFooter_.checkSum) 
+      structChecker=false;
+    if(structChecker)
+    {
+      int connectedPedalNumber=dap_bridge_state_st.payloadBridgeState_.Pedal_availability[0]+dap_bridge_state_st.payloadBridgeState_.Pedal_availability[1]+dap_bridge_state_st.payloadBridgeState_.Pedal_availability[2];
+      int maxScanAllowance=MAX_CAPACITY_OF_SCAN_PEDAL-connectedPedalNumber;
+      bool found = false;
+      for (UnassignedPeer &peer : unassignedPeersList) 
+      {
+        if (memcmp(peer.mac, esp_now_info->src_addr, 6) == 0) 
+        {
+          peer.lastSeen = millis();
+          found = true;
+          break;
+        }
+      }
+      if (!found) 
+      {
+        if (unassignedPeersList.size() >= maxScanAllowance) 
+        {
+
+        }
+        else
+        {
+          UnassignedPeer newPeer;
+          memcpy(newPeer.mac, esp_now_info->src_addr, 6);
+          newPeer.lastSeen = millis();
+          unassignedPeersList.push_back(newPeer);
+          ESPNow.add_peer(esp_now_info->src_addr);
+        }
+
+      }
+    }
+
   }
   //only recieve the package from registed mac address
   if(MacCheck((uint8_t*)esp_now_info->src_addr, Clu_mac)||MacCheck((uint8_t*)esp_now_info->src_addr, Brk_mac)||MacCheck((uint8_t*)esp_now_info->src_addr, Gas_mac))
@@ -383,4 +446,20 @@ void print_struct_hex(DAP_bridge_state_st* s) {
       ActiveSerial->print("-");
     }
     ActiveSerial->println("");
+}
+
+
+void checkAndRemoveTimeoutUnssignedPedal() 
+{
+  unsigned long currentTime = millis();
+  auto it = unassignedPeersList.begin();
+  while (it != unassignedPeersList.end())
+  { 
+    if (currentTime - it->lastSeen > TIMEOUT_OF_UNASSIGNED_SCAN) 
+    {
+      ActiveSerial->println("Unassigned pedal timeout and removed");
+      it = unassignedPeersList.erase(it);
+    } 
+    else ++it;
+  }
 }
