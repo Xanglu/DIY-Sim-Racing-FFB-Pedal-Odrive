@@ -24,7 +24,7 @@ namespace User.PluginSdkDemo
         public int current_pedal_travel_state { get; set; }
         public byte pedal_state_in_ratio { get; set; }
         public bool isDragging { get; set; }
-
+        public int unassignedPedalCount { get; set; }
         public Point offset;
 
         public SolidColorBrush lightcolor;
@@ -61,6 +61,7 @@ namespace User.PluginSdkDemo
         public uint rudderType;
         public bool IsTestBuild = false;
         public bool IsOtaUploadFromPlatformIO = false;
+        
         public uint RSSI_Value
         {
             get => _rssi_value;
@@ -148,6 +149,7 @@ namespace User.PluginSdkDemo
             verisonCreate_b = false;
             _joystick = new vJoyInterfaceWrap.vJoy();
             rudderType = 0;
+            unassignedPedalCount = 0;
 
         }
         public event PropertyChangedEventHandler PropertyChanged;

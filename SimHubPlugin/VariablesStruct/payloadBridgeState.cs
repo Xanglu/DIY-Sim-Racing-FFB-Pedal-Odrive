@@ -11,7 +11,7 @@ namespace User.PluginSdkDemo
     //[Serializable]
     unsafe public struct payloadBridgeState
     {
-        public byte Pedal_RSSI;
+        public byte unassignedPedalCount;
         public byte Pedal_availability_0;
         public byte Pedal_availability_1;
         public byte Pedal_availability_2;

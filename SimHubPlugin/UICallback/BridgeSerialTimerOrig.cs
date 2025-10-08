@@ -431,12 +431,17 @@ namespace User.PluginSdkDemo
                                 if ((check_payload_state_b) && check_crc_state_b)
                                 {
                                     //Bridge_RSSI = bridge_state.payloadBridgeState_.Pedal_RSSI;
-                                    Plugin._calculations.RSSI_Value = bridge_state.payloadBridgeState_.Pedal_RSSI;
+                                    if (bridge_state.payloadBridgeState_.unassignedPedalCount > 0 && Plugin._calculations.unassignedPedalCount != bridge_state.payloadBridgeState_.unassignedPedalCount)
+                                    {
+                                        Plugin._calculations.unassignedPedalCount = bridge_state.payloadBridgeState_.unassignedPedalCount;
+                                        string tmp = Plugin._calculations.unassignedPedalCount + "unassigned pedals founded!";
+                                        ToastNotification("Wireless Pedal founded", tmp);
+                                    }
+                                    
                                     for (int pedalIDX = 0; pedalIDX < 3; pedalIDX++)
                                     {
                                         Plugin._calculations.rssi[pedalIDX] = bridge_state.payloadBridgeState_.Pedal_RSSI_realtime[pedalIDX];
                                     }
-                                    dap_bridge_state_st.payloadBridgeState_.Pedal_RSSI = bridge_state.payloadBridgeState_.Pedal_RSSI;
                                     string connection_tmp = "";
                                     bool wireless_connection_update = false;
                                     //fill the status into _calculations

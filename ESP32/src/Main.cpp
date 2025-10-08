@@ -1170,7 +1170,7 @@ xTaskCreatePinnedToCore(
     ActiveSerial->println("Starting software assignment");
     softwareAssignmentInitialize();
     //overwrite the pedal type with device ID
-    if (deviceIdStructChecker && dap_assignement_reg.deviceID == PEDAL_ID_CLUTCH && dap_assignement_reg.deviceID == PEDAL_ID_BRAKE && dap_assignement_reg.deviceID == PEDAL_ID_THROTTLE)
+    if (deviceIdStructChecker)
     {
       dap_config_st_local.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
     }

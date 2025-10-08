@@ -1,4 +1,5 @@
-﻿using GameReaderCommon;
+﻿using FMOD;
+using GameReaderCommon;
 using log4net.Plugin;
 using NCalc;
 
@@ -332,6 +333,38 @@ namespace User.PluginSdkDemo
             {
                 string errorMessage = caughtEx.Message;
                 SimHub.Logging.Current.Error("FFB_Pedal_Action_Sending_error:"+errorMessage);
+            }
+
+        }
+        unsafe public void SendPedalActionWireless(DAP_action_st action_tmp, Byte PedalID)
+        {
+
+            action_tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
+            action_tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
+            action_tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
+            action_tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
+            action_tmp.payloadHeader_.PedalTag = PedalID;
+            action_tmp.payloadHeader_.version = (byte)Constants.pedalConfigPayload_version;
+            action_tmp.payloadHeader_.payloadType = (byte)Constants.pedalActionPayload_type;
+            DAP_action_st* v = &action_tmp;
+            byte* p = (byte*)v;
+            action_tmp.payloadFooter_.checkSum = checksumCalc(p, sizeof(payloadHeader) + sizeof(payloadPedalAction));
+            int length = sizeof(DAP_action_st);
+            byte[] newBuffer = new byte[length];
+            newBuffer = getBytes_Action(action_tmp);
+            try
+            {
+                if (ESPsync_serialPort.IsOpen)
+                {
+                    ESPsync_serialPort.DiscardInBuffer();
+                    ESPsync_serialPort.DiscardOutBuffer();
+                    ESPsync_serialPort.Write(newBuffer, 0, newBuffer.Length);
+                }
+            }
+            catch (Exception caughtEx)
+            {
+                string errorMessage = caughtEx.Message;
+                SimHub.Logging.Current.Error("FFB_Pedal_Action_Sending_Wireless_error:" + errorMessage);
             }
 
         }

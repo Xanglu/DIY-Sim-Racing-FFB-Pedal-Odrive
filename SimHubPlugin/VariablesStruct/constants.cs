@@ -87,4 +87,16 @@ namespace User.PluginSdkDemo
         DIRT,
         ICED
     };
+
+    public enum PedalIdEnum
+    {
+        PEDAL_ID_CLUTCH,
+        PEDAL_ID_BRAKE,
+        PEDAL_ID_THROTTLE,
+        PEDAL_ID_ASSIGNMENT_ERROR,
+        PEDAL_ID_UNKNOWN,
+        PEDAL_ID_TEMP_1,
+        PEDAL_ID_TEMP_2,
+        PEDAL_ID_TEMP_3
+    };
 }

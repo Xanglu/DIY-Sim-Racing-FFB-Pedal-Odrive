@@ -642,12 +642,11 @@ namespace User.PluginSdkDemo
                                     if ((check_payload_state_b) && check_crc_state_b)
                                     {
                                         //Bridge_RSSI = bridge_state.payloadBridgeState_.Pedal_RSSI;
-                                        Plugin._calculations.RSSI_Value = bridge_state.payloadBridgeState_.Pedal_RSSI;
                                         for (int pedalIDX = 0; pedalIDX < 3; pedalIDX++)
                                         {
                                             Plugin._calculations.rssi[pedalIDX] = bridge_state.payloadBridgeState_.Pedal_RSSI_realtime[pedalIDX];
                                         }
-                                        dap_bridge_state_st.payloadBridgeState_.Pedal_RSSI = bridge_state.payloadBridgeState_.Pedal_RSSI;
+
                                         string connection_tmp = "";
                                         bool wireless_connection_update = false;
                                         //fill the status into _calculations
