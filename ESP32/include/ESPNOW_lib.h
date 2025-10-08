@@ -765,23 +765,27 @@ void softwareAssignmentInitialize()
     ActiveSerial->print("Pedal ID get:");
     ActiveSerial->println(dap_assignement_reg_local.deviceID);
   }
+  DAP_config_st tmp;
+  global_dap_config_class.getConfig(&tmp, 500);
   if (structChecker)
   {
     deviceIdStructChecker = true;
     ActiveSerial->print("Overwritting pedal assignment: ");
     ActiveSerial->println(dap_assignement_reg_local.deviceID);
-    DAP_config_st tmp;
-    global_dap_config_class.getConfig(&tmp, 500);
+
     if (dap_assignement_reg.deviceID == PEDAL_ID_CLUTCH && dap_assignement_reg.deviceID == PEDAL_ID_BRAKE && dap_assignement_reg.deviceID == PEDAL_ID_THROTTLE)
-    {
-      //
       tmp.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
-      configDataPackage_t configPackage_st;
-      configPackage_st.config_st = tmp;
-      xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
-      delay(1000); // delay for writting config into global
-    }
-  } 
+    else
+      tmp.payLoadPedalConfig_.pedal_type = PEDAL_ID_UNKNOWN;
+    
+  }
+  else
+    tmp.payLoadPedalConfig_.pedal_type = PEDAL_ID_UNKNOWN;
+    
+  configDataPackage_t configPackage_st;
+  configPackage_st.config_st = tmp;
+  xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
+  delay(1000); // delay for writting config into global
 }
 
 void writeAssignmentToEeprom()
