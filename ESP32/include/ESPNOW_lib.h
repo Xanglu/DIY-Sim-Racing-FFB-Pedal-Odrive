@@ -55,6 +55,7 @@ bool Config_update_Buzzer_b = false;
 bool assignmentUpdateBuzzer_b = false;
 bool assignmentUpdate_b = false;
 bool assignmentClear_b = false;
+bool deviceIdStructChecker = false;
 unsigned long Rudder_initialized_time=0;
 DAP_Assignement_reg dap_assignement_reg;
 DAP_Rudder_st dap_rudder_receiving;
@@ -356,16 +357,19 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
             {
               dap_assignement_reg.deviceID=PEDAL_ID_CLUTCH;
               assignmentUpdate_b = true;
+              assignmentUpdateBuzzer_b = true;
             }
             if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_1)
             {
               dap_assignement_reg.deviceID = PEDAL_ID_BRAKE;
               assignmentUpdate_b = true;
+              assignmentUpdateBuzzer_b = true;
             }
             if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_2)
             {
               dap_assignement_reg.deviceID = PEDAL_ID_THROTTLE;
               assignmentUpdate_b = true;
+              assignmentUpdateBuzzer_b = true;
             }
             if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::ASSIGNMENT_CHECK_BEEP)
             {
@@ -734,9 +738,12 @@ void softwareAssignmentInitialize()
   EEPROM.get(ASSIGNMENT_EEPROM_OFFSET, dap_assignement_reg_local);
   bool structChecker= true;
   uint16_t crc = checksumCalculator((uint8_t *)(&dap_assignement_reg_local), sizeof(DAP_Assignement_reg) - sizeof(uint16_t));
-  if(dap_assignement_reg_local.payloadType!= DAP_PAYLOAD_TYPE_ASSIGNMENT) structChecker= false;
-  if(dap_assignement_reg_local.magicKey!= ESPNOW_ASSIGNMENT_MAGIC_KEY) structChecker= false;
-  if(crc!=dap_assignement_reg_local.crc) structChecker= false;
+  if(dap_assignement_reg_local.payloadType!= DAP_PAYLOAD_TYPE_ASSIGNMENT) 
+    structChecker = false;
+  if(dap_assignement_reg_local.magicKey!= ESPNOW_ASSIGNMENT_MAGIC_KEY) 
+    structChecker = false;
+  if(crc!=dap_assignement_reg_local.crc) 
+    structChecker = false;
   if (dap_assignement_reg_local.crc != PEDAL_ID_CLUTCH && dap_assignement_reg_local.crc != PEDAL_ID_BRAKE && dap_assignement_reg_local.crc != PEDAL_ID_THROTTLE)
     structChecker = false;
   if(structChecker) memcpy(&dap_assignement_reg, &dap_assignement_reg_local, sizeof(DAP_Assignement_reg));
@@ -760,13 +767,20 @@ void softwareAssignmentInitialize()
   }
   if (structChecker)
   {
+    deviceIdStructChecker = true;
     ActiveSerial->print("Overwritting pedal assignment: ");
     ActiveSerial->println(dap_assignement_reg_local.deviceID);
-    DAP_config_st dap_config_assignment_init_st;
-    global_dap_config_class.getConfig(&dap_config_assignment_init_st, 500);
-    dap_config_assignment_init_st.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
-    global_dap_config_class.setConfig(dap_config_assignment_init_st);
-    delay(1000);//delay for waiting the config write to global
+    DAP_config_st tmp;
+    global_dap_config_class.getConfig(&tmp, 500);
+    if (dap_assignement_reg.deviceID == PEDAL_ID_CLUTCH && dap_assignement_reg.deviceID == PEDAL_ID_BRAKE && dap_assignement_reg.deviceID == PEDAL_ID_THROTTLE)
+    {
+      //
+      tmp.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
+      configDataPackage_t configPackage_st;
+      configPackage_st.config_st = tmp;
+      xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);
+      delay(1000); // delay for writting config into global
+    }
   } 
 }
 

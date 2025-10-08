@@ -1168,7 +1168,11 @@ xTaskCreatePinnedToCore(
   //enable software assignment reading
   #if defined(PEDAL_SOFTWARE_ASSIGNMENT) && defined(ESPNOW_Enable)
     softwareAssignmentInitialize();
-    dap_config_st_local.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
+    //overwrite the pedal type with device ID
+    if (deviceIdStructChecker && dap_assignement_reg.deviceID == PEDAL_ID_CLUTCH && dap_assignement_reg.deviceID == PEDAL_ID_BRAKE && dap_assignement_reg.deviceID == PEDAL_ID_THROTTLE)
+    {
+      dap_config_st_local.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
+    }
   #endif
   #ifdef PEDAL_HARDWARE_ASSIGNMENT
     pinMode(CFG1, INPUT_PULLUP);
@@ -1252,22 +1256,26 @@ xTaskCreatePinnedToCore(
   #endif
 
   #ifdef USING_BUZZER
-    if(dap_config_st_local.payLoadPedalConfig_.pedal_type==0)
+    if(dap_config_st_local.payLoadPedalConfig_.pedal_type==PEDAL_ID_CLUTCH)
     {
       delay(500);
       Buzzer.single_beep_ledc_fade(NOTE_D4,3072,1);
       //Buzzer.single_beep_ledc_fade(NOTE_A4,1536,0.5);
     }
-    if(dap_config_st_local.payLoadPedalConfig_.pedal_type==1)
+    if(dap_config_st_local.payLoadPedalConfig_.pedal_type==PEDAL_ID_BRAKE)
     {
       Buzzer.single_beep_ledc_fade(NOTE_A4,3072,1);
     }    
-    if(dap_config_st_local.payLoadPedalConfig_.pedal_type==2)
+    if(dap_config_st_local.payLoadPedalConfig_.pedal_type==PEDAL_ID_THROTTLE)
     {
       delay(500);
       //Buzzer.single_beep_ledc_fade(NOTE_A4,1536,0.5);
       Buzzer.single_beep_ledc_fade(NOTE_D4,3072,1);
-    }    
+    }
+    if(dap_config_st_local.payLoadPedalConfig_.pedal_type==PEDAL_ID_UNKNOWN)    
+    {
+      Buzzer.single_beep_tone(770, 100);
+    }
     //Buzzer.single_beep_tone(440,1500);
   #endif
 

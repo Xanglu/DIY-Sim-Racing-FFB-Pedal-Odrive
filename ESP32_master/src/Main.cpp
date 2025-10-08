@@ -61,6 +61,7 @@ DAP_calculationVariables_st dap_calculationVariables_st;
 DAP_state_basic_st dap_state_basic_st[3];
 DAP_state_extended_st dap_state_extended_st[3];
 DAP_actions_st dap_actions_st[3];
+DAP_actions_st dap_actionassignment_st[3];
 DAP_bridge_state_st dap_bridge_state_st;
 DAP_config_st dap_config_st_Clu;
 DAP_config_st dap_config_st_Brk;
@@ -150,7 +151,7 @@ void serialCommunicationRxTask( void * pvParameters);
 void serialCommunicationTxTask( void * pvParameters);
 void ledUpdateDongleTask( void * pvParameters);
 void fanatecUpdateTask(void *pvParameters);
-
+void miscTask(void *pvParameters);
 void setup()
 {
   #ifdef USB_JOYSTICK
@@ -336,6 +337,7 @@ void setup()
   taskScheduler.addScheduledTask(serialCommunicationTxTask, "Seria TX", REPETITION_INTERVAL_SERIAL_TX_TASK, TASK_PRIORITY_SERIAL_TX_TASK, CORE_ID_SERIAL_TX_TASK, STACK_SIZE_SERIAL_TX_TASK);
   taskScheduler.addScheduledTask(espNowCommunicationTxTask, "Espnow tx", REPETITION_INTERVAL_ESPNOW_TX_TASK, TASK_PRIORITY_ESPNOW_TX_TASK, CORE_ID_ESPNOW_TX_TASK, STACK_SIZE_ESPNOW_TX_TASK);
   taskScheduler.addScheduledTask(joystickUpdateTask, "Joystick Update", REPETITION_INTERVAL_JOYSTICK_UPDATE_TASK, TASK_PRIORITY_JOYSTICK_UPDATE_TASK, CORE_ID_JOYSTICK_UPDATE_TASK, STACK_SIZE_JOYSTICK_UPDATE_TASK);
+  taskScheduler.addScheduledTask(miscTask, "MISC", REPETITION_INTERVAL_MISC_TASK, TASK_PRIORITY_MISC_TASK, CORE_ID_MISC_TASK, STACK_SIZE_MISC_TASK);
   delay(100);
   taskScheduler.begin();
 
@@ -527,6 +529,17 @@ void espNowCommunicationTxTask( void * pvParameters )
                 break;
             }
           }
+        }
+
+        if(sendAssignment_b[i])
+        {
+          sendAssignment_b[i]=false;
+          esp_err_t err;
+          auto it = unassignedPeersList.begin();
+          std::advance(it, i);
+          err = ESPNow.send_message(it->mac, (uint8_t *)&dap_actionassignment_st[i], sizeof(DAP_actions_st));
+          ActiveSerial->printf("[L]Send assignment to pedal: %0.2X:%0.2X:%0.2X:%0.2X:%0.2X:%0.2X, result: ", it->mac[0], it->mac[1], it->mac[2], it->mac[3], it->mac[4], it->mac[5]);
+          ActiveSerial->println(esp_err_to_name(err));
         }
       }
     
@@ -754,9 +767,22 @@ void serialCommunicationRxTask( void * pvParameters)
             }
             if (structChecker == true)
             {
+              
               int pedalIdx = dap_actions_st_local.payLoadHeader_.PedalTag;
-              memcpy(&dap_actions_st[pedalIdx], &dap_actions_st_local, sizeof(DAP_actions_st));
-              dap_action_update[pedalIdx] = true;
+              if(pedalIdx == PEDAL_ID_CLUTCH || pedalIdx == PEDAL_ID_BRAKE || pedalIdx == PEDAL_ID_THROTTLE)
+              {
+                //forward to pedal
+                memcpy(&dap_actions_st[pedalIdx], &dap_actions_st_local, sizeof(DAP_actions_st));
+                dap_action_update[pedalIdx] = true;
+              }
+              if (pedalIdx == PEDAL_ID_TEMP_1 || pedalIdx == PEDAL_ID_TEMP_2 || pedalIdx == PEDAL_ID_TEMP_3)
+              {
+                //make those assignement action to pedal with specific mac address
+                int tempIdx = pedalIdx - PEDAL_ID_TEMP_1;
+                memcpy(&dap_actionassignment_st[tempIdx], &dap_actions_st_local, sizeof(DAP_actions_st));
+                sendAssignment_b[tempIdx] = true;
+                //dap_action_update[pedalIdx] = true;
+              }
             }
             break;
           }
@@ -1049,7 +1075,7 @@ void serialCommunicationTxTask( void * pvParameters)
           ESPNow_request_config_b[pedal_config_IDX]=false;
           ActiveSerial->print("[L]Pedal:");
           ActiveSerial->print(pedal_config_IDX);
-          ActiveSerial->println("config returned");
+          ActiveSerial->println(" config returned");
           delay(3);
         }
       }
@@ -1063,7 +1089,7 @@ void serialCommunicationTxTask( void * pvParameters)
         dap_bridge_state_st.payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
         dap_bridge_state_st.payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
         int rssi_filter_value=constrain(rssi_filter.process(rssi_display),-100,0) ;
-        dap_bridge_state_st.payloadBridgeState_.Pedal_RSSI=(uint8_t)(rssi_filter_value+101);
+        dap_bridge_state_st.payloadBridgeState_.unassignedPedalCount=(byte)unassignedPeersList.size();
         dap_bridge_state_st.payLoadHeader_.PedalTag=5; //5 means bridge
         dap_bridge_state_st.payLoadHeader_.payloadType=DAP_PAYLOAD_TYPE_BRIDGE_STATE;
         dap_bridge_state_st.payLoadHeader_.version=DAP_VERSION_CONFIG;
@@ -1604,17 +1630,34 @@ void fanatecUpdateTask(void * pvParameters)
   }
 }
 
+void miscTask(void *pvParameters)
+{
+  unsigned long unassignedPedalScan_Last=0;
+  bool unassignedPedalScan_b= false;
+  int unassignedScanInterval=100;
+  int unassignedPedalCount_Last=0;
+  for (;;)
+  {
+    if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0)
+    {
+      if (millis() - unassignedPedalScan_Last > unassignedScanInterval)
+      {
+        unassignedPedalScan_b=true;
+        unassignedPedalScan_Last=millis();
+      }
 
+      if(unassignedPedalScan_b && unassignedPeersList.size()>0)
+      {
+        checkAndRemoveTimeoutUnssignedPedal();
+        unassignedPedalScan_b=false;
+      }
 
-
-
-
-
-
-
-
-
-
-
-
-
+      if (unassignedPeersList.size() > 0 && unassignedPeersList.size() != unassignedPedalCount_Last)
+      {
+        unassignedPedalCount_Last = unassignedPeersList.size();
+        ActiveSerial->printf("[L]Found %d Unconfigured Pedals", unassignedPedalCount_Last);
+        ActiveSerial->println("[L]");
+      }
+    }
+  }
+}

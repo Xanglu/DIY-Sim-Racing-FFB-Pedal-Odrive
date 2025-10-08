@@ -32,6 +32,7 @@ bool ESPNow_update= false;
 bool ESPNow_no_device=false;
 bool update_basic_state[3]={false,false,false};
 bool update_extend_state[3]={false,false,false};
+bool sendAssignment_b[3] = {false, false, false};
 bool pedal_OTA_action_b=false;
 uint16_t Joystick_value[]={0,0,0};
 uint16_t Joystick_throttle_value_from_pedal=0;
@@ -133,7 +134,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
   {
     DAP_AssignmentBoardcast_st dap_assignmentboardcast_st_lcl;
     memcpy(&dap_assignmentboardcast_st_lcl, data, sizeof(DAP_AssignmentBoardcast_st));
-    bool structChecker=false;
+    bool structChecker=true;
     if(dap_assignmentboardcast_st_lcl.payLoadHeader_.version!=DAP_VERSION_CONFIG) 
       structChecker=false;
     if(dap_assignmentboardcast_st_lcl.payLoadHeader_.payloadType!=DAP_PAYLOAD_TYPE_ASSIGNMENT) 
@@ -157,11 +158,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
       }
       if (!found) 
       {
-        if (unassignedPeersList.size() >= maxScanAllowance) 
-        {
-
-        }
-        else
+        if (unassignedPeersList.size() < maxScanAllowance) 
         {
           UnassignedPeer newPeer;
           memcpy(newPeer.mac, esp_now_info->src_addr, 6);
@@ -457,7 +454,7 @@ void checkAndRemoveTimeoutUnssignedPedal()
   { 
     if (currentTime - it->lastSeen > TIMEOUT_OF_UNASSIGNED_SCAN) 
     {
-      ActiveSerial->println("Unassigned pedal timeout and removed");
+      ActiveSerial->println("[L]Unassigned pedal timeout and removed");
       it = unassignedPeersList.erase(it);
     } 
     else ++it;
