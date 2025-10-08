@@ -299,9 +299,16 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
       DAP_actions_st dap_actions_st;
       if(data_len==sizeof(dap_actions_st))
       {
+        ActiveSerial->print(" get action");
         memcpy(&dap_actions_st, data, sizeof(DAP_actions_st));
         // ActiveSerial->readBytes((char*)&dap_actions_st, sizeof(DAP_actions_st));
-        if (dap_actions_st.payLoadHeader_.PedalTag == dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type)
+        bool commandForAssignment_b = false;
+        if(dap_actions_st.payLoadHeader_.PedalTag == PEDAL_ID_TEMP_1 || dap_actions_st.payLoadHeader_.PedalTag == PEDAL_ID_TEMP_2 ||dap_actions_st.payLoadHeader_.PedalTag == PEDAL_ID_TEMP_3)
+        {
+          commandForAssignment_b = true;
+        }
+
+        if (dap_actions_st.payLoadHeader_.PedalTag == dap_config_espnow_recv_st.payLoadPedalConfig_.pedal_type || commandForAssignment_b)
         {
           bool structChecker = true;
           uint16_t crc;
@@ -738,17 +745,32 @@ void softwareAssignmentInitialize()
   EEPROM.get(ASSIGNMENT_EEPROM_OFFSET, dap_assignement_reg_local);
   bool structChecker= true;
   uint16_t crc = checksumCalculator((uint8_t *)(&dap_assignement_reg_local), sizeof(DAP_Assignement_reg) - sizeof(uint16_t));
-  if(dap_assignement_reg_local.payloadType!= DAP_PAYLOAD_TYPE_ASSIGNMENT) 
-    structChecker = false;
-  if(dap_assignement_reg_local.magicKey!= ESPNOW_ASSIGNMENT_MAGIC_KEY) 
-    structChecker = false;
-  if(crc!=dap_assignement_reg_local.crc) 
-    structChecker = false;
-  if (dap_assignement_reg_local.crc != PEDAL_ID_CLUTCH && dap_assignement_reg_local.crc != PEDAL_ID_BRAKE && dap_assignement_reg_local.crc != PEDAL_ID_THROTTLE)
-    structChecker = false;
-  if(structChecker) memcpy(&dap_assignement_reg, &dap_assignement_reg_local, sizeof(DAP_Assignement_reg));
+  if(dap_assignement_reg_local.payloadType!= DAP_PAYLOAD_TYPE_ASSIGNMENT) structChecker = false;
+  if(dap_assignement_reg_local.magicKey!= ESPNOW_ASSIGNMENT_MAGIC_KEY) structChecker = false;
+  if(crc!=dap_assignement_reg_local.crc) structChecker = false;
+  if(dap_assignement_reg_local.crc != crc) structChecker = false;
+  DAP_config_st tmp;
+  global_dap_config_class.getConfig(&tmp, 500);
+  if(structChecker) 
+  {
+    memcpy(&dap_assignement_reg, &dap_assignement_reg_local, sizeof(DAP_Assignement_reg));
+    deviceIdStructChecker = true;
+    ActiveSerial->print("Overwritting pedal assignment: ");
+    ActiveSerial->println(dap_assignement_reg_local.deviceID);
+
+    if (dap_assignement_reg.deviceID == PEDAL_ID_CLUTCH && dap_assignement_reg.deviceID == PEDAL_ID_BRAKE && dap_assignement_reg.deviceID == PEDAL_ID_THROTTLE)
+    {
+      tmp.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
+    }
+    else
+    {
+      tmp.payLoadPedalConfig_.pedal_type = PEDAL_ID_UNKNOWN;
+    }
+      
+  }
   else
   {
+    tmp.payLoadPedalConfig_.pedal_type = PEDAL_ID_UNKNOWN;
     ActiveSerial->println("Assignment error:");
     ActiveSerial->print("Payload type expect:");
     ActiveSerial->print(DAP_PAYLOAD_TYPE_ASSIGNMENT);
@@ -765,23 +787,6 @@ void softwareAssignmentInitialize()
     ActiveSerial->print("Pedal ID get:");
     ActiveSerial->println(dap_assignement_reg_local.deviceID);
   }
-  DAP_config_st tmp;
-  global_dap_config_class.getConfig(&tmp, 500);
-  if (structChecker)
-  {
-    deviceIdStructChecker = true;
-    ActiveSerial->print("Overwritting pedal assignment: ");
-    ActiveSerial->println(dap_assignement_reg_local.deviceID);
-
-    if (dap_assignement_reg.deviceID == PEDAL_ID_CLUTCH && dap_assignement_reg.deviceID == PEDAL_ID_BRAKE && dap_assignement_reg.deviceID == PEDAL_ID_THROTTLE)
-      tmp.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
-    else
-      tmp.payLoadPedalConfig_.pedal_type = PEDAL_ID_UNKNOWN;
-    
-  }
-  else
-    tmp.payLoadPedalConfig_.pedal_type = PEDAL_ID_UNKNOWN;
-    
   configDataPackage_t configPackage_st;
   configPackage_st.config_st = tmp;
   xQueueSend(configUpdateAvailableQueue, &configPackage_st, portMAX_DELAY);

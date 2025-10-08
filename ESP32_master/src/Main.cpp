@@ -1656,7 +1656,7 @@ void miscTask(void *pvParameters)
       {
         unassignedPedalCount_Last = unassignedPeersList.size();
         ActiveSerial->printf("[L]Found %d Unconfigured Pedals", unassignedPedalCount_Last);
-        ActiveSerial->println("[L]");
+        ActiveSerial->println("");
       }
     }
   }

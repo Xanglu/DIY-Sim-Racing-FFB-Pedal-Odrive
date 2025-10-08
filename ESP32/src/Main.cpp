@@ -1167,11 +1167,16 @@ xTaskCreatePinnedToCore(
   }
   //enable software assignment reading
   #if defined(PEDAL_SOFTWARE_ASSIGNMENT) && defined(ESPNOW_Enable)
+    ActiveSerial->println("Starting software assignment");
     softwareAssignmentInitialize();
     //overwrite the pedal type with device ID
     if (deviceIdStructChecker && dap_assignement_reg.deviceID == PEDAL_ID_CLUTCH && dap_assignement_reg.deviceID == PEDAL_ID_BRAKE && dap_assignement_reg.deviceID == PEDAL_ID_THROTTLE)
     {
       dap_config_st_local.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
+    }
+    else
+    {
+      dap_config_st_local.payLoadPedalConfig_.pedal_type = PEDAL_ID_UNKNOWN;
     }
   #endif
   #ifdef PEDAL_HARDWARE_ASSIGNMENT
@@ -3128,7 +3133,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
         }
         DAP_config_st espnow_dap_config_st;
         global_dap_config_class.getConfig(&espnow_dap_config_st, 500);
-        if (espnow_dap_config_st.payLoadPedalConfig_.pedal_type != PEDAL_ID_CLUTCH && espnow_dap_config_st.payLoadPedalConfig_.pedal_type != PEDAL_ID_BRAKE && espnow_dap_config_st.payLoadPedalConfig_.pedal_type != PEDAL_ID_THROTTLE)
+        if (espnow_dap_config_st.payLoadPedalConfig_.pedal_type ==PEDAL_ID_UNKNOWN)
         {
           noAssignmentStatus=true;
         }
@@ -3314,10 +3319,13 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
           // assignment request packet send out
           if(assignmentUpdate_b && noAssignmentStatus)
           {
+            //ActiveSerial->println("Send out assignment request");
             assignmentUpdate_b=false;
             DAP_AssignmentBoardcast_st dap_assignmentBoardcast_st;
             dap_assignmentBoardcast_st.payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
             dap_assignmentBoardcast_st.payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
+            dap_assignmentBoardcast_st.payLoadHeader_.version = DAP_VERSION_CONFIG;
+            dap_assignmentBoardcast_st.payLoadHeader_.payloadType = DAP_PAYLOAD_TYPE_ASSIGNMENT;
             dap_assignmentBoardcast_st.payloadFooter_.enfOfFrame0_u8 = EOF_BYTE_0;
             dap_assignmentBoardcast_st.payloadFooter_.enfOfFrame1_u8 = EOF_BYTE_1;
             dap_assignmentBoardcast_st.payloadAssignmentRequest_.assignmentAction=1;
@@ -3653,6 +3661,7 @@ void miscTask( void * pvParameters )
         }
         if (assignmentUpdateBuzzer_b)
         {
+          ActiveSerial->println("Beep");
           Buzzer.single_beep_tone(700, 50);
           assignmentUpdateBuzzer_b = false;
         }

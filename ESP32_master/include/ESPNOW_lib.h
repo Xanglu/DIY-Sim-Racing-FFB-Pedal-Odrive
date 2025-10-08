@@ -135,17 +135,15 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
     DAP_AssignmentBoardcast_st dap_assignmentboardcast_st_lcl;
     memcpy(&dap_assignmentboardcast_st_lcl, data, sizeof(DAP_AssignmentBoardcast_st));
     bool structChecker=true;
-    if(dap_assignmentboardcast_st_lcl.payLoadHeader_.version!=DAP_VERSION_CONFIG) 
-      structChecker=false;
-    if(dap_assignmentboardcast_st_lcl.payLoadHeader_.payloadType!=DAP_PAYLOAD_TYPE_ASSIGNMENT) 
-      structChecker=false;
+    if(dap_assignmentboardcast_st_lcl.payLoadHeader_.version!=DAP_VERSION_CONFIG) structChecker=false;
+    if(dap_assignmentboardcast_st_lcl.payLoadHeader_.payloadType!=DAP_PAYLOAD_TYPE_ASSIGNMENT) structChecker=false;
     uint16_t crcChecker = checksumCalculator((uint8_t*)(&(dap_assignmentboardcast_st_lcl.payLoadHeader_)), sizeof(dap_assignmentboardcast_st_lcl.payLoadHeader_) + sizeof(dap_assignmentboardcast_st_lcl.payloadAssignmentRequest_));
-    if(crcChecker!=dap_assignmentboardcast_st_lcl.payloadFooter_.checkSum) 
-      structChecker=false;
+    if(crcChecker!=dap_assignmentboardcast_st_lcl.payloadFooter_.checkSum) structChecker=false;
     if(structChecker)
     {
       int connectedPedalNumber=dap_bridge_state_st.payloadBridgeState_.Pedal_availability[0]+dap_bridge_state_st.payloadBridgeState_.Pedal_availability[1]+dap_bridge_state_st.payloadBridgeState_.Pedal_availability[2];
       int maxScanAllowance=MAX_CAPACITY_OF_SCAN_PEDAL-connectedPedalNumber;
+
       bool found = false;
       for (UnassignedPeer &peer : unassignedPeersList) 
       {
@@ -158,6 +156,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
       }
       if (!found) 
       {
+        //ActiveSerial->println("[L]get assignment request");
         if (unassignedPeersList.size() < maxScanAllowance) 
         {
           UnassignedPeer newPeer;
