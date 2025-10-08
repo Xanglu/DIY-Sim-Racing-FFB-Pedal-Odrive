@@ -758,7 +758,7 @@ void softwareAssignmentInitialize()
     ActiveSerial->print("Overwritting pedal assignment: ");
     ActiveSerial->println(dap_assignement_reg_local.deviceID);
 
-    if (dap_assignement_reg.deviceID == PEDAL_ID_CLUTCH && dap_assignement_reg.deviceID == PEDAL_ID_BRAKE && dap_assignement_reg.deviceID == PEDAL_ID_THROTTLE)
+    if (dap_assignement_reg.deviceID == PEDAL_ID_CLUTCH || dap_assignement_reg.deviceID == PEDAL_ID_BRAKE || dap_assignement_reg.deviceID == PEDAL_ID_THROTTLE)
     {
       tmp.payLoadPedalConfig_.pedal_type = dap_assignement_reg.deviceID;
     }
