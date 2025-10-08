@@ -295,8 +295,8 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define MCP_SCL 4
 
   // Pedal assignment pin
-  #define PEDAL_HARDWARE_ASSIGNMENT
-  //#define PEDAL_SOFTWARE_ASSIGNMENT
+  //#define PEDAL_HARDWARE_ASSIGNMENT
+  #define PEDAL_SOFTWARE_ASSIGNMENT
   #define CFG1 1
   #define CFG2 2
 

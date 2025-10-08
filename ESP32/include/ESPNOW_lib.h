@@ -360,19 +360,19 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
             {
               printPedalInfo_b = true;
             }
-            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_0)
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_0 && commandForAssignment_b)
             {
               dap_assignement_reg.deviceID=PEDAL_ID_CLUTCH;
               assignmentUpdate_b = true;
               assignmentUpdateBuzzer_b = true;
             }
-            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_1)
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_1 && commandForAssignment_b)
             {
               dap_assignement_reg.deviceID = PEDAL_ID_BRAKE;
               assignmentUpdate_b = true;
               assignmentUpdateBuzzer_b = true;
             }
-            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_2)
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::SET_ASSIGNMENT_2 && commandForAssignment_b)
             {
               dap_assignement_reg.deviceID = PEDAL_ID_THROTTLE;
               assignmentUpdate_b = true;
@@ -382,7 +382,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
             {
               assignmentUpdateBuzzer_b = true;
             }
-            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::CLEAR_ASSIGNMENT)
+            if (dap_actions_st.payloadPedalAction_.system_action_u8 == (uint8_t)PedalSystemAction::CLEAR_ASSIGNMENT && !commandForAssignment_b)
             {
               assignmentClear_b = true;
             }

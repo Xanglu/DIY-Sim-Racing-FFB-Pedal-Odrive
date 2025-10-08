@@ -3154,7 +3154,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
         }
         if (millis() - assignmentPacketUpdateLast > assignmentPacketUpdateInterval)
         {
-          assignmentUpdate_b = true;
+          assignmentUpdatePacketSend_b = true;
           assignmentPacketUpdateLast = millis();
         }
         // activate profiler depending on pedal config
@@ -3317,10 +3317,10 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
 
           profiler_espNow.start(2);
           // assignment request packet send out
-          if(assignmentUpdate_b && noAssignmentStatus)
+          if(assignmentUpdatePacketSend_b && noAssignmentStatus)
           {
             //ActiveSerial->println("Send out assignment request");
-            assignmentUpdate_b=false;
+            assignmentUpdatePacketSend_b=false;
             DAP_AssignmentBoardcast_st dap_assignmentBoardcast_st;
             dap_assignmentBoardcast_st.payLoadHeader_.startOfFrame0_u8 = SOF_BYTE_0;
             dap_assignmentBoardcast_st.payLoadHeader_.startOfFrame1_u8 = SOF_BYTE_1;
