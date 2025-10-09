@@ -10,7 +10,7 @@ static const float ABS_SCALING = 50.0f;
 
 #define WAIT_TIME_IN_MS_TO_AQUIRE_GLOBAL_STRUCT 500
 
-const uint32_t EEPROM_OFFSET = (DAP_VERSION_CONFIG-128) * sizeof(DAP_config_st) % (2048-sizeof(DAP_config_st));
+const uint32_t EEPROM_OFFSET = ASSIGNMENT_EEPROM_OFFSET+ sizeof(DAP_Assignement_reg)+ASSIGNMENT_EEPROM_OFFSET/*+(DAP_VERSION_CONFIG-128) * sizeof(DAP_config_st) % (2048-sizeof(DAP_config_st))*/;
 
 void DAP_config_st::initialiseDefaults() {
 

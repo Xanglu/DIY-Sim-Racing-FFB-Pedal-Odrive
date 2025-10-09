@@ -151,5 +151,25 @@ namespace User.PluginSdkDemo.UIFunction
 
             Label_debug.Content = "Unassigned:" + _pedalSelect + " To:" + _pedalTargetAssignment;
         }
+
+        private void Btn_VibrationOn_Click(object sender, RoutedEventArgs e)
+        {
+            DAP_action_st tmp_action = default;
+            tmp_action.payloadHeader_.version = (byte)Constants.pedalConfigPayload_version;
+            tmp_action.payloadHeader_.payloadType = (byte)Constants.pedalActionPayload_type;
+            tmp_action.payloadHeader_.PedalTag = (byte)_pedalSelect;
+            tmp_action.payloadPedalAction_.RPM_u8 = (byte)20;
+            _plugin.SendPedalActionWireless(tmp_action, (byte)_pedalSelect);
+        }
+
+        private void Btn_VibrationOff_Click(object sender, RoutedEventArgs e)
+        {
+            DAP_action_st tmp_action = default;
+            tmp_action.payloadHeader_.version = (byte)Constants.pedalConfigPayload_version;
+            tmp_action.payloadHeader_.payloadType = (byte)Constants.pedalActionPayload_type;
+            tmp_action.payloadHeader_.PedalTag = (byte)_pedalSelect;
+            tmp_action.payloadPedalAction_.RPM_u8 = (byte)0;
+            _plugin.SendPedalActionWireless(tmp_action, (byte)_pedalSelect);
+        }
     }
 }

@@ -1654,6 +1654,14 @@ void miscTask(void *pvParameters)
 
       if (unassignedPeersList.size() > 0 && unassignedPeersList.size() != unassignedPedalCount_Last)
       {
+        for (UnassignedPeer &item : unassignedPeersList) 
+        {
+          if(!item.peerAdded)
+          {
+            ESPNow.add_peer(item.mac);
+            item.peerAdded=true;
+          }
+        }
         unassignedPedalCount_Last = unassignedPeersList.size();
         ActiveSerial->printf("[L]Found %d Unconfigured Pedals", unassignedPedalCount_Last);
         ActiveSerial->println("");

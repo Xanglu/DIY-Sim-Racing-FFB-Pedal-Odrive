@@ -49,6 +49,7 @@ bool ESPNow_Pairing_status = false;
 bool UpdatePairingToEeprom = false;
 bool ESPNow_pairing_action_b = false;
 bool software_pairing_action_b = false;
+bool newUnassignedPedalDetected[3]={false,false,false};
 QueueHandle_t messageQueueHandle;
 
 
@@ -84,6 +85,7 @@ struct UnassignedPeer
 {
   uint8_t mac[6];
   unsigned long lastSeen; 
+  bool peerAdded;
 };
 
 typedef struct ESPNOW_Message{
@@ -162,8 +164,9 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
           UnassignedPeer newPeer;
           memcpy(newPeer.mac, esp_now_info->src_addr, 6);
           newPeer.lastSeen = millis();
+          newPeer.peerAdded = false;
           unassignedPeersList.push_back(newPeer);
-          ESPNow.add_peer(esp_now_info->src_addr);
+          //ESPNow.add_peer(esp_now_info->src_addr);
         }
 
       }

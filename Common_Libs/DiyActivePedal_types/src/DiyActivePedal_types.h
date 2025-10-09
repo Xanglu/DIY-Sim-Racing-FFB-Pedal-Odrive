@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "CubicInterpolatorFloat.h"
 // define the payload revision
-#define DAP_VERSION_CONFIG 159
+#define DAP_VERSION_CONFIG 160
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -26,6 +26,7 @@
 #define EOF_BYTE_0 0xAA
 #define EOF_BYTE_1 0x56
 
+#define ASSIGNMENT_EEPROM_OFFSET 9
 
 enum pedalStatus{
   PEDAL_STATUS_NORMAL,

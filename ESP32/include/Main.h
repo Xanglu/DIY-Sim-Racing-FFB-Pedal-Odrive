@@ -269,7 +269,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define OTA_update
   #define CONTROLLER_SPECIFIC_VIDPID
   #define BAUDRATE3M
-  
+  #define PEDAL_SOFTWARE_ASSIGNMENT
 #endif
 
 // For Gilphilbert PCBA design
@@ -339,8 +339,8 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define MCP_SCL 4
 
   // Pedal assignment pin
-  #define PEDAL_HARDWARE_ASSIGNMENT
-  //#define PEDAL_SOFTWARE_ASSIGNMENT
+  //#define PEDAL_HARDWARE_ASSIGNMENT
+  #define PEDAL_SOFTWARE_ASSIGNMENT
   #define CFG1 1
   #define CFG2 2
 
@@ -421,7 +421,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define LED_ENABLE_RGB
   #define OTA_update
   #define USING_BUZZER
-  
+  #define PEDAL_SOFTWARE_ASSIGNMENT
 #endif
 
 
@@ -460,7 +460,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define OTA_update
   #define CONTROLLER_SPECIFIC_VIDPID
   #define BAUDRATE3M
-  
+  #define PEDAL_SOFTWARE_ASSIGNMENT
   // #define ANGLE_SENSOR_GPIO 11 // disabled by default, since to much runtime impact of ADC
 #endif
 
@@ -499,6 +499,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define OTA_update
   #define CONTROLLER_SPECIFIC_VIDPID
   #define BAUDRATE3M
+  #define PEDAL_SOFTWARE_ASSIGNMENT
   // #define ANGLE_SENSOR_GPIO 11 // disabled by default, since to much runtime impact of ADC
 #endif
 
