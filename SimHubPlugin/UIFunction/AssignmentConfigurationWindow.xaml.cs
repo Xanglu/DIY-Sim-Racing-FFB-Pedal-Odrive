@@ -31,7 +31,7 @@ namespace User.PluginSdkDemo.UIFunction
         private int _pedalSelect;
         private string[] _pedalName= new string[3] {"Clutch", "Brake", "Throttle"};
         private int[] _pedalActionId = new int[3] {(int)PedalSystemAction.SET_ASSIGNMENT_0, (int)PedalSystemAction.SET_ASSIGNMENT_1, (int)PedalSystemAction.SET_ASSIGNMENT_2 };
-        private string[] _unassignedPedalName = new string[4] {"NA", "#1", "#2", "#3" };
+        private string[] _unassignedPedalName = new string[4] {"Selected a Unassigned Pedal", "#1", "#2", "#3" };
         private int[] _unassignedPedalId = new int[4] { (int)PedalIdEnum.PEDAL_ID_UNKNOWN, (int)PedalIdEnum.PEDAL_ID_TEMP_1, (int)PedalIdEnum.PEDAL_ID_TEMP_2, (int)PedalIdEnum.PEDAL_ID_TEMP_3 };
         double clientWidth;
         double clientHeight;
@@ -89,7 +89,7 @@ namespace User.PluginSdkDemo.UIFunction
             ComboBoxUnassignedPedal.ItemsSource = _unassignedPedalList;
             ComboBoxUnassignedPedal.DisplayMemberPath = "Name";
             ComboBoxUnassignedPedal.SelectedValuePath = "Id";
-            ComboBoxUnassignedPedal.SelectedIndex = Plugin._calculations.unassignedPedalCount;
+            ComboBoxUnassignedPedal.SelectedIndex = 0;
             
 
 
@@ -137,7 +137,7 @@ namespace User.PluginSdkDemo.UIFunction
                 _pedalSelect = -2;
             }
 
-            Label_debug.Content = "Unassigned:" + _pedalSelect + " To:" + _pedalActionId[_plugin.Settings.table_selected];
+            //Label_debug.Content = "Unassigned:" + _pedalSelect + " To:" + _pedalActionId[_plugin.Settings.table_selected];
         }
 
         private void Btn_VibrationOn_Click(object sender, RoutedEventArgs e)
