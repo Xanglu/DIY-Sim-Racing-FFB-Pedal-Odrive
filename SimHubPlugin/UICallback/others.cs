@@ -30,7 +30,7 @@ namespace User.PluginSdkDemo
             text[0].AppendChild(xml.CreateTextNode(message1));
             text[1].AppendChild(xml.CreateTextNode(message2));
             var toast = new ToastNotification(xml);
-            toast.ExpirationTime = DateTime.Now.AddSeconds(1);
+            toast.ExpirationTime = DateTime.Now.AddMilliseconds(500);
             toast.Tag = "Pedal_notification";
             ToastNotificationManager.CreateToastNotifier("FFB Pedal Dashboard").Show(toast);
 

@@ -431,16 +431,23 @@ namespace User.PluginSdkDemo
                                 if ((check_payload_state_b) && check_crc_state_b)
                                 {
                                     //Bridge_RSSI = bridge_state.payloadBridgeState_.Pedal_RSSI;
+                                    
                                     if (bridge_state.payloadBridgeState_.unassignedPedalCount > 0 && Plugin._calculations.unassignedPedalCount != bridge_state.payloadBridgeState_.unassignedPedalCount)
                                     {
-                                        Plugin._calculations.unassignedPedalCount = bridge_state.payloadBridgeState_.unassignedPedalCount;
-                                        string tmp = Plugin._calculations.unassignedPedalCount + "unassigned pedals founded!";
-                                        ToastNotification("Wireless Pedal founded", tmp);
+                                        
+                                        string tmp = bridge_state.payloadBridgeState_.unassignedPedalCount + " unassigned pedals founded!";
+                                        ToastNotification("New Pedal Detected", tmp);
                                     }
-                                    
+                                    Plugin._calculations.unassignedPedalCount = bridge_state.payloadBridgeState_.unassignedPedalCount;
+
                                     for (int pedalIDX = 0; pedalIDX < 3; pedalIDX++)
                                     {
                                         Plugin._calculations.rssi[pedalIDX] = bridge_state.payloadBridgeState_.Pedal_RSSI_realtime[pedalIDX];
+                                        int macInitialAddress = pedalIDX * 6;
+                                        for (int macIndex = 0; macIndex < 6; macIndex++)
+                                        {
+                                            Plugin._calculations.unassignedPedalMacaddress[pedalIDX][macIndex] = bridge_state.payloadBridgeState_.macAddressDetection[macInitialAddress + macIndex];
+                                        }
                                     }
                                     string connection_tmp = "";
                                     bool wireless_connection_update = false;

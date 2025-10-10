@@ -457,7 +457,20 @@ void checkAndRemoveTimeoutUnssignedPedal()
     if (currentTime - it->lastSeen > TIMEOUT_OF_UNASSIGNED_SCAN) 
     {
       ActiveSerial->println("[L]Unassigned pedal timeout and removed");
+      uint8_t mac[6]={0};
+      memcpy(mac, it->mac, 6);
       it = unassignedPeersList.erase(it);
+      ActiveSerial->print("[L]List size AFTER removal: ");
+      ActiveSerial->println(unassignedPeersList.size());
+      esp_err_t result = esp_now_del_peer(mac);
+      if (result == ESP_OK) 
+      {
+        ActiveSerial->println("[L]ESPNow peer removed successfully.");
+      } 
+      else 
+      {
+        ActiveSerial->println("[L]Failed to remove ESPNow peer.");
+      }
     } 
     else ++it;
   }

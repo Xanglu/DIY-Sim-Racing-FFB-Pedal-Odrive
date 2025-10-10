@@ -1099,6 +1099,12 @@ void serialCommunicationTxTask( void * pvParameters)
         dap_bridge_state_st.payloadBridgeState_.Bridge_firmware_version_u8[0]=versionMajor;
         dap_bridge_state_st.payloadBridgeState_.Bridge_firmware_version_u8[1]=versionMinor;
         dap_bridge_state_st.payloadBridgeState_.Bridge_firmware_version_u8[2]=versionPatch;
+        int indexMac = 0;
+        for (UnassignedPeer &item : unassignedPeersList) 
+        {
+          memcpy(&dap_bridge_state_st.payloadBridgeState_.macAddressDetected[indexMac], item.mac,6);
+          indexMac=indexMac+6;
+        }
         //CRC check should be in the final
         crc = checksumCalculator((uint8_t*)(&(dap_bridge_state_st.payLoadHeader_)), sizeof(dap_bridge_state_st.payLoadHeader_) + sizeof(dap_bridge_state_st.payloadBridgeState_));
         dap_bridge_state_st.payloadFooter_.checkSum=crc;
@@ -1652,19 +1658,45 @@ void miscTask(void *pvParameters)
         unassignedPedalScan_b=false;
       }
 
-      if (unassignedPeersList.size() > 0 && unassignedPeersList.size() != unassignedPedalCount_Last)
+      if (unassignedPeersList.size() != unassignedPedalCount_Last)
       {
-        for (UnassignedPeer &item : unassignedPeersList) 
-        {
-          if(!item.peerAdded)
-          {
-            ESPNow.add_peer(item.mac);
-            item.peerAdded=true;
-          }
-        }
         unassignedPedalCount_Last = unassignedPeersList.size();
-        ActiveSerial->printf("[L]Found %d Unconfigured Pedals", unassignedPedalCount_Last);
-        ActiveSerial->println("");
+        if(unassignedPeersList.size()>0)
+        {
+          ActiveSerial->printf("[L]Found %d Unconfigured Pedals", unassignedPedalCount_Last);
+          ActiveSerial->println("");
+          for (UnassignedPeer &item : unassignedPeersList) 
+          {
+            if(!item.peerAdded)
+            {
+              esp_now_peer_info_t peerInfo = {};
+              memcpy(peerInfo.peer_addr, item.mac, 6);
+              peerInfo.channel = 0; 
+              peerInfo.ifidx = WIFI_IF_STA; 
+              peerInfo.encrypt = false; 
+              esp_err_t result = esp_now_add_peer(&peerInfo);
+
+              if (result == ESP_OK) 
+              {
+                ActiveSerial->println("[L]SUCCESS: ESPNow peer added.");
+              } 
+              else if (result == ESP_ERR_ESPNOW_EXIST) 
+              {
+                ActiveSerial->println("[L]Peer already exists. No action taken.");
+              }
+              else 
+              {
+                ActiveSerial->print("[L]FAIL: esp_now_add_peer failed! Error Code: ");
+                ActiveSerial->println(result);
+              }
+              item.peerAdded=true;
+            }
+          }
+
+        }
+
+
+
       }
     }
   }

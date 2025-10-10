@@ -142,7 +142,14 @@ namespace User.PluginSdkDemo
             if (Plugin != null)
             {
 
-
+                if (Plugin.Settings.Pedal_ESPNow_Sync_flag[indexOfSelectedPedal_u])
+                {
+                    btn_Assignment.IsEnabled = true;
+                }
+                else
+                {
+                    btn_Assignment.IsEnabled = false;
+                }
 
                 if (Plugin.Sync_esp_connection_flag)
                 {

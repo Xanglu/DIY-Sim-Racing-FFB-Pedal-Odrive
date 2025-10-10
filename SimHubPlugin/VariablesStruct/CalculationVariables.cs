@@ -61,7 +61,7 @@ namespace User.PluginSdkDemo
         public uint rudderType;
         public bool IsTestBuild = false;
         public bool IsOtaUploadFromPlatformIO = false;
-        
+        public byte[][] unassignedPedalMacaddress;
         public uint RSSI_Value
         {
             get => _rssi_value;
@@ -150,6 +150,11 @@ namespace User.PluginSdkDemo
             _joystick = new vJoyInterfaceWrap.vJoy();
             rudderType = 0;
             unassignedPedalCount = 0;
+            unassignedPedalMacaddress = new byte[3][];
+            for (int i = 0; i < 3; i++)
+            {
+                unassignedPedalMacaddress[i]=new byte[6] { 0, 0, 0, 0, 0, 0};
+            }
 
         }
         public event PropertyChangedEventHandler PropertyChanged;

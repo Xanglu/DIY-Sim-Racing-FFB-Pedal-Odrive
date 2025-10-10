@@ -18,5 +18,6 @@ namespace User.PluginSdkDemo
         public byte Bridge_action;//0=none, 1=enable pairing
         public fixed byte Bridge_firmware_version_u8[3];
         public fixed Int32 Pedal_RSSI_realtime[3];
+        public fixed byte macAddressDetection[18];
     };
 }

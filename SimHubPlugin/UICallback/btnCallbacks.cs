@@ -1609,19 +1609,14 @@ namespace User.PluginSdkDemo
             sideWindow.Top = screenHeight / 2 - sideWindow.Height / 2;
             sideWindow.Show();
         }
-        private void btn_ClearAssignment_Click(object sender, RoutedEventArgs e)
+        private void btn_Assignment_Click(object sender, RoutedEventArgs e)
         {
-            DAP_action_st tmp=default;
-            tmp.payloadHeader_.version = (byte)Constants.pedalConfigPayload_version;
-            tmp.payloadHeader_.payloadType = (byte)Constants.pedalActionPayload_type;
-            tmp.payloadPedalAction_.system_action_u8 = (byte)PedalSystemAction.CLEAR_ASSIGNMENT;
-            tmp.payloadHeader_.PedalTag = (byte)indexOfSelectedPedal_u;
-            tmp.payloadFooter_.enfOfFrame0_u8 = ENDOFFRAMCHAR[0];
-            tmp.payloadFooter_.enfOfFrame1_u8 = ENDOFFRAMCHAR[1];
-            tmp.payloadHeader_.startOfFrame0_u8 = STARTOFFRAMCHAR[0];
-            tmp.payloadHeader_.startOfFrame1_u8 = STARTOFFRAMCHAR[1];
-
-            Plugin.SendPedalAction(tmp, (byte)indexOfSelectedPedal_u);
+            AssignmentConfigurationWindow sideWindow = new AssignmentConfigurationWindow(Plugin);
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            sideWindow.Left = screenWidth / 2 - sideWindow.Width / 2;
+            sideWindow.Top = screenHeight / 2 - sideWindow.Height / 2;
+            sideWindow.Show();
         }
     }
 }
