@@ -6,10 +6,10 @@
         xmlns:local="clr-namespace:User.PluginSdkDemo.UIFunction"
         xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins" mc:Ignorable="d" 
         xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-        Title="Update Setting" Height="350" Width="410" Background="{x:Null}" WindowStyle="ToolWindow" ResizeMode="NoResize">
+        Title="Update Setting" Height="500" Width="600" Background="{x:Null}" WindowStyle="ToolWindow" ResizeMode="NoResize">
     <Grid>
-        <Border Background="#7F4E4E4E" Height="330" CornerRadius="5,5,5,5" BorderThickness="0,2,0,0" >
-            <StackPanel Width="400" Height="330" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Border Background="#7F4E4E4E" CornerRadius="5,5,5,5" BorderThickness="0,2,0,0" >
+            <StackPanel>
                 <Label Content="Update Setting" Height="15" Width="200" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial Black" HorizontalAlignment="Left"/>
                 <StackPanel HorizontalAlignment="Left" Height="25" VerticalAlignment="Center" Width="400" Grid.Column="1" Grid.Row="5" Orientation="Horizontal">
                     <Label Content="SSID:" Height="15" Width="40" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" Margin="2,0,0,0" FontSize="10"/>
@@ -43,11 +43,12 @@
                         <Label Content="Upload from PlatformIO" Height="20" Width="130" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" FontSize="10" Margin="4,0,0,0"/>
                     </StackPanel>
                 </StackPanel>
-                <TextBox x:Name="textBox_changelog" Width="400" Height="150" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
-                <StackPanel Height="25" Width="400" Orientation="Horizontal" Margin="0,5,0,0">
+                
+                <StackPanel Height="25" Width="400" Orientation="Horizontal" Margin="0,5,0,0" HorizontalAlignment="Left">
                     <styles:SHButtonPrimary x:Name="Btn_Apply" Click="Btn_Apply_Click" Width="80" Content="Update" Height="25" Margin="0,0,0,0" HorizontalAlignment="Left" Padding="0,0,0,0" VerticalContentAlignment="Center" />
                     <styles:SHButtonPrimary x:Name="Btn_Leave"  Click="Btn_Leave_Click" Width="80" Content="Leave" Height="25" Margin="10,0,0,0" HorizontalAlignment="Left" Padding="15,0,15,0" VerticalContentAlignment="Center" />
                 </StackPanel>
+                <TextBox x:Name="textBox_changelog" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,5,0,0" Height="300"/>
             </StackPanel>
         </Border>
     </Grid>

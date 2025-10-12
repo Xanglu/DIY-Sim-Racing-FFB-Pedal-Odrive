@@ -88,6 +88,8 @@ namespace User.PluginSdkDemo
         public bool[] isCdcSerial = new bool[3] { false, false, false };
         public List<VidPidResult> comportList = new List<VidPidResult>();
         private const float actionIntervalTolerance = 0.5f;
+        bool flightRpmEffectsStatus_last = false;
+        bool flightGforceEffects_last = false;
         //public vJoyInterfaceWrap.vJoy joystick;
         //effect trigger timer
         DateTime[] Action_currentTime = new DateTime[3];
@@ -863,7 +865,7 @@ namespace User.PluginSdkDemo
                     }
 
 
-                    if (update_flag)
+                    if (update_flag && !Rudder_status)
                     {
 
                         DAP_action_st* v = &tmp;
@@ -883,7 +885,7 @@ namespace User.PluginSdkDemo
                 {
                     if (((string)pluginManager.GetPropertyValue("DataCorePlugin.CurrentGame")) == "FlightSimulator2020" || ((string)pluginManager.GetPropertyValue("DataCorePlugin.CurrentGame")) == "FlightSimulator2024")
                     {
-                        MSFS_RPM_Value_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.GeneralEngPctMaxRPM1"));
+                        MSFS_RPM_Value_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameData.CarSettings_CurrentDisplayedRPMPercent"));
                         //RUDDER_DEFLECTION_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.RUDDER_DEFLECTION")); 
                         RELATIVE_WIND_VELOCITY_BODY_Z_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.AircraftWindZ"));
                         ACCELERATION_BODY_Z_Simhub = Convert.ToDouble(pluginManager.GetPropertyValue("DataCorePlugin.GameRawData.FSStatus.AccelerationBodyZ"));
@@ -1060,6 +1062,7 @@ namespace User.PluginSdkDemo
                         Rudder_Action_currentTime = DateTime.Now;
                         TimeSpan diff_action = Rudder_Action_currentTime - Rudder_Action_lastTime;
                         int millisceonds_action = (int)diff_action.TotalMilliseconds;
+                        
                         if (millisceonds_action > 40)
                         {
                             bool Rudder_Effect_update_b = false;
@@ -1081,18 +1084,23 @@ namespace User.PluginSdkDemo
                             //RPM effect
                             if (Settings.Rudder_RPM_effect_b)
                             {
+                                flightRpmEffectsStatus_last = true;
                                 byte Rudder_RPM_value = 0;
                                 if (MSFS_Plugin_Status)
                                 {
                                     Rudder_RPM_value = Convert.ToByte(pluginManager.GetPropertyValue("FlightPlugin.FlightData.GENERAL_ENG_PCT_MAX_RPM_1"));
                                 }
-                                if (Flight_running_simhub)
+                                else
                                 {
-                                    Rudder_RPM_value = (byte)MSFS_RPM_Value_Simhub;
+                                    if (Flight_running_simhub)
+                                    {
+                                        Rudder_RPM_value = (byte)MSFS_RPM_Value_Simhub;
+                                    }
                                 }
-                                
-                                
-                                
+
+
+
+
                                 if (Math.Abs(Rudder_RPM_value - Rudder_RPM_Effect_last_value) > 3)
                                 {
                                     tmp.payloadPedalAction_.RPM_u8 = Rudder_RPM_value;
@@ -1101,9 +1109,20 @@ namespace User.PluginSdkDemo
                                     Rudder_RPM_Effect_last_value = Rudder_RPM_value;
                                 }
                             }
+                            else
+                            {
+                                if (Rudder_RPM_Effect_last_value!=0)
+                                {
+                                    Rudder_RPM_Effect_last_value = 0;
+                                    Rudder_Effect_update_b = true;
+                                    tmp.payloadPedalAction_.RPM_u8 = Rudder_RPM_Effect_last_value;
+                                }
+                                Rudder_RPM_Effect_last_value = 0;
+                            }
 
                             if (Settings.Rudder_ACC_effect_b)
                             {
+                                flightGforceEffects_last = true;
                                 double Rudder_Wind_Froce_Ratio = 0;
 
                                 double RELATIVE_WIND_VELOCITY_BODY_Z = 0;
@@ -1117,7 +1136,7 @@ namespace User.PluginSdkDemo
                                     RELATIVE_WIND_VELOCITY_BODY_Z = Math.Abs(Convert.ToDouble(pluginManager.GetPropertyValue("FlightPlugin.FlightData.RELATIVE_WIND_VELOCITY_BODY_Z")));
                                     Rudder_Radians = Math.Abs(Convert.ToDouble(pluginManager.GetPropertyValue("FlightPlugin.FlightData.RUDDER_DEFLECTION")));
                                 }
-                                if (Flight_running_simhub)
+                                if (Flight_running_simhub && !MSFS_Plugin_Status)
                                 {
                                     Rudder_G_value_dz = ACCELERATION_BODY_Z_Simhub;
                                     Rudder_G_value_dy = ACCELERATION_BODY_Y_Simhub;
@@ -1139,7 +1158,7 @@ namespace User.PluginSdkDemo
 
                                 double Rudder_G_value_combined = Math.Sqrt(Rudder_G_value_dz * Rudder_G_value_dz + Rudder_G_value_dy * Rudder_G_value_dy);
                                 double Rudder_G_constrain = Math.Min(Rudder_G_value_combined, max_G);
-                                Rudder_G_percent = Rudder_G_constrain / max_G * 100.0f;
+                                Rudder_G_percent = Rudder_G_constrain / max_G * 100.0d;
                                 double Rudder_G_Wind_combined = Math.Min(Rudder_G_percent + Rudder_Wind_Froce_Ratio, max_G);
 
                                 if (Math.Abs(Rudder_G_last_value - Rudder_G_percent) > 2)
@@ -1149,6 +1168,17 @@ namespace User.PluginSdkDemo
                                     Rudder_Action_lastTime = DateTime.Now;
                                     Rudder_G_last_value = (Byte)Rudder_G_Wind_combined;
                                 }
+                            }
+                            else
+                            {
+                                if (Rudder_G_last_value!=0)
+                                {
+                                    Rudder_G_last_value = 0;
+                                    tmp.payloadPedalAction_.impact_value = Rudder_G_last_value;
+                                    Rudder_Effect_update_b = true;
+                                }
+                                Rudder_G_last_value = 0;
+
                             }
 
 

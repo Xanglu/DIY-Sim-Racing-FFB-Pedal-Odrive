@@ -114,20 +114,20 @@ MovingAverageFilter Averagefilter_Rudder_G_Offset(50);
 class Rudder_G_Force{
   public:
   int32_t offset_raw;
-  int32_t offset_filter;
-  int32_t stepper_range;
+  long offset_filter;
+  float stepper_range;
   uint8_t G_value;
   long stepperPosMax;
   void offset_calculate(DAP_calculationVariables_st* calcVars_st)
   {
     stepperPosMax=(float)calcVars_st->stepperPosMax;
     stepper_range=(float)calcVars_st->stepperPosRange;
-    float Amp_max=0.3*stepper_range;
+    float Amp_max=0.3f*stepper_range;
     if(calcVars_st->Rudder_status)
     {
       float offset= Amp_max*((float)G_value)/100.0f;
       //offset=constrain(offset,0,Amp_max);
-      offset_filter=Averagefilter_Rudder_G_Offset.process((stepperPosMax-offset));
+      offset_filter=Averagefilter_Rudder_G_Offset.process((stepperPosMax-(int32_t)offset));
     }
     else
     {

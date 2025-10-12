@@ -1682,10 +1682,11 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
       if(dap_calculationVariables_st.Rudder_status) 
       {
-        _rudder.offset_calculate(&dap_calculationVariables_st);
-        dap_calculationVariables_st.update_stepperMinpos(_rudder.offset_filter);
         _rudder_g_force.offset_calculate(&dap_calculationVariables_st);
         dap_calculationVariables_st.update_stepperMaxpos(_rudder_g_force.offset_filter);
+        _rudder.offset_calculate(&dap_calculationVariables_st);
+        dap_calculationVariables_st.update_stepperMinpos(_rudder.offset_filter);
+
       }
       if(dap_calculationVariables_st.helicopterRudderStatus) 
       {
@@ -1700,8 +1701,11 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           debugMessageLast=millis();
           ActiveSerial->print("Center offset:");
           ActiveSerial->println(_rudder.offset_filter);
-          ActiveSerial->print("min default:");
-          ActiveSerial->println(dap_calculationVariables_st.stepperPosMin_default);
+          ActiveSerial->print("pos min:");
+          ActiveSerial->println(dap_calculationVariables_st.stepperPosMin);
+          ActiveSerial->print("pos max:");
+          ActiveSerial->println(dap_calculationVariables_st.stepperPosMax);
+          ActiveSerial->print("max Force:");
           ActiveSerial->print("max Force:");
           ActiveSerial->print(dap_calculationVariables_st.Force_Max);
           ActiveSerial->print(" min Force:");
@@ -3457,14 +3461,7 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
             #ifdef USING_BUZZER
               buzzerBeepAction_b=true;
             #endif
-            /*
-            char logString[200];
-            snprintf(logString, sizeof(logString),
-                    "Pedal ID: %d\nBoard: %s\nLoadcell shift= %.3f kg\nLoadcell variance= %.3f kg\nPSU voltage:%.1f V\nMax endstop:%lu\nCurrentPos:%d\0",
-                    espnow_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage()/10.0f),dap_calculationVariables_st.stepperPosMaxEndstop,dap_calculationVariables_st.current_pedal_position);
-            ActiveSerial->println(logString);
-            sendESPNOWLog(logString, strnlen(logString, sizeof(logString)));
-            */
+            delay(100);
             pedalInfoBuilder.BuildInfoString(espnow_dap_config_st.payLoadPedalConfig_.pedal_type, CONTROL_BOARD, loadcell->getShiftingEstimate(), loadcell->getSTDEstimate(), ((float)stepper->getServosVoltage()/10.0f),dap_calculationVariables_st.stepperPosMaxEndstop,dap_calculationVariables_st.current_pedal_position);
             sendESPNOWLog(pedalInfoBuilder.logString);
             ActiveSerial->println(pedalInfoBuilder.logString);
