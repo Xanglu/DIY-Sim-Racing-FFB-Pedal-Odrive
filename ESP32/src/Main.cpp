@@ -1924,10 +1924,12 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
       // compute next position with PID strategy
       // MPC control strategy for rudder
+      int32_t positionWithoutEffect=0;
       if(dap_calculationVariables_st.Rudder_status || dap_calculationVariables_st.helicopterRudderStatus)
       {
         // Rudder only
         Position_Next = MoveByForceTargetingStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity, d_phi_d_x, d_x_hor_d_phi);
+        positionWithoutEffect=Position_Next;//send the value without rpm effect
         Position_Next -= effect_pos_fl32;
       }
       else 
@@ -1949,9 +1951,9 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       
 
       // rudder helper
-      Rudder_real_poisiton= 100*((Position_Next-dap_calculationVariables_st.stepperPosMin_default) / dap_calculationVariables_st.stepperPosRange_default);
+      Rudder_real_poisiton= 100*((positionWithoutEffect-dap_calculationVariables_st.stepperPosMin_default) / dap_calculationVariables_st.stepperPosRange_default);
 
-      dap_calculationVariables_st.current_pedal_position = Position_Next;
+      dap_calculationVariables_st.current_pedal_position = positionWithoutEffect;
       dap_calculationVariables_st.current_pedal_position_ratio=((float)(dap_calculationVariables_st.current_pedal_position-dap_calculationVariables_st.stepperPosMin_default))/((float)dap_calculationVariables_st.stepperPosRange_default);
       //Rudder initialzing and de initializing
       #ifdef ESPNOW_Enable
