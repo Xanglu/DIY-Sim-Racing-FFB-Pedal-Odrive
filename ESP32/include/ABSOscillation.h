@@ -363,7 +363,7 @@ public:
     {
       _CVTimeMillis += timeNowMillis - _lastCallTimeMillis;
       float CVTimeSeconds = _CVTimeMillis * 0.001f;
-      CVForceOffset = 0.05f * CV_amp * isin( 360.0f * CV_freq* CVTimeSeconds );  
+      CVForceOffset = CV_amp * isin( 360.0f * CV_freq* CVTimeSeconds );  
     }
 
     CV_Force_offset = CVForceOffset;
