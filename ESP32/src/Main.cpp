@@ -925,7 +925,7 @@ void setup()
   #endif
 
   bool invMotorDir = dap_config_st_local.payLoadPedalConfig_.invertMotorDirection_u8 > 0;
-  stepper = new StepperWithLimits(stepPinStepper, dirPinStepper, invMotorDir, dap_calculationVariables_st.stepsPerMotorRevolution); 
+  stepper = new StepperWithLimits(stepPinStepper, dirPinStepper, invMotorDir, dap_calculationVariables_st.stepsPerMotorRevolution, dap_config_st_local.payLoadPedalConfig_.servoRatioOfInertia_u8); 
 
   motorRevolutionsPerSteps_fl32 = 1.0f / ( (float)dap_calculationVariables_st.stepsPerMotorRevolution );
   // ActiveSerial->printf("Steps per motor revolution: %d\n", dap_calculationVariables_st.stepsPerMotorRevolution);
@@ -1547,6 +1547,7 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
         // set position command smoothing
         stepper->configSetPositionCommandSmoothingFactor(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.positionSmoothingFactor_u8);
         stepper->configSetProfilingFlag( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_CYCLE_TIMER) );
+        stepper->configSetRatioOfInertia(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.servoRatioOfInertia_u8);
 
         // reset all servo alarms
         if ( (dap_config_pedalUpdateTask_st.payLoadPedalConfig_.debug_flags_0 & DEBUG_INFO_0_RESET_ALL_SERVO_ALARMS) )

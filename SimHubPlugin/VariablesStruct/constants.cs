@@ -9,7 +9,7 @@ namespace User.PluginSdkDemo
     static class Constants
     {
         // payload revisiom
-        public const uint pedalConfigPayload_version = 160;
+        public const uint pedalConfigPayload_version = 161;
 
 
         // pyload types

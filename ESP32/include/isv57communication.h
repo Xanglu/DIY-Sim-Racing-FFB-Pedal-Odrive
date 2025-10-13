@@ -57,7 +57,7 @@ class isv57communication {
 	public:
     isv57communication();
     void setupServoStateReading();
-    void sendTunedServoParameters(bool commandRotationDirection, uint32_t stepsPerMotorRev_u32);
+    void sendTunedServoParameters(bool commandRotationDirection, uint32_t stepsPerMotorRev_u32, uint32_t ratioOfInertia_u32);
     void readAllServoParameters();
     void readServoStates();
     bool checkCommunication();
@@ -68,6 +68,7 @@ class isv57communication {
     void resetToFactoryParams();
     bool setServoVoltage(uint16_t voltageInVolt_u16);
     bool setPositionSmoothingFactor(uint16_t posSmoothingFactor_u16);
+    bool setRatioOfInertia(uint8_t ratiOfInertia_u8);
 	
 	void clearServoUnitPosition();
     void disableAxis();

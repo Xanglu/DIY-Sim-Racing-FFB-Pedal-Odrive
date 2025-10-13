@@ -182,7 +182,6 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadPedalConfig_.kf_modelNoise = 90;
             dap_config_st[pedalIdx].payloadPedalConfig_.kf_modelOrder = 0;
 
-            dap_config_st[pedalIdx].payloadPedalConfig_.positionSmoothingFactor_u8 = 20;
 
             dap_config_st[pedalIdx].payloadPedalConfig_.loadcell_rating = 150;
 
@@ -199,6 +198,7 @@ namespace User.PluginSdkDemo
             dap_config_st[pedalIdx].payloadPedalConfig_.kf_Joystick_u8 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.positionSmoothingFactor_u8 = 0;
             dap_config_st[pedalIdx].payloadPedalConfig_.minForceForEffects = 0;
+            dap_config_st[pedalIdx].payloadPedalConfig_.servoRatioOfInertia_u8 = 1;
         }
 
         public void DAP_config_set_default_rudder()

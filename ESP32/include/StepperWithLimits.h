@@ -40,6 +40,7 @@ private:
 	bool enableCrashDetection_b = true;
 
 	uint16_t posCommandSmoothingFactor_u16 = 0;
+	uint8_t ratioOfInertia_u8 = 1;
 
 	bool logAllServoParams = false;
 	bool clearAllServoAlarms_b = false;
@@ -55,7 +56,7 @@ private:
 	
 
 public:
-	StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool invertMotorDir_b, uint32_t stepsPerMotorRev_arg_u32);
+	StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool invertMotorDir_b, uint32_t stepsPerMotorRev_arg_u32, uint8_t ratioOfInertia_arg_u8);
 	bool hasValidStepper() const { return NULL != _stepper; }
 
 	void checkLimitsAndResetIfNecessary();
@@ -98,6 +99,7 @@ public:
 	
 	void configSteplossRecovAndCrashDetection(uint8_t flags_u8);
 	void configSetPositionCommandSmoothingFactor(uint8_t posCommandSmoothingFactorArg_u8);
+	void configSetRatioOfInertia(uint8_t ratioOfInertia_arg_u8);
 	void printAllServoParameters();
 	void clearAllServoAlarms();
 	void resetServoParametersToFactoryValues();

@@ -212,9 +212,14 @@ bool isv57communication::setPositionSmoothingFactor(uint16_t posSmoothingFactor_
   return modbus.checkAndReplaceParameter(slaveId, pr_2_00+22, posSmoothingFactor_u16); // positional command smoothing factor in 0.1ms
 }
 
+bool isv57communication::setRatioOfInertia(uint8_t ratiOfInertia_u8)
+{
+  return modbus.checkAndReplaceParameter(slaveId, pr_0_00+4, ratiOfInertia_u8); // positional command smoothing factor in 0.1ms
+}
+
 
 // send tuned servo parameters
-void isv57communication::sendTunedServoParameters(bool commandRotationDirection, uint32_t stepsPerMotorRev_u32) {
+void isv57communication::sendTunedServoParameters(bool commandRotationDirection, uint32_t stepsPerMotorRev_u32, uint32_t ratioOfInertia_u32) {
   
   bool retValue_b = false;
 
@@ -241,7 +246,7 @@ void isv57communication::sendTunedServoParameters(bool commandRotationDirection,
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+1, tuned_parameters[pr_0_00+1]); // control mode #
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+2, tuned_parameters[pr_0_00+2]); // deactivate auto gain
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+3, tuned_parameters[pr_0_00+3]); // machine stiffness
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+4, tuned_parameters[pr_0_00+4]); // ratio of inertia
+  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+4, ratioOfInertia_u32 ); // ratio of inertia
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+6, tuned_parameters[pr_0_00+6]); // motor command direction
   //retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+6, commandRotationDirection); // Command Pulse Rotational Direction
   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+8, (long)stepsPerMotorRev_u32); // microsteps

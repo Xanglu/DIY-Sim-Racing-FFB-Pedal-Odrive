@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "CubicInterpolatorFloat.h"
 // define the payload revision
-#define DAP_VERSION_CONFIG 160
+#define DAP_VERSION_CONFIG 161
 
 // define the payload types
 #define DAP_PAYLOAD_TYPE_CONFIG 100
@@ -303,7 +303,7 @@ struct payloadPedalConfig {
   uint8_t servoIdleTimeout;
   uint8_t positionSmoothingFactor_u8;
   uint8_t minForceForEffects_u8;
-  
+  uint8_t servoRatioOfInertia_u8;
 
 };
 

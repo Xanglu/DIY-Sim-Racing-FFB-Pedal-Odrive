@@ -136,6 +136,7 @@ void DAP_config_st::initialiseDefaults() {
   payLoadPedalConfig_.kf_Joystick_u8=0;
   payLoadPedalConfig_.servoIdleTimeout=0;
   payLoadPedalConfig_.minForceForEffects_u8=0;
+  payLoadPedalConfig_.servoRatioOfInertia_u8=1;
 }
 
 

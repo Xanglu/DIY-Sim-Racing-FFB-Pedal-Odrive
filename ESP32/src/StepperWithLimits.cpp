@@ -44,10 +44,11 @@ bool setServoToSleep_b = false;
 #define STEPPER_FORWARD_PLANNING_TIME_IN_MS (uint8_t)1
 
 
-StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool invertMotorDir_b, uint32_t stepsPerMotorRev_arg_u32)
+StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool invertMotorDir_b, uint32_t stepsPerMotorRev_arg_u32, uint8_t ratioOfInertia_arg_u8)
   :  _endstopLimitMin(0),    _endstopLimitMax(0)
   , _posMin(0),      _posMax(0)
   , stepsPerMotorRev_u32(stepsPerMotorRev_arg_u32)
+  , ratioOfInertia_u8(ratioOfInertia_arg_u8)
 {
 
   	_stepper = new FastNonAccelStepper(pinStep, pinDirection, invertMotorDir_b); 
@@ -115,7 +116,7 @@ StepperWithLimits::StepperWithLimits(uint8_t pinStep, uint8_t pinDirection, bool
 		// flash iSV57 registers
 		isv57.setupServoStateReading();
 		invertMotorDir_global_b = invertMotorDir_b;
-		isv57.sendTunedServoParameters(invertMotorDir_global_b, stepsPerMotorRev_u32);
+		isv57.sendTunedServoParameters(invertMotorDir_global_b, stepsPerMotorRev_u32, ratioOfInertia_u8);
 
 
 		delay(30);
@@ -630,6 +631,17 @@ void StepperWithLimits::configSetPositionCommandSmoothingFactor(uint8_t posComma
 	}
 }
 
+void StepperWithLimits::configSetRatioOfInertia(uint8_t ratioOfInertia_arg_u8)
+{
+	if (ratioOfInertia_u8 != (uint8_t)ratioOfInertia_arg_u8)
+	{
+		ratioOfInertia_u8 = constrain( (uint8_t)ratioOfInertia_arg_u8, 1, 255);
+		updateServoParams_b = true;
+
+
+	}
+}
+
 
 
 int64_t timeSinceLastServoPosChange_l = 0;
@@ -778,7 +790,10 @@ void IRAM_ATTR StepperWithLimits::servoCommunicationTask(void *pvParameters)
 				if (true == stepper_cl->updateServoParams_b)
 				{
 					stepper_cl->isv57.setPositionSmoothingFactor(stepper_cl->posCommandSmoothingFactor_u16);
+					stepper_cl->isv57.setRatioOfInertia(stepper_cl->ratioOfInertia_u8);
 					stepper_cl->updateServoParams_b = false;
+
+					ActiveSerial->println("Updating Servo parameters.");
 				}
 
 
