@@ -826,6 +826,9 @@ namespace User.PluginSdkDemo
 
         unsafe private void btn_OTA_enable_Click(object sender, RoutedEventArgs e)
         {
+            Plugin._calculations.ForceUpdate_b = false;
+            Plugin._calculations.IsOtaUploadFromPlatformIO = false;
+            Plugin._calculations.IsTestBuild = false;
             UpdateSettingWindow sideWindow = new UpdateSettingWindow(Plugin.Settings, Plugin._calculations);
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             double screenHeight = SystemParameters.PrimaryScreenHeight;
@@ -839,6 +842,7 @@ namespace User.PluginSdkDemo
                 string PASS = Plugin.Settings.PASS_string;
                 string MSG_tmp = "";
                 bool SSID_PASS_check = true;
+                tmp_2.payloadOtaInfo_.ota_action = (byte)otaAction.OTA_ACTION_NORMAL;
                 if (Plugin._calculations.ForceUpdate_b == true)
                 {
                     tmp_2.payloadOtaInfo_.ota_action = (byte) otaAction.OTA_ACTION_FORCE_UPDATE;
@@ -867,21 +871,8 @@ namespace User.PluginSdkDemo
                     System.Windows.MessageBox.Show(MSG_tmp, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                MSG_tmp += "OTA-Pull function only support V4/V5/Gilphilbert pcba v1.2/pcba v2.0 board.\nAfter enable OTA-Pull, you need wait for 3-5 minutes and Pedal will auto restart after update.\nThe OTA log will showed in serial monitor with USB connection.\nV3/Speedcrafter board user, please connect to ";
-                if (indexOfSelectedPedal_u == 0)
-                {
-                    MSG_tmp += "FFBPedalClutch";
-                }
-                if (indexOfSelectedPedal_u == 1)
-                {
-                    MSG_tmp += "FFBPedalBrake";
-                }
-                if (indexOfSelectedPedal_u == 2)
-                {
-                    MSG_tmp += "FFBPedalGas";
-                }
-                MSG_tmp += " wifi hotspot, open 192.168.2.1 in web browser to upload firmware.bin";
-
+                //MSG_tmp = "OTA action:" + tmp_2.payloadOtaInfo_.ota_action;
+                MSG_tmp = "Please confirm whether you want to proceed with the OTA update.";
                 //System.Windows.MessageBox.Show(MSG_tmp, "OTA warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                 var result = System.Windows.MessageBox.Show(MSG_tmp, "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Question);
                 if (result == MessageBoxResult.OK)

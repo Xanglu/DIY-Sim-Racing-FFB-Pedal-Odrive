@@ -299,7 +299,7 @@ void onRecv(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int da
       DAP_actions_st dap_actions_st;
       if(data_len==sizeof(dap_actions_st))
       {
-        ActiveSerial->print(" get action");
+        //ActiveSerial->print(" get action");
         memcpy(&dap_actions_st, data, sizeof(DAP_actions_st));
         // ActiveSerial->readBytes((char*)&dap_actions_st, sizeof(DAP_actions_st));
         bool commandForAssignment_b = false;

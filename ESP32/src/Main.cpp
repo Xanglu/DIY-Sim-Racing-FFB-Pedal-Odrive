@@ -2586,7 +2586,7 @@ void IRAM_ATTR_FLAG serialCommunicationTaskRx(void *pvParameters) {
 
                           //3= Wifi OTA
                           #ifdef ESPNOW_Enable
-                          if (received_action.payloadPedalAction_.system_action_u8==3)
+                          if (received_action.payloadPedalAction_.system_action_u8==(uint8_t)PedalSystemAction::ENABLE_OTA)
                           {
                             ActiveSerial->println("Get OTA command");
                             OTA_enable_b=true;
@@ -3076,6 +3076,7 @@ void otaUpdateTask( void * pvParameters )
             else
             {
               // initialize ota for platformIO upload
+              ActiveSerial->println("OTA from platformIO");
               ota_arduinoota_initialize();
             }         
             #endif
