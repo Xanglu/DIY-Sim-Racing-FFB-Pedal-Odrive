@@ -2962,6 +2962,7 @@ void otaUpdateTask( void * pvParameters )
               if(dap_action_ota_st.payloadOtaInfo_.ota_action==OTA_ACTION_PLATFORMIO_DIRECT_UPLOAD)
               {
                 //updload ota from platformio
+                //sendESPNOWLog("Upload from platformIO");
                 ArduinoOTA.handle(); 
                 if(millis()-ota_debug_messaage_last>1000)
                 {
@@ -2993,19 +2994,20 @@ void otaUpdateTask( void * pvParameters )
         }
         else
         {
-
+          esp_err_t result;
           ActiveSerial->println("de-initialize espnow");
           ActiveSerial->println("wait...");
           #ifdef ESPNOW_Enable
             sendESPNOWLog("OTA enabled, de-initialize espnow");
             sendESPNOWLog("wait...");
             delay(1000);
-            esp_err_t result= esp_now_deinit();
+            result= esp_now_deinit();
             ESPNow_initial_status=false;
             ESPNOW_status=false;
           #else
-            esp_err_t result = ESP_OK;
+            result = ESP_OK;
           #endif
+          //result = ESP_OK;
           delay(3000);
           if(result==ESP_OK)
           {
@@ -3026,6 +3028,7 @@ void otaUpdateTask( void * pvParameters )
             #ifdef OTA_update
             wifi_initialized(SSID,PASS);
             delay(2000);
+            //sendESPNOWLog("Wifi Connected");
             if(dap_action_ota_st.payloadOtaInfo_.ota_action!=OTA_ACTION_PLATFORMIO_DIRECT_UPLOAD)
             {
               ESP32OTAPull ota;
@@ -3430,13 +3433,14 @@ void IRAM_ATTR_FLAG espNowCommunicationTaskTx( void * pvParameters )
 
           if (OTA_update_action_b && !noAssignmentStatus)
           {
-            ActiveSerial->println("Get OTA command");
+            ActiveSerial->println("Starting Pedal OTA");
             #ifdef USING_BUZZER
               buzzerBeepAction_b=true;
             #endif
             OTA_enable_b=true;
             OTA_enable_start=true;
             ESPNow_OTA_enable=false;
+            OTA_update_action_b = false;
             //ActiveSerial->println("get basic wifi info");
             //ActiveSerial->readBytes((char*)&dap_action_ota_st, sizeof(DAP_action_ota_st));
             #ifdef OTA_update
