@@ -58,7 +58,7 @@ namespace User.PluginSdkDemo
         {
 
             CheckSerialAvailability();
-
+            
             if (Plugin != null)
             {
                 var tmp_struct = dap_config_st[indexOfSelectedPedal_u];

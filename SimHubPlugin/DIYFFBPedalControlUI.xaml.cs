@@ -84,8 +84,8 @@ namespace User.PluginSdkDemo
         public uint indexOfSelectedPedal_u = 1;
         public uint profile_select = 0;
         public DIY_FFB_Pedal Plugin { get; }
-        public static DAP_config_st[] dap_config_st = new DAP_config_st[3];
-        public static DAP_config_st dap_config_st_rudder;
+        public DAP_config_st[] dap_config_st = new DAP_config_st[3];
+        public DAP_config_st dap_config_st_rudder;
 
 
         public DAP_bridge_state_st dap_bridge_state_st;
@@ -484,20 +484,25 @@ namespace User.PluginSdkDemo
         private void SystemLicense_Tab_btn_test_Click_event(object sender, EventArgs e)
         {
             ToastNotification("Debug", "Print All parameter and available com portin Serial log");
-            PrintUnknownStructParameters(dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_);
+            
             //readRudderSettingToConfig();
             //PrintUnknownStructParameters(dap_config_st_rudder.payloadPedalConfig_);
-                
             if (_serial_monitor_window != null)
             {
+                PrintUnknownStructParameters(dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_);
                 _serial_monitor_window.TextBox_SerialMonitor.Text += "\nCom port count: " + Plugin.comportList.Count;
                 foreach (var items in Plugin.comportList)
                 {              
                     _serial_monitor_window.TextBox_SerialMonitor.Text += "\ndevice name:" + items.DeviceName + "\nVID:" + items.Vid + " PID:" + items.Pid;
                 }
             }
-            
-            
+            ConfigUpdateWIndow sideWindow = new ConfigUpdateWIndow(Plugin);
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            sideWindow.Left = screenWidth / 2 - sideWindow.Width / 2;
+            sideWindow.Top = screenHeight / 2 - sideWindow.Height / 2;
+            sideWindow.Show();
+
 
         }
 

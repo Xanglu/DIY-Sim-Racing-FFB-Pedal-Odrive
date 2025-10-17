@@ -32,7 +32,7 @@ namespace User.PluginSdkDemo
     [PluginDescription("The Plugin was for FFB pedal, To tune the pedal parameters and communicates with the pedal over USB.")]
     [PluginAuthor("OpenSource")]
     [PluginName("DIY active pedal plugin")]
-    public class DIY_FFB_Pedal : IPlugin, IDataPlugin, IWPFSettingsV2
+    public partial class DIY_FFB_Pedal : IPlugin, IDataPlugin, IWPFSettingsV2
     {
         public CalculationVariables _calculations;
         public PluginManager pluginHandle;// = this;
@@ -1421,7 +1421,7 @@ namespace User.PluginSdkDemo
             pluginManager.AddProperty("PedalErrorCode", this.GetType(), PedalErrorCode);
             pluginManager.AddProperty("FlightRudder_G", this.GetType(), Rudder_G_last_value);
             pluginManager.AddProperty("FlightRudder_Wind_Force", this.GetType(), Rudder_Wind_Force_last_value);
-
+            EnsureFolderExistsAndProcess();
             for (uint pedali=0; pedali < 3; pedali++)
             {
                 Action_currentTime[pedali] = new DateTime();
