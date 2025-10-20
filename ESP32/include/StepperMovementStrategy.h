@@ -41,14 +41,16 @@ int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, StepperWithLim
 
   // get current position
   int32_t currentPosFromMinInSteps_i32 = stepper->getCurrentPositionFromMin();
-
+  
   // apply offset
   int32_t currentPosWithOffset_i32 = currentPosFromMinInSteps_i32 + absPosOffset_fl32;
-  float stepperPosFraction = stepper->getCurrentPositionFractionFromExternalPos(currentPosWithOffset_i32);
+  
+  float stepperPosFraction = stepper->getCurrentPositionFractionFromExternalPos(currentPosFromMinInSteps_i32);
+  float stepperPosFractionWithForceOffset_fl32 = stepper->getCurrentPositionFractionFromExternalPos(currentPosWithOffset_i32);
 
   // clamp the stepper position to prevent problems with the spline 
   float stepperPosFraction_constrained = constrain(stepperPosFraction, 0.0f, 1.0f);
-
+  float stepperPosFractionWithForceOffset_constrained = constrain(stepperPosFractionWithForceOffset_fl32, 0.0f, 1.0f);
 
   // constrain the output to the correct positioning interval to prevent PID windup 
   float neg_output_limit_fl32 = 1.0f - stepperPosFraction_constrained;
@@ -67,7 +69,7 @@ int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, StepperWithLim
   }
 
   // read target force at spline position
-  float loadCellTargetKg = forceCurve->EvalForceCubicSpline(config_st, calc_st, stepperPosFraction_constrained);
+  float loadCellTargetKg = forceCurve->EvalForceCubicSpline(config_st, calc_st, stepperPosFractionWithForceOffset_constrained);
 
   // apply effect force offset
   loadCellTargetKg -= absForceOffset_fl32;
