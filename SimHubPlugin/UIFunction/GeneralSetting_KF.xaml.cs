@@ -84,15 +84,6 @@ namespace User.PluginSdkDemo.UIFunction
             get;set;
         }
 
-        public double PosSmoothing_value
-        {
-            /*
-            get => (double)GetValue(KF_valueProperty);
-            set => SetValue(KF_valueProperty, value);
-            */
-            get; set;
-        }
-
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             
@@ -106,7 +97,6 @@ namespace User.PluginSdkDemo.UIFunction
                         if(control. KF_filter_order!=null) control.KF_filter_order.SelectedIndex = newData.payloadPedalConfig_.kf_modelOrder;
                         if (control.Slider_KF != null) control.Slider_KF.SliderValue = newData.payloadPedalConfig_.kf_modelNoise;
                         if (control.Slider_KF_Joystick != null) control.Slider_KF_Joystick.SliderValue = newData.payloadPedalConfig_.kf_modelNoise_joystick;
-                        if (control.Slider_PositionFilter != null) control.Slider_PositionFilter.SliderValue = newData.payloadPedalConfig_.positionSmoothingFactor_u8;
                     }
                     catch
                     {
@@ -133,14 +123,6 @@ namespace User.PluginSdkDemo.UIFunction
             ConfigChangedEvent(dap_config_st);
         }
 
-        public void PosFilterValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            PosSmoothing_value = e.NewValue;
-            var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.positionSmoothingFactor_u8 = (byte)PosSmoothing_value;
-            dap_config_st = tmp;
-            ConfigChangedEvent(dap_config_st);
-        }
 
         //public event RoutedEventHandler KF_SelectionChanged;
         public void KF_filter_order_SelectionChanged(object sender, SelectionChangedEventArgs e)

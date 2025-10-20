@@ -33,6 +33,14 @@ namespace User.PluginSdkDemo.UIFunction
             typeof(GeneralSetting_Servo),
             new FrameworkPropertyMetadata(new DAP_config_st(), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnPropertyChanged));
 
+        public double PosSmoothing_value
+        {
+            /*
+            get => (double)GetValue(KF_valueProperty);
+            set => SetValue(KF_valueProperty, value);
+            */
+            get; set;
+        }
 
         public DAP_config_st dap_config_st
         {
@@ -59,6 +67,7 @@ namespace User.PluginSdkDemo.UIFunction
                     try
                     {
                         if (control.Slider_ServoRatioOfInertia != null) control.Slider_ServoRatioOfInertia.SliderValue = newData.payloadPedalConfig_.servoRatioOfInertia_u8;
+                        if (control.Slider_PositionFilter != null) control.Slider_PositionFilter.SliderValue = newData.payloadPedalConfig_.positionSmoothingFactor_u8;
                     }
                     catch
                     {
@@ -78,6 +87,15 @@ namespace User.PluginSdkDemo.UIFunction
         {
             var tmp = dap_config_st;
             tmp.payloadPedalConfig_.servoRatioOfInertia_u8 = (byte)e.NewValue;
+            dap_config_st = tmp;
+            ConfigChangedEvent(dap_config_st);
+        }
+
+        public void PosFilterValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            PosSmoothing_value = e.NewValue;
+            var tmp = dap_config_st;
+            tmp.payloadPedalConfig_.positionSmoothingFactor_u8 = (byte)PosSmoothing_value;
             dap_config_st = tmp;
             ConfigChangedEvent(dap_config_st);
         }

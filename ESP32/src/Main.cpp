@@ -20,6 +20,7 @@
 #define DEBUG_INFO_0_LOG_ALL_SERVO_PARAMS 128
 
 
+#define EFFECT_SCALING_FACTOR_FL32 4.0f;
 
 
 #define BAUD3M 3000000
@@ -1605,13 +1606,9 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
           stepper->printAllServoParameters();
         }
 
-
-        ActiveSerial->printf("Abs ampl.: %0.3f\n", (float)dap_calculationVariables_st.absAmplitude);
-        ActiveSerial->printf("force range.: %0.3f\n", (float)dap_calculationVariables_st.Force_Range);
-        ActiveSerial->printf("pos range: %0.3f\n", (float)dap_calculationVariables_st.stepperPosRange);
-
-        ActiveSerial->printf("isin: %0.3f, %0.3f, %0.3f, %0.3f, %0.3f\n", (float)isin(0), (float)isin(90), (float)isin(180), (float)isin(270), (float)isin(360), (float)isin(450));
-
+        // ActiveSerial->printf("Abs ampl.: %0.3f\n", (float)dap_calculationVariables_st.absAmplitude);
+        // ActiveSerial->printf("force range.: %0.3f\n", (float)dap_calculationVariables_st.Force_Range);
+        // ActiveSerial->printf("pos range: %0.3f\n", (float)dap_calculationVariables_st.stepperPosRange);
         
         //bitepoint trigger
         BP_trigger_value = dap_config_pedalUpdateTask_st.payLoadPedalConfig_.BP_trigger_value;
@@ -1922,6 +1919,11 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
         // dampening is proportional to velocity --> D-gain for stability
         effect_pos_fl32 -= dap_calculationVariables_st.dampingPress * changeVelocity * dap_calculationVariables_st.springStiffnesssInv;
       }
+
+      // Due to closed loop frequiency response, the servo might travel less than the input amplitude. 
+      // To compensate the attenuation, the input amplitude is scaled by a constant factor, which was identified for 15Hz input frequency and roughly resulted in plausible amplitude range. 
+      effect_force_fl32 *= EFFECT_SCALING_FACTOR_FL32;
+      effect_pos_fl32 *= EFFECT_SCALING_FACTOR_FL32;
 
       // compute next position with PID strategy
       // MPC control strategy for rudder
