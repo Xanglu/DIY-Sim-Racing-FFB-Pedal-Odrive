@@ -113,7 +113,7 @@ int32_t IRAM_ATTR_FLAG MoveByPidStrategy(float loadCellReadingKg, StepperWithLim
   
   // clamp target position to range
   posStepperNew=constrain(posStepperNew,calc_st->stepperPosMin,calc_st->stepperPosMax );
-  
+  //posStepperNew=constrain(posStepperNew,calc_st->stepperPosMinEndstop,calc_st->stepperPosMaxEndstop );
 
   return posStepperNew;
 }

@@ -1881,36 +1881,31 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
       // Adding effects
       effect_pos_fl32 = 0.0f;
       effect_force_fl32 = 0.0f;
-
+      bool effectsCalculated_b=false;
       // only add force when not at min position 
       if(dap_config_pedalUpdateTask_st.payLoadPedalConfig_.minForceForEffects_u8!=0)
       {
         if(filteredReading >= (float)dap_config_pedalUpdateTask_st.payLoadPedalConfig_.minForceForEffects_u8)
         {
-          // accumulate force offsets
-          effect_force_fl32 += absOscillation.absOscillation_Force_offset;
-          effect_force_fl32 += _BitePointOscillation.BitePoint_Force_offset;
-          effect_force_fl32 += _WSOscillation.WS_Force_offset;
-          effect_force_fl32 += CV1.CV_Force_offset;
-          effect_force_fl32 += CV2.CV_Force_offset;
-
-          // accumulate position offsets
-          effect_pos_fl32 += absOscillation.absOscillation_Position_offset;
-          effect_pos_fl32 += _RPMOscillation.RPM_position_offset;
+          effectsCalculated_b = true;
         }
       }
       else
       {
         // accumulate force offsets
+        effectsCalculated_b=true;
+        //effect_pos_fl32 += _RPMOscillation.RPM_position_offset;
+      }
+      if(effectsCalculated_b)
+      {
         effect_force_fl32 += absOscillation.absOscillation_Force_offset;
         effect_force_fl32 += _BitePointOscillation.BitePoint_Force_offset;
         effect_force_fl32 += _WSOscillation.WS_Force_offset;
         effect_force_fl32 += CV1.CV_Force_offset;
         effect_force_fl32 += CV2.CV_Force_offset;
 
-        // accumulate position offsets
+          // accumulate position offsets
         effect_pos_fl32 += absOscillation.absOscillation_Position_offset;
-        effect_pos_fl32 += _RPMOscillation.RPM_position_offset;
       }
 
       // add dampening
@@ -1933,12 +1928,15 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
         // Rudder only
         Position_Next = MoveByForceTargetingStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, 0.0f/*effect_force*/, changeVelocity, d_phi_d_x, d_x_hor_d_phi);
         positionWithoutEffect=Position_Next;//send the value without rpm effect
-        Position_Next -= effect_pos_fl32;
+        if(effectsCalculated_b) Position_Next -= effect_pos_fl32;
+        if(effectsCalculated_b) Position_Next -= _RPMOscillation.RPM_position_offset;
       }
       else 
       {
         // Pedal control
         Position_Next = MoveByPidStrategy(filteredReading, stepper, &forceCurve, &dap_calculationVariables_st, &dap_config_pedalUpdateTask_st, effect_force_fl32, effect_pos_fl32);
+        if(effectsCalculated_b) Position_Next -= _RPMOscillation.RPM_position_offset;
+        
       }
       // end profiler 4, movement strategy
       profiler_pedalUpdateTask.end(5);
@@ -1948,8 +1946,8 @@ void IRAM_ATTR_FLAG pedalUpdateTask( void * pvParameters )
 
       
       // clip target position to configured target interval with RPM effect movement in the endstop
-      // Position_Next = (int32_t)constrain(Position_Next, dap_calculationVariables_st.stepperPosMinEndstop, dap_calculationVariables_st.stepperPosMaxEndstop);
-      Position_Next = (int32_t)constrain(Position_Next, dap_calculationVariables_st.stepperPosMin, dap_calculationVariables_st.stepperPosMax);
+      Position_Next = (int32_t)constrain(Position_Next, dap_calculationVariables_st.stepperPosMinEndstop, dap_calculationVariables_st.stepperPosMaxEndstop);
+      //Position_Next = (int32_t)constrain(Position_Next, dap_calculationVariables_st.stepperPosMin, dap_calculationVariables_st.stepperPosMax);
 
       
 
