@@ -9,6 +9,6 @@
   },
   "daily-build": {
     "version": "0.90.15",
-    "changelog": "\nNightly build changelog:\nSAME AS STABLE RELEASE"
+    "changelog": "\nNightly build changelog:\nSAME AS STABLE RELEASE "
   }
 }
