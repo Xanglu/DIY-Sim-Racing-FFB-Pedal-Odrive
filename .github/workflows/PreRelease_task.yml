@@ -92,9 +92,7 @@ jobs:
         working-directory: ./ESP32
         run: | 
           pio system info
-          pio run --environment esp32 
           pio run --environment esp32s3usbotg
-          pio run --environment esp32-speedcrafter
           pio run --environment esp32s3usbotg-gilphilbert
           pio run --environment esp32s3usbotg-gilphilbert_2_0
           pio run --environment esp32s3usbotg-gilphilbert_2_0_without_espnow
@@ -113,15 +111,9 @@ jobs:
     # copy files to dir
       - name: Copy files to packing dir
         run: | 
-          copy ${{ github.workspace }}/ESP32/.pio/build/esp32/firmware.bin  ${{ github.workspace }}/Helper/bins/esp32
-          copy ${{ github.workspace }}/ESP32/.pio/build/esp32/bootloader.bin  ${{ github.workspace }}/Helper/bins/esp32
-          copy ${{ github.workspace }}/ESP32/.pio/build/esp32/partitions.bin  ${{ github.workspace }}/Helper/bins/esp32
           copy ${{ github.workspace }}/ESP32/.pio/build/esp32s3usbotg/firmware.bin  ${{ github.workspace }}/Helper/bins/esp32s3
           copy ${{ github.workspace }}/ESP32/.pio/build/esp32s3usbotg/bootloader.bin  ${{ github.workspace }}/Helper/bins/esp32s3
           copy ${{ github.workspace }}/ESP32/.pio/build/esp32s3usbotg/partitions.bin  ${{ github.workspace }}/Helper/bins/esp32s3
-          copy ${{ github.workspace }}/ESP32/.pio/build/esp32-speedcrafter/firmware.bin  ${{ github.workspace }}/Helper/bins/esp32_speedcrafter_PCB_V1p4
-          copy ${{ github.workspace }}/ESP32/.pio/build/esp32-speedcrafter/bootloader.bin  ${{ github.workspace }}/Helper/bins/esp32_speedcrafter_PCB_V1p4
-          copy ${{ github.workspace }}/ESP32/.pio/build/esp32-speedcrafter/partitions.bin  ${{ github.workspace }}/Helper/bins/esp32_speedcrafter_PCB_V1p4
           copy ${{ github.workspace }}/ESP32/.pio/build/esp32s3usbotg-gilphilbert/firmware.bin  ${{ github.workspace }}/Helper/bins/esp32s3_esp32s3usbotg-gilphilbert
           copy ${{ github.workspace }}/ESP32/.pio/build/esp32s3usbotg-gilphilbert/bootloader.bin  ${{ github.workspace }}/Helper/bins/esp32s3_esp32s3usbotg-gilphilbert
           copy ${{ github.workspace }}/ESP32/.pio/build/esp32s3usbotg-gilphilbert/partitions.bin  ${{ github.workspace }}/Helper/bins/esp32s3_esp32s3usbotg-gilphilbert   
@@ -160,9 +152,7 @@ jobs:
     # zip plugin binaries
       - name: ZIP files
         run: | 
-          7z a ${{ github.workspace }}/Helper/zip/esp32.zip ${{ github.workspace }}/Helper/bins/esp32/
           7z a ${{ github.workspace }}/Helper/zip/esp32s3.zip ${{ github.workspace }}/Helper/bins/esp32s3/
-          7z a ${{ github.workspace }}/Helper/zip/esp32_speedcrafter.zip ${{ github.workspace }}/Helper/bins/esp32_speedcrafter_PCB_V1p4/
           7z a ${{ github.workspace }}/Helper/zip/esp32s3-gilphilbert.zip ${{ github.workspace }}/Helper/bins/esp32s3_esp32s3usbotg-gilphilbert/
           7z a ${{ github.workspace }}/Helper/zip/esp32s3_V5.zip ${{ github.workspace }}/Helper/bins/esp32s3_V5/
           7z a ${{ github.workspace }}/Helper/zip/esp32s3_V5_without_espnow.zip ${{ github.workspace }}/Helper/bins/esp32s3_V5_without_espnow/
@@ -220,17 +210,6 @@ jobs:
           7z a ${{ github.workspace }}/Helper/zip/esp32s3_Bridge_with_external_joystick.zip ${{ github.workspace }}/Helper/bins/esp32s3_Bridge_with_external_joystick/
       # upload release asset
       # Arduino binaries
-      - name: Upload ESP release assets
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          url: ${{needs.Build-date.outputs.Upload_URL}}
-        with:
-          upload_url: ${{ env.url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./Helper/zip/esp32.zip
-          asset_name: esp32_0.zip
-          asset_content_type: application/zip
           
       - name: Upload ESP32S3 release assets 
         id: upload-release-asset-ESP32S3
@@ -268,17 +247,6 @@ jobs:
           asset_name: esp32s3_V5_without_espnow.zip
           asset_content_type: application/zip
 
-      - name: Upload ESP release assets speedcrafter PCB V1p4
-        id: upload-release-asset-speedcrafter-pcb-v1p4
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          url: ${{needs.Build-date.outputs.Upload_URL}}
-        with:
-          upload_url: ${{ env.url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./Helper/zip/esp32_speedcrafter.zip
-          asset_name: esp32_speedcrafter.zip
-          asset_content_type: application/zip
       - name: Upload ESP release assets gilphilbert
         id: upload-release-asset-esp32s3-gilphilbert
         uses: actions/upload-release-asset@v1
