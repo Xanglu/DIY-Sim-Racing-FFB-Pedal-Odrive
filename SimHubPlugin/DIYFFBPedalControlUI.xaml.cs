@@ -496,12 +496,14 @@ namespace User.PluginSdkDemo
                     _serial_monitor_window.TextBox_SerialMonitor.Text += "\ndevice name:" + items.DeviceName + "\nVID:" + items.Vid + " PID:" + items.Pid;
                 }
             }
+            /*
             ConfigUpdateWIndow sideWindow = new ConfigUpdateWIndow(Plugin);
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             double screenHeight = SystemParameters.PrimaryScreenHeight;
             sideWindow.Left = screenWidth / 2 - sideWindow.Width / 2;
             sideWindow.Top = screenHeight / 2 - sideWindow.Height / 2;
             sideWindow.Show();
+            */
 
 
         }

@@ -556,6 +556,7 @@
                                                         <Line  X1="10" Y1="4" X2="150" Y2="4" Stroke="{DynamicResource AccentColorBrush3}" StrokeThickness="2" StrokeEndLineCap="Round" StrokeStartLineCap="Round" />
                                                     </Canvas>
                                                 </StackPanel>
+                                                
                                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <styles:SHButtonPrimary Click="SaveButton_Click" Width="160" Content="Export Config to JSON" Height="25" Margin="0,0,0,0" HorizontalAlignment="Left" Padding="15,0,15,0" VerticalContentAlignment="Center" />
                                                     <styles:SHButtonPrimary Click="OpenButton_Click" Width="160" Content="Load Config from JSON" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="15,0,15,0" VerticalContentAlignment="Center" />
