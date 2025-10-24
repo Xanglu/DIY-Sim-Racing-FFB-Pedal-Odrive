@@ -15,8 +15,7 @@ class Modbus
 private:
     /* data */
     bool log = false;
-    int mode_ = -1;
-    uint32_t timeout_ = 100;
+    unsigned long timeout_ = 100;
     HardwareSerial* s ;
     uint8_t rawRx[512];
     int  lenRx = 0;
@@ -37,7 +36,7 @@ public:
     Modbus();
     Modbus(HardwareSerial &st);
     
-    bool init(int mode, bool en_log = false);
+    bool init(bool en_log = false);
     void setTimeout(uint16_t timeout);
 
 
@@ -62,7 +61,7 @@ public:
     //int requestFrom(int type, int address, int nb, byte *ret,int len);
     int requestFrom(int slaveId, int type, int address,int nb);
     //  ~Modbus();
-    bool checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress, long value);
+    bool checkAndReplaceParameter(uint16_t slaveId_local_u16, int16_t parameterAdress, long value);
     void readParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress);
 
 
@@ -87,10 +86,11 @@ public:
     int ReadInputReg(int slaveId, int add, int nbyte);
 
 
-    int8_t   uint8(int add);
-    uint16_t uint16(int add);
-    uint32_t uint32(int add, bool byteHL = true);
-    
+    // int8_t   uint8(int add);
+    // uint16_t uint16(int add);
+    // uint32_t uint32(int add, bool byteHL = true);
+
+    int16_t int16(int add);
 
 
     int CheckCRC(uint8_t *buf, int len);

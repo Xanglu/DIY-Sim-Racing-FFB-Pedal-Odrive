@@ -99,7 +99,7 @@ namespace User.PluginSdkDemo.UIFunction
                 try
                 {
                     control.Slider_WS_freq.SliderValue = control.dap_config_st.payloadPedalConfig_.WS_freq;
-                    control.Slider_WS_AMP.SliderValue = (double)(control.dap_config_st.payloadPedalConfig_.WS_amp) / (double)20.0f;
+                    control.Slider_WS_AMP.SliderValue = (double)(control.dap_config_st.payloadPedalConfig_.WS_amp) / 1000.0d * 100.0d;
                     control.update_plot_WS();
                 }
                 catch
@@ -159,7 +159,7 @@ namespace User.PluginSdkDemo.UIFunction
         private void Slider_WS_AMP_SliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.WS_amp = (Byte)(e.NewValue * 20);
+            tmp.payloadPedalConfig_.WS_amp = (Byte)(e.NewValue * 1000.0d/100.0d);
             dap_config_st = tmp;
             ConfigChangedEvent(dap_config_st);
             update_plot_WS();

@@ -1,0 +1,15 @@
+{
+  "name": "DiyActivePedal_types",
+  "version": "0.0.159",
+  "description": "",
+  "keywords": "custom, sensor, utility",
+  "authors": [
+    {
+      "name": "",
+      "email": "",
+      "maintainer": true
+    }
+  ],
+  "frameworks": "*",
+  "platforms": "*"
+}

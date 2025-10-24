@@ -114,7 +114,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Thumb}">
                             <Grid SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
-                                <Rectangle Fill="{TemplateBinding Background}" Margin="{TemplateBinding BorderThickness}" RadiusX="0" RadiusY="0"/>
+                                <Rectangle RadiusX="2" RadiusY="2" Fill="Transparent" Stroke="{DynamicResource AccentColorBrush}" StrokeThickness="2" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" />
                                 <Rectangle x:Name="DisabledVisualElement" Fill="{DynamicResource DisabledWhiteBrush}" IsHitTestVisible="false" Opacity="0"/>
 
                             </Grid>
@@ -161,7 +161,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type RepeatButton}">
                             <Grid x:Name="Root" Margin="0 -1 0 0">
-                                <Rectangle Height="4" Margin="0 1 0 0" RadiusX="1" RadiusY="1">
+                                <Rectangle Height="2" Margin="0 1 0 0" RadiusX="1" RadiusY="1">
                                     <Rectangle.Fill>
                                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0" Opacity="0.9">
                                             <GradientStop Color="{TemplateBinding Background}" Offset="0.0"/>
@@ -315,7 +315,7 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate>
-                                                <Rectangle Fill="{DynamicResource AccentColorBrush}" Height="4" Margin="0 1 0 0" Opacity="0.8"/>
+                                                <Rectangle Fill="{DynamicResource AccentColorBrush}" Height="2" Margin="0 1 0 0" Opacity="0.8"/>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
@@ -352,7 +352,7 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate>
-                                                <Rectangle Fill="{DynamicResource AccentColorBrush}" Margin="0 0 0 0" Width="3" Opacity="0.7"/>
+                                                <Rectangle Fill="{DynamicResource AccentColorBrush}" Margin="0 0 0 0" Width="2" Opacity="0.8"/>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
@@ -512,7 +512,7 @@
                                     <TabItem x:Name="tabPedalSelection_accelerator" Width="190" Height="40" Padding="0,0,0,0">
                                         <TabItem.Header>
                                             <Border  Width="190" Height="40" Margin="0,0,0,0" >
-                                                <Label Content="Accelerator"  FontFamily="Arial Black" FontSize="26" Height="40" Width="190" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" RenderTransformOrigin="0.5,0.5"  >
+                                                <Label Content="Throttle"  FontFamily="Arial Black" FontSize="26" Height="40" Width="190" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" RenderTransformOrigin="0.5,0.5"  >
                                                     <Label.RenderTransform>
                                                         <TransformGroup>
                                                             <ScaleTransform/>
@@ -536,26 +536,47 @@
                                         <Border Background="#7F4E4E4E" Height="808" CornerRadius="5,5,5,5" BorderThickness="0,0,0,0" Width="168" HorizontalAlignment="Center" >
                                             <StackPanel HorizontalAlignment="Center" Height="807" VerticalAlignment="Top" Width="160" Margin="0,5,0,0">
                                                 <localFunction:InfoSection_Pedal x:Name="PedalInfo" />
-                                                <TextBox x:Name="TextBox_debugOutput" HorizontalAlignment="Left" Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="160" Height="25" AutomationProperties.Name="TextBox2" BorderBrush="#00CCCCCC" Background="#00252525" FontSize="8" FontFamily="Arial" />
+                                                <TextBox x:Name="textBox_VersionUpdate" HorizontalAlignment="Left" Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="160" Height="25" AutomationProperties.Name="TextBox2" BorderBrush="#00CCCCCC" Background="#00252525" FontSize="8" FontFamily="Arial" />
                                                 <StackPanel Height="30" Width="250" Orientation="Horizontal">
-                                                    <ComboBox x:Name="SerialPortSelection" SelectionChanged="SerialPortSelectionChanged" Width="135" ItemsSource="{Binding}" DisplayMemberPath="Display" SelectedValuePath="Value" FontSize="10" Height="30"/>
-                                                    <!--<TextBlock Text="Connect to pedal:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="200,10,0,0"  Grid.Row="2" Width="200" Foreground="Red" />-->
-                                                    <CheckBox x:Name="ConnectToPedal" Width="30" Height="30" IsChecked="False" IsEnabled="False" Content="" FontSize="8" Margin="5,0,0,0"/>
+                                                    <ComboBox x:Name="SerialPortSelection" DropDownOpened="SerialPortSelection_DropDownOpened" SelectionChanged="SerialPortSelectionChanged" Width="76" ItemsSource="{Binding}" DisplayMemberPath="Display" SelectedValuePath="Value" FontSize="8" Height="20" MinHeight="20"/>
+                                                    
+                                                    <CheckBox x:Name="ConnectToPedal" Width="23" Height="30" IsChecked="False" IsEnabled="False" Content="" FontSize="8" Padding="0,0,0,0" Margin="5,0,0,0"/>
+                                                    <styles:SHButtonPrimary x:Name="btn_pedal_connect" Click="ConnectToPedal_click" Width="55"  Height="20" Content="Connect" HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" Padding="0,0,0,0" MinHeight="20"  FontFamily="Arial" FontSize="10"/>
                                                 </StackPanel>
-                                                <styles:SHButtonPrimary x:Name="btn_pedal_connect" Click="ConnectToPedal_click" Width="160"  Height="25" Content="Connect to Pedal" HorizontalAlignment="Center" Margin="0,2,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" Padding="15,0,15,0"  />
-                                                <styles:SHButtonPrimary x:Name="btn_update" Click="UpdateSerialPortList_click" Width="160" Height="25" Content="Update Serial Port List" HorizontalAlignment="Left" Margin="0,2,0,0" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="15,0,15,0" />
-                                                <styles:SHButtonPrimary x:Name="btn_SendConfig" Click="SendConfigToPedal_click" Width="160" Height="25" Content="Send Config to Pedal" HorizontalAlignment="Left" Margin="0,2,0,0" Padding="0,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" ToolTip="Send Config to Pedal and save in storage" />
-                                                <styles:SHButtonPrimary Click="ReadConfigFromPedal_click" Width="160" Height="25" Content="Load Config from Pedal" Margin="0,2,0,0" HorizontalAlignment="Left" Padding="0,0,0,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary Click="SaveButton_Click" Width="160" Content="Export Config to Local" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary Click="OpenButton_Click" Width="160" Content="Load Config from Local" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="btn_OnlineProfile" Click="btn_OnlineProfile_Click" Width="160" Content="Community Config" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="button_pedal_restart" Click="RestartPedal_click" Width="160" Content="Restart Pedal" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" MinHeight="20" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="btn_reset_default" Click="btn_reset_default_Click" Width="160"  Content="Reset Config to Default" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" ToolTip="Reset the config to default" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="btn_OTA_enable" Click="btn_OTA_enable_Click" Width="160" Content="Pedal FW OTA Update" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="btn_PedalBootMode" Click="btn_PedalBootMode_Click" Width="160" Content="Pedal Download Mode" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <styles:SHButtonPrimary x:Name="btn_SerialMonitorWindow" Click="btn_SerialMonitorWindow_Click" Width="160" Content="Pedal Log Monitor" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                                <Border Background="#FF4E4E4E" Height="62" CornerRadius="5,5,5,5" BorderThickness="0,0,0,0" Width="160" HorizontalAlignment="Center" Margin="0,2,0,0" >
-                                                    <TextBox x:Name="TextBox2" TextWrapping="Wrap" Width="160" AutomationProperties.Name="TextBox2" Height="62" FontSize="9" Background="#004E4E4E" BorderBrush="#00CCCCCC" IsHitTestVisible="False" AllowDrop="True" HorizontalAlignment="Center"/>
+
+                                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <styles:SHButtonPrimary x:Name="btn_Printlog" Click="btn_Printlog_Click" Width="160" Height="25" Content="Print Pedal Info" HorizontalAlignment="Left" Margin="0,2,0,0" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="15,0,15,0" />
+                                                    <styles:SHButtonPrimary x:Name="btn_Assignment" Click="btn_Assignment_Click" Width="160" Height="25" Content="Wireless Assignment" HorizontalAlignment="Left" Margin="0,2,0,0" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="15,0,15,0" />
+                                                    <!--<styles:SHButtonPrimary x:Name="btn_update" Click="UpdateSerialPortList_click" Width="160" Height="25" Content="Update Serial Port List" HorizontalAlignment="Left" Margin="0,2,0,0" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="15,0,15,0" />-->
+                                                    <styles:SHButtonPrimary x:Name="btn_SendConfig" Click="SendConfigToPedal_click" Width="160" Height="25" Content="Send Config to Pedal" HorizontalAlignment="Left" Margin="0,2,0,0" Padding="0,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" ToolTip="Send Config to Pedal and save in storage" />
+                                                    <styles:SHButtonPrimary Click="ReadConfigFromPedal_click" Width="160" Height="25" Content="Load Config from Pedal" Margin="0,2,0,0" HorizontalAlignment="Left" Padding="0,0,0,0" VerticalContentAlignment="Center" />
+                                                </StackPanel>
+                                                <StackPanel>
+                                                    <Canvas Height="8">
+                                                        <Line  X1="10" Y1="4" X2="150" Y2="4" Stroke="{DynamicResource AccentColorBrush3}" StrokeThickness="2" StrokeEndLineCap="Round" StrokeStartLineCap="Round" />
+                                                    </Canvas>
+                                                </StackPanel>
+                                                
+                                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <styles:SHButtonPrimary Click="SaveButton_Click" Width="160" Content="Export Config to JSON" Height="25" Margin="0,0,0,0" HorizontalAlignment="Left" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary Click="OpenButton_Click" Width="160" Content="Load Config from JSON" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_OnlineProfile" Click="btn_OnlineProfile_Click" Width="160" Content="Community Config" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_reset_default" Click="btn_reset_default_Click" Width="160"  Content="Reset Config to Default" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" ToolTip="Reset the config to default" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                </StackPanel>
+                                                <StackPanel>
+                                                    <Canvas Height="8">
+                                                        <Line  X1="10" Y1="4" X2="150" Y2="4" Stroke="{DynamicResource AccentColorBrush3}" StrokeThickness="2" StrokeEndLineCap="Round" StrokeStartLineCap="Round" />
+                                                    </Canvas>
+                                                </StackPanel>
+                                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <styles:SHButtonPrimary x:Name="button_pedal_restart" Click="RestartPedal_click" Width="160" Content="Restart Pedal" Height="25" Margin="0,0,0,0" HorizontalAlignment="Center" MinHeight="20" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_OTA_enable" Click="btn_OTA_enable_Click" Width="160" Content="Pedal FW OTA Update" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_PedalBootMode" Click="btn_PedalBootMode_Click" Width="160" Content="Pedal Download Mode" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                    <styles:SHButtonPrimary x:Name="btn_SerialMonitorWindow" Click="btn_SerialMonitorWindow_Click" Width="160" Content="Serial Monitor" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                                </StackPanel>
+                                                
+                                                <Border Background="#FF4E4E4E" Height="50" CornerRadius="5,5,5,5" BorderThickness="0,0,0,0" Width="160" HorizontalAlignment="Center" Margin="0,2,0,0" >
+                                                    <TextBox x:Name="TextBox2" TextWrapping="Wrap" Width="160" AutomationProperties.Name="TextBox2" Height="50" FontSize="9" Background="#004E4E4E" BorderBrush="#00CCCCCC" IsHitTestVisible="False" AllowDrop="True" HorizontalAlignment="Center"/>
                                                 </Border>
                                                 <localFunction:SettingSection_Pedal x:Name="PedalSettingsSection" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
 
@@ -603,23 +624,30 @@
                                                 </Setter>
                                             </Style>
                                         </TabControl.Resources>
-                                        <TabItem Width="270" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
+                                        <TabItem Width="180" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
                                             <TabItem.Header>
-                                                <Border  Width="270" Height="30" Margin="0,0,0,0" >
-                                                    <Label Content="FORCE-TRAVEL CURVE"  FontFamily="Arial Black" FontSize="10" Height="30" Padding="0,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" Width="270"  />
+                                                <Border  Width="180" Height="30" Margin="0,0,0,0" >
+                                                    <Label Content="FORCE-TRAVEL CURVE"  FontFamily="Arial Black" FontSize="10" Height="30" Padding="0,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" Width="180"  />
                                                 </Border>
                                             </TabItem.Header>
-                                            <localFunction:CurveTab_PedalForceTravel x:Name="PedalForceTravel_Tab" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
+                                            <localFunction:CurveTab_PedalForceTravel_Modified x:Name="PedalForceTravel_Tab" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
                                         </TabItem>
-                                        <TabItem x:Name="pedalKinematicTab" Width="270" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
+                                        <TabItem x:Name="pedalKinematicTab" Width="180" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
                                             <TabItem.Header>
-                                                <Border  Width="270" Height="30" Margin="0,0,0,0" >
+                                                <Border  Width="180" Height="30" Margin="0,0,0,0" >
                                                     <Label Content="PEDAL KINEMATIC"  FontFamily="Arial Black" FontSize="10" Height="30" Width="270" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True"  />
                                                 </Border>
                                             </TabItem.Header>
                                             <localFunction:KinematicsTab_Pedal x:Name="PedalKinematics_Tab" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
                                         </TabItem>
-
+                                        <TabItem x:Name="pedalJoystickTab" Width="180" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
+                                            <TabItem.Header>
+                                                <Border  Width="180" Height="30" Margin="0,0,0,0" >
+                                                    <Label Content="JOYSTICK MAPPING"  FontFamily="Arial Black" FontSize="10" Height="30" Width="180" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True"  />
+                                                </Border>
+                                            </TabItem.Header>
+                                            <localFunction:CurveTab_JoystickMapping x:Name="PedalJoystick_Tab" ConfigChanged="Tab_ConfigChanged" SettingsChanged="Tab_SettingsChanged" CalculationChanged="Tab_CalculationChanged"/>
+                                        </TabItem>
 
                                     </TabControl>
                                     <TabControl Grid.Column="0" HorizontalAlignment="Left" Height="222" Grid.Row="4" VerticalAlignment="Top" Width="540" Padding="0,0,0,0" BorderThickness="0,0,0,0" Background="#00252525" Foreground="Transparent" Margin="0,4,0,0">
@@ -677,45 +705,26 @@
                                                 </Border>
                                             </TabItem.Header>
                                             <localFunction:GeneralSetting_KF x:Name="KF_Tab" KF_value="8" KF_selection="2" ConfigChanged="Tab_ConfigChanged"/>
-
                                         </TabItem>
-
                                         <TabItem Width="108" Height="30" Padding="0,0,0,0">
                                             <TabItem.Header>
                                                 <Border  Width="108" Height="30" Margin="0,0,0,0" >
-                                                    <Label Content="Control"  FontFamily="Arial Black" FontSize="10" Height="30" Width="108" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" ToolTip="Control stretegy for Pedal"  />
+                                                    <Label Content="Global Effects"  FontFamily="Arial Black" FontSize="10" Height="30" Width="108" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" ToolTip="Filter used in pedal"  />
                                                 </Border>
                                             </TabItem.Header>
-                                            <localFunction:GeneralSetting_ControlStrategy x:Name="ControlStrategy_Tab" ConfigChanged="Tab_ConfigChanged" />
+                                            <localFunction:GeneralSetting_GlobalEffects x:Name="GlobalEffects_Tab" ConfigChanged="Tab_ConfigChanged"/>
                                         </TabItem>
-
-
-
                                         <TabItem Width="108" Height="30" Padding="0,0,0,0">
                                             <TabItem.Header>
                                                 <Border  Width="108" Height="30" Margin="0,0,0,0" >
-                                                    <Label Content="PID"  FontFamily="Arial Black" FontSize="10" Height="30" Width="108" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" ToolTip="PID control tuning was here"  />
+                                                    <Label Content="Servo"  FontFamily="Arial Black" FontSize="10" Height="30" Width="108" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True" ToolTip="Filter used in pedal"  />
                                                 </Border>
                                             </TabItem.Header>
-                                            <localFunction:GeneralSetting_PID x:Name="PID_Tab" ConfigChanged="Tab_ConfigChanged"/>
+                                            <localFunction:GeneralSetting_Servo x:Name="Servo_Tab" ConfigChanged="Tab_ConfigChanged"/>
                                         </TabItem>
 
 
 
-
-
-
-                                        <TabItem Width="108" Height="30" Padding="0,0,0,0">
-                                            <TabItem.Header>
-                                                <Border  Width="108" Height="30" Margin="0,0,0,0" >
-                                                    <Label Content="MPC"  FontFamily="Arial Black" FontSize="10" Width="108" Padding="0,0,0,0" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True"  />
-                                                </Border>
-                                            </TabItem.Header>
-
-
-                                            <localFunction:GeneralSetting_MPC x:Name="MPC_tab" ConfigChanged="Tab_ConfigChanged"/>
-
-                                        </TabItem>
                                     </TabControl>
                                     <TabControl Grid.Column="0" SelectionChanged="TabControl_SelectionChanged_1" HorizontalAlignment="Left" Height="272" Grid.Row="5" VerticalAlignment="Center" Width="540" Padding="0,0,0,0" BorderThickness="0,0,0,0" Background="#00252525" Foreground="Transparent" Margin="0,3,0,0">
                                         <TabControl.Resources>
@@ -854,9 +863,9 @@
                                             <localFunction:InfoSection_Rudder x:Name="RudderInfo" />
                                             <TextBox x:Name="TextBox_rudder_debug" HorizontalAlignment="Left" Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="160" Height="25" AutomationProperties.Name="TextBox2" BorderBrush="#00CCCCCC" Background="#00252525" FontSize="8" FontFamily="Arial" />
                                             <styles:SHButtonPrimary x:Name="btn_rudder_initialize" Click="btn_rudder_initialize_Click" Width="160" Height="25" Content="Rudder" Margin="0,2,0,0" HorizontalAlignment="Center" VerticalContentAlignment="Center" Padding="15,0,15,0" />
-                                            <styles:SHButtonPrimary x:Name="btn_Rudder_load_config" Click="btn_Rudder_load_config_Click" Width="160" Content="Load Config from Local" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                            <styles:SHButtonPrimary Click="SaveButton_Click" Width="160" Content="Export Config to Local" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" Padding="15,0,15,0" VerticalContentAlignment="Center" />
-                                            
+                                            <styles:SHButtonPrimary x:Name="btn_Rudder_load_config" Click="btn_Rudder_load_config_Click" Width="160" Content="Load Config from JSON" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                            <styles:SHButtonPrimary x:Name="btn_rudder_export_config" Click="btn_rudder_export_config_Click" Width="160" Content="Export Config to JSON" Height="25" Margin="0,2,0,0" HorizontalAlignment="Left" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                            <localFunction:SettingSection_Rudder x:Name="RudderSettingSection" HorizontalAlignment="Left"/>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
@@ -957,13 +966,17 @@
                                         <StackPanel HorizontalAlignment="Center" Height="498" VerticalAlignment="Top" Width="160" Margin="0,5,0,0">
                                             <localFunction:InfoSection_System x:Name="SystemInfo" />
                                             <StackPanel HorizontalAlignment="Left" Height="22" Grid.Row="4" VerticalAlignment="Top" Width="168" Grid.RowSpan="3" Orientation="Horizontal" Margin="0,2,0,0">
-                                                <ComboBox x:Name="SerialPortSelection_ESPNow" SelectionChanged="ESPNow_SerialPortSelectionChanged" Width="100" ItemsSource="{Binding}" DisplayMemberPath="Display" SelectedValuePath="Value" FontSize="8" Height="20" HorizontalAlignment="Left" MinHeight="20"/>
+                                                <ComboBox x:Name="SerialPortSelection_ESPNow" DropDownOpened="ESPNow_SerialPortSelection_DropDownOpened" SelectionChanged="ESPNow_SerialPortSelectionChanged" Width="100" ItemsSource="{Binding}" DisplayMemberPath="Display" SelectedValuePath="Value" FontSize="8" Height="20" HorizontalAlignment="Left" MinHeight="20"/>
                                                 <styles:SHButtonPrimary x:Name="btn_connect_espnow_port" Click="btn_connect_espnow_port_Click" Width="55" Content="Connect" Height="20" Margin="3,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" FontSize="10" MinHeight="20" />
                                             </StackPanel>
-                                            <styles:SHButtonPrimary x:Name="btn_update_system" Click="UpdateSerialPortList_click" Width="160" Height="25" Content="Update Serial Port List" HorizontalAlignment="Left" Margin="0,2,0,0" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                            <!--<styles:SHButtonPrimary x:Name="btn_update_system" Click="UpdateSerialPortList_click" Width="160" Height="25" Content="Update Serial Port List" HorizontalAlignment="Left" Margin="0,2,0,0" Padding="15,0,15,0" VerticalContentAlignment="Center" />-->
                                             <styles:SHButtonPrimary x:Name="btn_Bridge_restart" Click="btn_Bridge_restart_Click" Width="160" Content="Bridge Restart" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
                                             <styles:SHButtonPrimary x:Name="btn_Bridge_boot_restart" Click="btn_Bridge_boot_restart_Click" Width="160" Content="Enable Download Mode" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" ToolTip="Click for enabling Bridge into firmware download mode" />
                                             <styles:SHButtonPrimary x:Name="btn_Bridge_OTA" Click="btn_Bridge_OTA_Click" Width="160" Content="Bridge FW OTA Update" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                            <styles:SHButtonPrimary x:Name="btn_Bridge_print_debug" Click="btn_Bridge_print_debug_Click" Width="160" Content="Bridge Debug Mode" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                            <styles:SHButtonPrimary x:Name="btn_Bridge_joystick_flashing" Click="btn_Bridge_joystick_flashing_Click" Width="160" Content="External Joystick Flash" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                            <styles:SHButtonPrimary x:Name="btn_Bridge_joysitck_debug" Click="btn_Bridge_joysitck_debug_Click" Width="160" Content="External Joystick Debug" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
+                                            <styles:SHButtonPrimary x:Name="btn_Plugin_OTA" Click="btn_Plugin_OTA_Click" Width="160" Content="Plugin Update" Height="25" Margin="0,2,0,0" HorizontalAlignment="Center" Padding="15,0,15,0" VerticalContentAlignment="Center" />
                                             <localFunction:SettingSection_System x:Name="SystemSetting_Section" SettingsChanged="Tab_SettingsChanged"/>
 
 
@@ -1019,14 +1032,6 @@
                                         <TabItem Width="120" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
                                             <TabItem.Header>
                                                 <Border  Width="120" Height="30" Margin="0,0,0,0" >
-                                                    <Label Content="OTA Setting"  FontFamily="Arial Black" FontSize="10" Height="30" Width="120" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True"  />
-                                                </Border>
-                                            </TabItem.Header>
-                                            <localFunction:SystemSetting_OTA x:Name="SettingOTA_Tab" CalculationChanged="Tab_CalculationChanged"/>
-                                        </TabItem>
-                                        <TabItem Width="120" Height="30" Padding="0,0,0,0" ToolTip="General setting for Pedal, will save to pedal">
-                                            <TabItem.Header>
-                                                <Border  Width="120" Height="30" Margin="0,0,0,0" >
                                                     <Label Content="License"  FontFamily="Arial Black" FontSize="10" Height="30" Width="120" Padding="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" UseLayoutRounding="True"  />
                                                 </Border>
                                             </TabItem.Header>
@@ -1046,7 +1051,7 @@
                                                         <Label Content="Auto clear" Height="20" Width="130" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial" HorizontalAlignment="Left" FontSize="10" Margin="4,0,0,0"/>
                                                     </StackPanel>
                                                 </StackPanel>
-                                                <TextBox x:Name="TextBox_serialMonitor_bridge" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Visible" HorizontalAlignment="Left" Grid.Column="2" Grid.Row="2" Grid.RowSpan="4" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="540" Height="256" AutomationProperties.Name="TextBox3" Background="#00252525" BorderBrush="#00CCCCCC" BorderThickness="0,0,0,0" />
+                                                <TextBox x:Name="TextBox_serialMonitor_bridge" FontFamily="Consolas" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Visible" HorizontalAlignment="Left" Grid.Column="2" Grid.Row="2" Grid.RowSpan="4" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="540" Height="256" AutomationProperties.Name="TextBox3" Background="#00252525" BorderBrush="#00CCCCCC" BorderThickness="0,0,0,0" />
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>

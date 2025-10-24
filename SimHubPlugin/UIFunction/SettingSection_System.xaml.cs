@@ -15,11 +15,11 @@ using System.Windows.Shapes;
 
 namespace User.PluginSdkDemo.UIFunction
 {
-    /// <summary>
-    /// SettingSection_System.xaml 的互動邏輯
-    /// </summary>
     public partial class SettingSection_System : UserControl
     {
+        public vJoyInterfaceWrap.vJoy _joystick;
+        public bool IsJoystickInitialized = false;
+        public bool isVjoyAsigned= false;
         public SettingSection_System()
         {
             InitializeComponent();
@@ -54,6 +54,26 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 SetValue(Settings_Property, value);
                 //updateUI();
+                if (_joystick != null)
+                {
+                    if (Settings.vjoy_output_flag == 1)
+                    {
+                        Checkox_Vjoy.IsChecked = true;
+                        if (!IsJoystickInitialized)
+                        {
+                            //_joystick = new vJoyInterfaceWrap.vJoy();
+                            _joystick.AcquireVJD(Settings.vjoy_order);
+                            //joystick.Aquire();
+                            vjoy_axis_initialize();
+                            IsJoystickInitialized = true;
+                        }
+                    }
+                    else
+                    {
+                        Checkox_Vjoy.IsChecked = false;
+                    }
+                }
+
 
             }
         }
@@ -83,8 +103,9 @@ namespace User.PluginSdkDemo.UIFunction
                 if (Settings != null)
                 {
                     if (CheckBox_Pedal_ESPNow_autoconnect != null) CheckBox_Pedal_ESPNow_autoconnect.IsChecked = (Settings.Pedal_ESPNow_auto_connect_flag);
-                    if (CheckBox_using_CDC_for_bridge!=null) CheckBox_using_CDC_for_bridge.IsChecked = Settings.Using_CDC_bridge;
+                    //if (CheckBox_using_CDC_for_bridge!=null) CheckBox_using_CDC_for_bridge.IsChecked = Settings.Using_CDC_bridge;
                     if (Debug_check != null) Debug_check.IsChecked = Settings.advanced_b;
+                    if(Label_vjoy_order!=null) Label_vjoy_order.Content = Settings.vjoy_order;
                 }
 
             }
@@ -187,6 +208,180 @@ namespace User.PluginSdkDemo.UIFunction
         {
             Settings.advanced_b = true;
             SettingsChangedEvent(Settings);
+        }
+
+        private void btn_vjoy_plus_Click(object sender, RoutedEventArgs e)
+        {
+            if (_joystick != null)
+            {
+                _joystick.RelinquishVJD(Settings.vjoy_order);
+
+                Settings.vjoy_order += 1;
+                uint max = 16;
+                uint min = 1;
+                Settings.vjoy_order = Math.Max(min, Math.Min(Settings.vjoy_order, max));
+                Label_vjoy_order.Content = Settings.vjoy_order;
+                if (Settings.vjoy_output_flag == 1)
+                {
+                    //joystick.Release();
+
+
+                    //VjdStat status;
+                    VjdStat status = _joystick.GetVJDStatus(Settings.vjoy_order);
+                    //status = joystick.Joystick.GetVJDStatus(Plugin.Settings.vjoy_order);
+                    switch (status)
+                    {
+                        case VjdStat.VJD_STAT_OWN:
+                            //TextBox_debugOutput.Text = "vjoy already aquaried";
+                            System.Windows.MessageBox.Show("vjoy already aquaried", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Settings.vjoy_output_flag = 0;
+                            Checkox_Vjoy.IsChecked = false;
+                            break;
+                        case VjdStat.VJD_STAT_FREE:
+
+                            //TextBox_debugOutput.Text = "vjoy aquaried";
+                            //joystick = new VirtualJoystick(Plugin.Settings.vjoy_order);
+                            //joystick.Aquire();
+                            _joystick.AcquireVJD(Settings.vjoy_order);
+                            if (Checkox_Vjoy.IsChecked == false)
+                            {
+                                Checkox_Vjoy.IsChecked = true;
+                            }
+                            //Console.WriteLine("vJoy Device {0} is free\n", id);
+                            break;
+                        case VjdStat.VJD_STAT_BUSY:
+                            //TextBox_debugOutput.Text = "vjoy was aquaried by other program";
+                            System.Windows.MessageBox.Show("vjoy was aquaried by other program", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Settings.vjoy_output_flag = 0;
+                            Checkox_Vjoy.IsChecked = false;
+                            //Console.WriteLine("vJoy Device {0} is already owned by another feeder\nCannot continue\n", id);
+                            return;
+                        case VjdStat.VJD_STAT_MISS:
+                            //TextBox_debugOutput.Text = "the selected vjoy device not enabled";
+                            System.Windows.MessageBox.Show("the selected vjoy device not enabled", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Settings.vjoy_output_flag = 0;
+                            Checkox_Vjoy.IsChecked = false;
+                            //Console.WriteLine("vJoy Device {0} is not installed or disabled\nCannot continue\n", id);
+                            return;
+                        default:
+                            //TextBox_debugOutput.Text = "vjoy device error";
+                            System.Windows.MessageBox.Show("vjoy device error", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Settings.vjoy_output_flag = 0;
+                            Checkox_Vjoy.IsChecked = false;
+                            //Console.WriteLine("vJoy Device {0} general error\nCannot continue\n", id);
+                            return;
+                    }
+                    ;
+                }
+            }
+        }
+
+        private void btn_vjoy_minus_Click(object sender, RoutedEventArgs e)
+        {
+            if (_joystick != null)
+            {
+                _joystick.RelinquishVJD(Settings.vjoy_order);
+
+                Settings.vjoy_order -= 1;
+                uint max = 16;
+                uint min = 1;
+                Settings.vjoy_order = Math.Max(min, Math.Min(Settings.vjoy_order, max));
+                Label_vjoy_order.Content = Settings.vjoy_order;
+                if (Settings.vjoy_output_flag == 1)
+                {
+                    //joystick.Release();
+
+                    //VjdStat status;
+                    VjdStat status = _joystick.GetVJDStatus(Settings.vjoy_order);
+                    //status = joystick.Joystick.GetVJDStatus(Plugin.Settings.vjoy_order);
+                    switch (status)
+                    {
+                        case VjdStat.VJD_STAT_OWN:
+                            //TextBox_debugOutput.Text = "vjoy already aquaried";
+                            System.Windows.MessageBox.Show("vjoy already aquaried", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Settings.vjoy_output_flag = 0;
+                            Checkox_Vjoy.IsChecked = false;
+                            break;
+                        case VjdStat.VJD_STAT_FREE:
+
+                            //TextBox_debugOutput.Text = "vjoy aquaried";
+                            //joystick = new VirtualJoystick(Plugin.Settings.vjoy_order);
+                            //joystick.Aquire();
+                            _joystick.AcquireVJD(Settings.vjoy_order);
+                            if (Checkox_Vjoy.IsChecked == false)
+                            {
+                                Checkox_Vjoy.IsChecked = true;
+                            }
+                            //Console.WriteLine("vJoy Device {0} is free\n", id);
+                            break;
+                        case VjdStat.VJD_STAT_BUSY:
+                            //TextBox_debugOutput.Text = "vjoy was aquaried by other program";
+                            System.Windows.MessageBox.Show("vjoy was aquaried by other program", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Settings.vjoy_output_flag = 0;
+                            Checkox_Vjoy.IsChecked = false;
+                            //Console.WriteLine("vJoy Device {0} is already owned by another feeder\nCannot continue\n", id);
+                            return;
+                        case VjdStat.VJD_STAT_MISS:
+                            //TextBox_debugOutput.Text = "the selected vjoy device not enabled";
+                            System.Windows.MessageBox.Show("the selected vjoy device not enabled", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Settings.vjoy_output_flag = 0;
+                            Checkox_Vjoy.IsChecked = false;
+                            //Console.WriteLine("vJoy Device {0} is not installed or disabled\nCannot continue\n", id);
+                            return;
+                        default:
+                            //TextBox_debugOutput.Text = "vjoy device error";
+                            System.Windows.MessageBox.Show("vjoy device error", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Settings.vjoy_output_flag = 0;
+                            Checkox_Vjoy.IsChecked = false;
+                            //Console.WriteLine("vJoy Device {0} general error\nCannot continue\n", id);
+                            return;
+                    }
+                    ;
+                }
+            }
+        }
+
+        private void Checkox_Vjoy_Checked(object sender, RoutedEventArgs e)
+        {
+            if (_joystick != null)
+            {
+                Settings.vjoy_output_flag = 1;
+                uint vJoystickId = Settings.vjoy_order;
+                _joystick.AcquireVJD(vJoystickId);
+                vjoy_axis_initialize();
+            }
+
+        }
+
+        private void Checkox_Vjoy_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (_joystick != null)
+            {
+                Settings.vjoy_output_flag = 0;
+                _joystick.RelinquishVJD(Settings.vjoy_order);
+            }
+
+        }
+
+        private void vjoy_axis_initialize()
+        {
+            //center all axis/hats reader
+            _joystick.SetAxis(16384, Settings.vjoy_order, HID_USAGES.HID_USAGE_X);
+            _joystick.SetAxis(16384, Settings.vjoy_order, HID_USAGES.HID_USAGE_Y);
+            _joystick.SetAxis(16384, Settings.vjoy_order, HID_USAGES.HID_USAGE_Z);
+            _joystick.SetAxis(16384, Settings.vjoy_order, HID_USAGES.HID_USAGE_RX);
+            _joystick.SetAxis(16384, Settings.vjoy_order, HID_USAGES.HID_USAGE_RY);
+            _joystick.SetAxis(16384, Settings.vjoy_order, HID_USAGES.HID_USAGE_RZ);
+            //joystick.SetJoystickHat(0, Hats.Hat);
+            //joystick.SetJoystickHat(0, Hats.HatExt1);
+            //joystick.SetJoystickHat(0, Hats.HatExt2);
+            //joystick.SetJoystickHat(0, Hats.HatExt3);
+
+        }
+        public void asignVjoyJoystickPtr(vJoyInterfaceWrap.vJoy _vJoy)
+        { 
+            _joystick = _vJoy;
+            isVjoyAsigned = true;
         }
     }
 }

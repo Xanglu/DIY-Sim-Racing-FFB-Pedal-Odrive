@@ -122,6 +122,8 @@ namespace User.PluginSdkDemo.UIFunction
             dap_config_st = tmp;
             ConfigChangedEvent(dap_config_st);
         }
+
+
         //public event RoutedEventHandler KF_SelectionChanged;
         public void KF_filter_order_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

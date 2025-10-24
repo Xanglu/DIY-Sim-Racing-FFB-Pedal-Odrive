@@ -1,12 +1,17 @@
 #include <Arduino.h>
 #include <ESP32OTAPull.h>
 #include <esp_wifi.h>
-#define JSON_URL_dev   "https://raw.githubusercontent.com/gilphilbert/pedal-flasher/main/json/dev/Version_ControlBoard.json"
+#include <math.h>
+#define OTA_JSON_URL_DEV   "https://raw.githubusercontent.com/gilphilbert/pedal-flasher/main/json/dev/Version_ControlBoard.json"
 //#define JSON_URL_dev "https://raw.githubusercontent.com/tcfshcrw/playground/main/OTA_test_repo/GH2/Version.json"
-#define JSON_URL_main   "https://raw.githubusercontent.com/gilphilbert/pedal-flasher/main/json/main/Version_ControlBoard.json"
+#define OTA_JSON_URL_MAIN   "https://raw.githubusercontent.com/gilphilbert/pedal-flasher/main/json/main/Version_ControlBoard.json"
+#define OTA_JSON_URL_TEST "https://raw.githubusercontent.com/ChrGri/DIY-Sim-Racing-FFB-Pedal/develop/OTA/TestBuild/json/Version_ControlBoard.json"
 bool OTA_enable_b =false;
 bool OTA_status =false;
-struct Basic_WIfi_info
+bool beepForOtaProgress = false;
+bool OTA_enable_start=false;
+/*
+struct DAP_otaWifiInfo_st
 { 
     uint8_t payloadType;
     uint8_t device_ID;
@@ -17,17 +22,18 @@ struct Basic_WIfi_info
     uint8_t WIFI_SSID[30];
     uint8_t WIFI_PASS[30];
 };
+*/
 
-Basic_WIfi_info _basic_wifi_info;
+//DAP_otaWifiInfo_st _dap_OtaWifiInfo_st;
 char* SSID;
 char* PASS;
 
 void wifi_initialized(char* Wifi_SSID, char* Wifi_PASS)
 {
-    Serial.print("SSID: ");
-    Serial.print(Wifi_SSID);
-    Serial.print(" PASS: ");
-    Serial.println(Wifi_PASS);
+    ActiveSerial->print("SSID: ");
+    ActiveSerial->print(Wifi_SSID);
+    ActiveSerial->print(" PASS: ");
+    ActiveSerial->println(Wifi_PASS);
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     delay(100);
@@ -35,19 +41,19 @@ void wifi_initialized(char* Wifi_SSID, char* Wifi_PASS)
     WiFi.begin(Wifi_SSID, Wifi_PASS);
 
     // Display connection progress
-    Serial.print("Connecting to WiFi:");
-    Serial.print(WiFi.SSID());
-	Serial.print(" ");
+    ActiveSerial->print("Connecting to WiFi:");
+    ActiveSerial->print(WiFi.SSID());
+	ActiveSerial->print(" ");
     // Wait until WiFi is connected
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
-        Serial.print(".");
+        ActiveSerial->print(".");
   }
   
   // Print confirmation message when WiFi is connected
-  Serial.println("WiFi connected");
-  Serial.print("WiFi RSSI: ");
-  Serial.println(WiFi.RSSI());
+  ActiveSerial->println("WiFi connected");
+  ActiveSerial->print("WiFi RSSI: ");
+  ActiveSerial->println(WiFi.RSSI());
 
 }
 void OTAcallback(int offset, int totallength);
@@ -85,34 +91,34 @@ void DisplayInfo()
 	char exampleImageURL[256];
 	snprintf(exampleImageURL, sizeof(exampleImageURL), "https://example.com/Basic-OTA-Example-%s-%s.bin", ARDUINO_BOARD, VERSION);
 
-	Serial.printf("Basic-OTA-Example v%s\n", VERSION);
-	Serial.printf("You need to post a JSON (text) file similar to this:\n");
-	Serial.printf("{\n");
-	Serial.printf("  \"Configurations\": [\n");
-	Serial.printf("    {\n");
-	Serial.printf("      \"Board\": \"%s\",\n", ARDUINO_BOARD);
-	Serial.printf("      \"Device\": \"%s\",\n", WiFi.macAddress().c_str());
-	Serial.printf("      \"Version\": \"%s\",\n", VERSION);
-	Serial.printf("      \"URL\": \"%s\"\n", exampleImageURL);
-	Serial.printf("    }\n");
-	Serial.printf("  ]\n");
-	Serial.printf("}\n");
-	Serial.printf("\n");
-	Serial.printf("(Board, Device, Config, and Version are all *optional*.)\n");
-	Serial.printf("\n");
-	Serial.printf("Post the JSON at, e.g., %s\n", JSON_URL_main);
-	Serial.printf("Post the compiled bin at, e.g., %s\n\n", exampleImageURL);
+	ActiveSerial->printf("Basic-OTA-Example v%s\n", VERSION);
+	ActiveSerial->printf("You need to post a JSON (text) file similar to this:\n");
+	ActiveSerial->printf("{\n");
+	ActiveSerial->printf("  \"Configurations\": [\n");
+	ActiveSerial->printf("    {\n");
+	ActiveSerial->printf("      \"Board\": \"%s\",\n", ARDUINO_BOARD);
+	ActiveSerial->printf("      \"Device\": \"%s\",\n", WiFi.macAddress().c_str());
+	ActiveSerial->printf("      \"Version\": \"%s\",\n", VERSION);
+	ActiveSerial->printf("      \"URL\": \"%s\"\n", exampleImageURL);
+	ActiveSerial->printf("    }\n");
+	ActiveSerial->printf("  ]\n");
+	ActiveSerial->printf("}\n");
+	ActiveSerial->printf("\n");
+	ActiveSerial->printf("(Board, Device, Config, and Version are all *optional*.)\n");
+	ActiveSerial->printf("\n");
+	ActiveSerial->printf("Post the JSON at, e.g., %s\n", JSON_URL_main);
+	ActiveSerial->printf("Post the compiled bin at, e.g., %s\n\n", exampleImageURL);
 }
 */
 
-void OTAcallback(int offset, int totallength)
+void OTAcallback(int offset, int totalLength)
 {
-	Serial.print("Updating: ");
-    Serial.print(offset);
-    Serial.print(" of ");
-    Serial.print(totallength);
-    Serial.print("(");
-    Serial.print(100 * offset / totallength);
-    Serial.println("%)");
-    
+	float progressInPrecent = (100.0f * (float)offset / (float)totalLength);
+	float progressBeepTolerance= 0.1f;
+    ActiveSerial->printf("Updating: %d of %d, (%0.0f %)\n",offset, totalLength, progressInPrecent);
+	//call beep callback
+	if(fmod(progressInPrecent,10.0f)<=progressBeepTolerance && beepForOtaProgress==false && progressInPrecent>1.0f)
+	{
+		beepForOtaProgress=true;
+	}
 }

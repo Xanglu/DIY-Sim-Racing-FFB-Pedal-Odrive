@@ -19,12 +19,12 @@ namespace User.PluginSdkDemo
         public bool Update_CV1_textbox { get; set; }
         public bool Update_CV2_textbox { get; set; }
 
-        public double[] Force_curve_Y = new double[100];
+        public double[] Force_curve_Y = new double[101];
 
         public int current_pedal_travel_state { get; set; }
         public byte pedal_state_in_ratio { get; set; }
         public bool isDragging { get; set; }
-
+        public int unassignedPedalCount { get; set; }
         public Point offset;
 
         public SolidColorBrush lightcolor;
@@ -48,6 +48,20 @@ namespace User.PluginSdkDemo
         public bool Rudder_status;
         public bool BridgeSerialAvailability;
         public bool OTASettingUpdate_b;
+        public int[] rssi;
+        public byte[] ServoStatus;
+        public string[] pluginVersionReading;
+        public string[] updateChannelString = new[] { "main", "dev-build", "daily-build" };
+        public bool versionCheck_b;
+        public bool verisonCreate_b;
+        public Version pluginVersion;
+        public Version updateVerison;
+        public vJoyInterfaceWrap.vJoy _joystick;
+        public bool IsJoystickInitialized = false;
+        public uint rudderType;
+        public bool IsTestBuild = false;
+        public bool IsOtaUploadFromPlatformIO = false;
+        public byte[][] unassignedPedalMacaddress;
         public uint RSSI_Value
         {
             get => _rssi_value;
@@ -128,12 +142,27 @@ namespace User.PluginSdkDemo
             _pedalConnectingString = "";
             _bridgeConnectingString = "";
             OTASettingUpdate_b = false;
-            
-    }
+            rssi = new int[3] { 0, 0, 0 };
+            ServoStatus = new byte[3] { 0, 0, 0 };
+            pluginVersionReading = new string[3] { "", "", ""};
+            versionCheck_b = false;
+            verisonCreate_b = false;
+            _joystick = new vJoyInterfaceWrap.vJoy();
+            rudderType = 0;
+            unassignedPedalCount = 0;
+            unassignedPedalMacaddress = new byte[3][];
+            for (int i = 0; i < 3; i++)
+            {
+                unassignedPedalMacaddress[i]=new byte[6] { 0, 0, 0, 0, 0, 0};
+            }
+
+        }
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+
     }
 }

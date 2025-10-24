@@ -7,7 +7,7 @@
 #include <WebServer.h>
 //#include <ESPmDNS.h>
 #include <Update.h>
-struct Basic_WIfi_info
+struct DAP_otaWifiInfo_st
 { 
     uint8_t payloadType;
     uint8_t device_ID;
@@ -19,7 +19,7 @@ struct Basic_WIfi_info
     uint8_t WIFI_PASS[30];
 };
 
-Basic_WIfi_info _basic_wifi_info;
+DAP_otaWifiInfo_st _dap_OtaWifiInfo_st;
 
 
 
@@ -126,7 +126,7 @@ String serverIndex =
 
 void onJavaScript(void) 
 {
-    Serial.println("onJavaScript(void)");
+    ActiveSerial->println("onJavaScript(void)");
 		server.setContentLength(jquery_min_js_v3_2_1_gz_len);
 		server.sendHeader(F("Content-Encoding"), F("gzip"));
     server.send_P(200, "text/javascript", jquery_min_js_v3_2_1_gz, jquery_min_js_v3_2_1_gz_len);
@@ -138,45 +138,45 @@ void ota_wifi_initialize(char* APhostname)
     IPAddress local_ip(192, 168, 2, 1);
     IPAddress local_mask(255,255,255,0);
     IPAddress gateway(192, 168, 2, 1);
-    //Serial.begin(115200);
+    //ActiveSerial->begin(115200);
     WiFi.softAP(APhostname,password);
     WiFi.softAPConfig(local_ip,gateway,local_mask);
-    Serial.println("");
-    Serial.print("AP set to ");
-    Serial.println(APhostname);
-    Serial.print("IP address: ");
-    Serial.println(WiFi.softAPIP());
-    Serial.print("wifi password: ");
-    Serial.println(password);
+    ActiveSerial->println("");
+    ActiveSerial->print("AP set to ");
+    ActiveSerial->println(APhostname);
+    ActiveSerial->print("IP address: ");
+    ActiveSerial->println(WiFi.softAPIP());
+    ActiveSerial->print("wifi password: ");
+    ActiveSerial->println(password);
 
 
     // Connect to WiFi network
     //WiFi.begin(ssid, password);
-    Serial.println("");
+    ActiveSerial->println("");
 
     // Wait for connection
     // while (WiFi.status() != WL_CONNECTED)
     // {
     //     delay(500);
-    //     Serial.print(".");
+    //     ActiveSerial->print(".");
     // }
-    //Serial.println("");
-    //Serial.print("Connected to ");
-    //Serial.println(host_name);
-    //Serial.print("IP address: ");
-    //Serial.println(WiFi.localIP());
+    //ActiveSerial->println("");
+    //ActiveSerial->print("Connected to ");
+    //ActiveSerial->println(host_name);
+    //ActiveSerial->print("IP address: ");
+    //ActiveSerial->println(WiFi.localIP());
 
     /*use mdns for host name resolution*/
     /*
     if (!MDNS.begin(host_name))
     {  //http://esp32.local
-        Serial.println("Error setting up MDNS responder!");
+        ActiveSerial->println("Error setting up MDNS responder!");
         while (1)
         {
             delay(1000);
         }
     }
-    Serial.println("mDNS responder started");
+    ActiveSerial->println("mDNS responder started");
     */
 
      /*return javascript jquery */
@@ -205,8 +205,8 @@ void ota_wifi_initialize(char* APhostname)
             HTTPUpload &upload = server.upload();
             if (upload.status == UPLOAD_FILE_START)
             {
-                Serial.printf("Update: %s\n", upload.filename.c_str());
-                Serial.println("Please don't move the Pedal");
+                ActiveSerial->printf("Update: %s\n", upload.filename.c_str());
+                ActiveSerial->println("Please don't move the Pedal");
                 if (!Update.begin(UPDATE_SIZE_UNKNOWN))
                 { // start with max available size
                     Update.printError(Serial);
@@ -224,7 +224,7 @@ void ota_wifi_initialize(char* APhostname)
             {
                 if (Update.end(true))
                 { // true to set the size to the current progress
-                    Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+                    ActiveSerial->printf("Update Success: %u\nRebooting...\n", upload.totalSize);
                 }
                 else
                 {

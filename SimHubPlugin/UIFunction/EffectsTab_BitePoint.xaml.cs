@@ -66,7 +66,7 @@ namespace User.PluginSdkDemo.UIFunction
                 try
                 {
                     control.Slider_BP_freq.SliderValue = control.dap_config_st.payloadPedalConfig_.BP_freq;
-                    control.Slider_BP_AMP.SliderValue = (double)(control.dap_config_st.payloadPedalConfig_.BP_amp) / (double)100.0f;
+                    control.Slider_BP_AMP.SliderValue = (double)(control.dap_config_st.payloadPedalConfig_.BP_amp) / 1000.0d * 100.0d;
                     control.checkbox_enable_bite_point.IsChecked = (control.dap_config_st.payloadPedalConfig_.BP_trigger == 1);
                     control.update_plot_BP();
                 }
@@ -160,7 +160,7 @@ namespace User.PluginSdkDemo.UIFunction
         private void Slider_BP_AMP_SliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             var tmp = dap_config_st;
-            tmp.payloadPedalConfig_.BP_amp = (Byte)(e.NewValue * 100);
+            tmp.payloadPedalConfig_.BP_amp = (Byte)(e.NewValue * 1000.0d / 100.0d);
             dap_config_st = tmp;
             ConfigChangedEvent(dap_config_st);
             update_plot_BP();

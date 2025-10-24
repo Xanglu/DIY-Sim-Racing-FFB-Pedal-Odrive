@@ -4,12 +4,13 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace User.PluginSdkDemo
 {
     //[StructLayout(LayoutKind.Sequential, Pack = 1)]
     
-    public struct payloadPedalConfig
+    unsafe public struct payloadPedalConfig
     {
         // configure pedal start and endpoint
         // In percent
@@ -22,12 +23,62 @@ namespace User.PluginSdkDemo
 
         // design force vs travel curve
         // In percent
+        /*
         public byte relativeForce_p000;
         public byte relativeForce_p020;
         public byte relativeForce_p040;
         public byte relativeForce_p060;
         public byte relativeForce_p080;
         public byte relativeForce_p100;
+        */
+        public byte quantityOfControl;
+        public byte relativeForce00;
+        public byte relativeForce01;
+        public byte relativeForce02;
+        public byte relativeForce03;
+        public byte relativeForce04;
+        public byte relativeForce05;
+        public byte relativeForce06;
+        public byte relativeForce07;
+        public byte relativeForce08;
+        public byte relativeForce09;
+        public byte relativeForce10;
+        
+        public byte relativeTravel00;
+        public byte relativeTravel01;
+        public byte relativeTravel02;
+        public byte relativeTravel03;
+        public byte relativeTravel04;
+        public byte relativeTravel05;
+        public byte relativeTravel06;
+        public byte relativeTravel07;
+        public byte relativeTravel08;
+        public byte relativeTravel09;
+        public byte relativeTravel10;
+
+        public byte numOfJoystickMapControl;
+        public byte joystickMapOrig00;
+        public byte joystickMapOrig01;
+        public byte joystickMapOrig02;
+        public byte joystickMapOrig03;
+        public byte joystickMapOrig04;
+        public byte joystickMapOrig05;
+        public byte joystickMapOrig06;
+        public byte joystickMapOrig07;
+        public byte joystickMapOrig08;
+        public byte joystickMapOrig09;
+        public byte joystickMapOrig10;
+        public byte joystickMapMapped00;
+        public byte joystickMapMapped01;
+        public byte joystickMapMapped02;
+        public byte joystickMapMapped03;
+        public byte joystickMapMapped04;
+        public byte joystickMapMapped05;
+        public byte joystickMapMapped06;
+        public byte joystickMapMapped07;
+        public byte joystickMapMapped08;
+        public byte joystickMapMapped09;
+        public byte joystickMapMapped10;
 
         // parameter to configure damping
         public byte dampingPress;
@@ -71,33 +122,6 @@ namespace User.PluginSdkDemo
         //Custom Vibration 2
         public byte CV_amp_2;
         public byte CV_freq_2;
-        // cubic spline params
-        public float cubic_spline_param_a_0;
-        public float cubic_spline_param_a_1;
-        public float cubic_spline_param_a_2;
-        public float cubic_spline_param_a_3;
-        public float cubic_spline_param_a_4;
-
-        public float cubic_spline_param_b_0;
-        public float cubic_spline_param_b_1;
-        public float cubic_spline_param_b_2;
-        public float cubic_spline_param_b_3;
-        public float cubic_spline_param_b_4;
-
-        // PID settings
-        public float PID_p_gain;
-        public float PID_i_gain;
-        public float PID_d_gain;
-        public float PID_velocity_feedforward_gain;
-
-        // MPC settings
-        public float MPC_0th_order_gain;
-        public float MPC_1st_order_gain;
-        public float MPC_2nd_order_gain;
-
-
-
-        public byte control_strategy_b;
 
         public byte maxGameOutput;
 
@@ -134,6 +158,12 @@ namespace User.PluginSdkDemo
         // Kalman filter model noise
         public byte kf_Joystick_u8;
         public byte kf_modelNoise_joystick;
+        public byte servoIdleTimeout;
+
+        public byte positionSmoothingFactor_u8;
+        public byte minForceForEffects;
+
+        public byte servoRatioOfInertia_u8;
 
     }
 }

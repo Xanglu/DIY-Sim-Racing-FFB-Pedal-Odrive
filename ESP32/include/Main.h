@@ -1,8 +1,11 @@
 #pragma once
-//#include <ADS1256.h>
+#include <stdint.h>
+#include <arduino.h>
+// #include <task.h>
 
-
-//#define PRINT_TASK_FREE_STACKSIZE_IN_WORDS
+#define PI_FL32         3.1415926535897932384626433832795f
+#define DEG_TO_RAD_FL32 0.017453292519943295769236907684886f
+#define RAD_TO_DEG_FL32 57.295779513082320876798154814105f
 
 /********************************************************************/
 /*                      Select the PCB      */
@@ -41,6 +44,8 @@
 #define ADC_SAMPLE_RATE ADS1256_DRATE_2000SPS
 #define PUT_TARGET_CYCLE_TIME_IN_US DAP_MICROSECONDS_PER_SECOND / 2000
 
+// #define PUT_TARGET_CYCLE_TIME_IN_US 300
+
 // 1.0kHz
 //#define ADC_SAMPLE_RATE ADS1256_DRATE_1000SPS
 //#define PUT_TARGET_CYCLE_TIME_IN_US DAP_MICROSECONDS_PER_SECOND / 1000
@@ -63,7 +68,7 @@
 //#define MOTOR_INVERT_MOTOR_DIR false
 static const uint32_t MAXIMUM_STEPPER_RPM = 4000;     
 static const uint32_t SECONDS_PER_MINUTE = 60;
-#define MAXIMUM_STEPPER_SPEED (uint32_t)250000//  max steps per second, see https://github.com/gin66/FastAccelStepper
+#define MAXIMUM_STEPPER_SPEED (uint32_t)MAX_SPEED_IN_HZ//100000//  max steps per second, see https://github.com/gin66/FastAccelStepper
 
 
 /********************************************************************/
@@ -87,9 +92,9 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   // level shifter not present on this PCB design
   #define SENSORLESS_HOMING false
 
-  #define BLUETOOTH_GAMEPAD
   //#define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 1
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -111,9 +116,9 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   // level shifter not present on this PCB design
   #define SENSORLESS_HOMING false
 
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 1
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -150,16 +155,15 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ESPNOW_Enable
   #define ESPNow_ESP32
   //#define I2C_slave_address 0x15
-  #define BLUETOOTH_GAMEPAD
   //#define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 1
   //#define ESPNow_Pairing_function
   //#define Pairing_GPIO 13
   //#define ESPNow_debug_rudder
-  #define OTA_update_ESP32
+  #define OTA_update
   //#define BRAKE_RESISTOR_PIN 13
   //#define OTA_update_ESP32
-  
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -183,13 +187,13 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ISV57_TXPIN 27 //17
   #define ISV57_RXPIN 26 // 16
 
-  #define BLUETOOTH_GAMEPAD
   //#define USB_JOYSTICK
 
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 3
   //#define Pairing_GPIO 0
   //#define ESPNow_Pairing_function
   #define ESPNow_ESP32
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -214,13 +218,13 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ISV57_TXPIN 26 //17
   #define ISV57_RXPIN 27 // 16
   #define ESPNOW_Enable
-  #define BLUETOOTH_GAMEPAD
   //#define USB_JOYSTICK
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 3
   #define Pairing_GPIO 0
   //#define ESPNow_Pairing_function
   #define ESPNow_ESP32
-  #define OTA_update_ESP32
+  #define OTA_update
+  #define RUN_IN_CACHE
 #endif
 
 
@@ -256,7 +260,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 
   //#define Using_analog_output_ESP32_S3
 
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
   #define ESPNOW_Enable
   #define ESPNow_S3
@@ -265,6 +268,8 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   //#define Pairing_GPIO 0
   #define OTA_update
   #define CONTROLLER_SPECIFIC_VIDPID
+  #define BAUDRATE3M
+  #define PEDAL_SOFTWARE_ASSIGNMENT
 #endif
 
 // For Gilphilbert PCBA design
@@ -290,7 +295,8 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define MCP_SCL 4
 
   // Pedal assignment pin
-  #define PEDAL_HARDWARE_ASSIGNMENT
+  //#define PEDAL_HARDWARE_ASSIGNMENT
+  #define PEDAL_SOFTWARE_ASSIGNMENT
   #define CFG1 1
   #define CFG2 2
 
@@ -301,10 +307,6 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define ISV57_TXPIN 10//27 //17
   #define ISV57_RXPIN 9//26 // 16
 
-  //#define Using_analog_output_ESP32_S3
-  #define ESPNOW_Enable
-  #define ESPNow_S3
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
 
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
@@ -316,58 +318,10 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define LED_GPIO 12
   #define OTA_update
   #define USING_BUZZER
+  #define USE_CDC_INSTEAD_OF_UART
 #endif
 
-#if PCB_VERSION == 8
-  // ADC defines
-  #define PIN_DRDY 15//19// 19 --> DRDY
-  #define PIN_RST  6 // X --> X
-  #define PIN_SCK 16//16 // 16 -->SCLK
-  #define PIN_MISO 18 // 18 --> DOUT
-  #define PIN_MOSI 17 // 17 --> DIN
-  #define PIN_CS 7//21 // 21 --> CS
-
-  // stepper pins
-  #define dirPinStepper    37//22
-  #define stepPinStepper   38//23
-
-  //analog output pin
-  //#define D_O 25   
-  //MCP4725 SDA SCL
-  #define MCP_SDA 5
-  #define MCP_SCL 4
-
-  // Pedal assignment pin
-  #define PEDAL_HARDWARE_ASSIGNMENT
-  #define CFG1 1
-  #define CFG2 2
-
-  #define EMERGENCY_BUTTON
-  #define ShutdownPin 6
-  #define BuzzerPin 6
-  // level shifter is present on this PCB design
-  #define SENSORLESS_HOMING true
-  #define ISV57_TXPIN 10//27 //17
-  #define ISV57_RXPIN 9//26 // 16
-
-  //#define Using_analog_output_ESP32_S3
-  #define ESPNOW_Enable
-  #define ESPNow_S3
-  //#define BLUETOOTH_GAMEPAD
-  #define USB_JOYSTICK
-
-  #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
-  //#define ESPNow_Pairing_function
-  //#define Hardware_Pairing_button
-  #define Pairing_GPIO 33
-  //#define ESPNow_debug_rudder
-  #define CONTROLLER_SPECIFIC_VIDPID
-  #define USING_LED
-  #define LED_GPIO 12
-  #define OTA_update
-  #define USING_BUZZER
-#endif
-
+// PCBA V2
 #if PCB_VERSION == 9
   // ADC defines
   #define PIN_DRDY 15//--> DRDY
@@ -385,29 +339,26 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define MCP_SCL 4
 
   // Pedal assignment pin
-  #define PEDAL_HARDWARE_ASSIGNMENT
+  //#define PEDAL_HARDWARE_ASSIGNMENT
+  #define PEDAL_SOFTWARE_ASSIGNMENT
   #define CFG1 1
   #define CFG2 2
 
-  #define EMERGENCY_BUTTON
-  #define ShutdownPin 6
+  // #define EMERGENCY_BUTTON
+  // #define ShutdownPin 6
   #define BuzzerPin 21
   // level shifter is present on this PCB design
   #define SENSORLESS_HOMING true
-  #define ISV57_TXPIN 10//27 //17
-  #define ISV57_RXPIN 9//26 // 16
+  #define ISV57_TXPIN 10 // 27 //17
+  #define ISV57_RXPIN 9  // 26 // 16
 
-  //#define Using_analog_output_ESP32_S3
-  #define ESPNOW_Enable
-  #define ESPNow_S3
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
 
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
-  //#define ESPNow_Pairing_function
-  //#define Hardware_Pairing_button
+  // #define ESPNow_Pairing_function
+  // #define Hardware_Pairing_button
   #define Pairing_GPIO 33
-  //#define ESPNow_debug_rudder
+  // #define ESPNow_debug_rudder
   #define CONTROLLER_SPECIFIC_VIDPID
   #define USING_LED
   #define LED_GPIO 12
@@ -415,6 +366,8 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define USING_BUZZER
   #define BRAKE_RESISTOR_PIN 4
   #define SERVO_POWER_PIN 3
+  #define EMERGENCY_PIN 6
+  #define BAUDRATE3M
 #endif
 // Switch-!t PCB for Waveshare ESP32-S3-DEV-KIT-N8R8
 // More information at https://github.com/gaggi/ActivePedalPCB
@@ -455,11 +408,10 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   //#define Using_analog_output_ESP32_S3
   #define ESPNOW_Enable
   #define ESPNow_S3
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
 
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 5
-  #define ESPNow_Pairing_function
+  //#define ESPNow_Pairing_function
   #define Hardware_Pairing_button
   #define Pairing_GPIO 33
   //#define ESPNow_debug_rudder
@@ -469,6 +421,7 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
   #define LED_ENABLE_RGB
   #define OTA_update
   #define USING_BUZZER
+  #define PEDAL_SOFTWARE_ASSIGNMENT
 #endif
 
 
@@ -498,15 +451,142 @@ static const uint32_t SECONDS_PER_MINUTE = 60;
 
   #define BRAKE_RESISTOR_PIN 35
 
-  //#define BLUETOOTH_GAMEPAD
   #define USB_JOYSTICK
-  #define ESPNOW_Enable
-  #define ESPNow_S3
+  //#define ESPNOW_Enable
+  //#define ESPNow_S3
   #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 0
   //#define ESPNow_Pairing_function
   #define Pairing_GPIO 0
   #define OTA_update
   #define CONTROLLER_SPECIFIC_VIDPID
-
+  #define BAUDRATE3M
+  #define PEDAL_SOFTWARE_ASSIGNMENT
   // #define ANGLE_SENSOR_GPIO 11 // disabled by default, since to much runtime impact of ADC
 #endif
+
+
+
+// V6 version of dev PCB for ESP32 S3
+// flash instructions, see https://hutscape.com/tutorials/hello-arduino-esp32s3
+// 1. ESP32S3 Dev Module
+#if PCB_VERSION == 13
+  // ADC defines
+  #define USES_ADS1220
+  #define FFB_ADS1220_SCLK    6
+  #define FFB_ADS1220_DIN     7     // MOSI
+  #define FFB_ADS1220_DOUT    15    // MISO
+  #define FFB_ADS1220_DRDY    16
+  #define FFB_ADS1220_CS      17
+
+  // stepper pins
+  #define dirPinStepper    36
+  #define stepPinStepper   37
+
+  // level shifter is present on this PCB design
+  #define SENSORLESS_HOMING true
+
+  #define ISV57_TXPIN 2
+  #define ISV57_RXPIN 1
+
+  #define BRAKE_RESISTOR_PIN 35
+  
+  #define USB_JOYSTICK
+  //#define ESPNOW_Enable
+  //#define ESPNow_S3
+  #define SERIAL_COOMUNICATION_TASK_DELAY_IN_MS 0
+  //#define ESPNow_Pairing_function
+  #define Pairing_GPIO 0
+  #define OTA_update
+  #define CONTROLLER_SPECIFIC_VIDPID
+  #define BAUDRATE3M
+  #define PEDAL_SOFTWARE_ASSIGNMENT
+  // #define ANGLE_SENSOR_GPIO 11 // disabled by default, since to much runtime impact of ADC
+#endif
+
+
+#ifdef ENABLE_ESP_NOW
+  #define ESPNOW_Enable
+  #define ESPNow_S3
+#endif
+
+//IRAM switch flag
+#ifdef RUN_IN_CACHE
+  #define IRAM_ATTR_FLAG
+#else
+  #define IRAM_ATTR_FLAG IRAM_ATTR
+#endif
+
+
+
+
+
+/********************************************************************/
+/*                      Task defines                                */
+/********************************************************************/
+#define CORE_ID_PEDAL_UPDATE_TASK (uint8_t)1
+#define CORE_ID_SERIAL_COMMUNICATION_TASK (uint8_t)0
+#define CORE_ID_JOYSTICK_TASK (uint8_t)1
+#define CORE_ID_MISC_TASK (uint8_t)0
+#define CORE_ID_OTA_TASK (uint8_t)0
+#define CORE_ID_SERVO_COMMUNICATION_TASK (uint8_t)0
+#define CORE_ID_ESPNOW_TASK (uint8_t)0
+#define CORE_ID_STEPPER_TASK (uint8_t)1
+#define CORE_ID_LOADCELLREADING_TASK (uint8_t)1
+#define CORE_ID_PROFILER_TASK (uint8_t)0
+#define CORE_ID_CONFIG_HANDLING_TASK (uint8_t)0
+
+// #define CORE_ID_PEDAL_UPDATE_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_SERIAL_COMMUNICATION_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_JOYSTICK_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_MISC_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_OTA_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_SERVO_COMMUNICATION_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_ESPNOW_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_STEPPER_TASK ( 0x7FFFFFFF )
+// #define CORE_ID_LOADCELLREADING_TASK ( 0x7FFFFFFF )
+
+#ifdef RUN_IN_CACHE
+  #define REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US (int64_t)600
+#else
+  #define REPETITION_INTERVAL_PEDAL_UPDATE_TASK_IN_US (int64_t)300
+#endif
+
+#define REPETITION_INTERVAL_JOYSTICKOUTPUT_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERIALCOMMUNICATION_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_ESPNOW_TASK_IN_US (int64_t)3000
+#define REPETITION_INTERVAL_OTA_TASK_IN_US (int64_t)10000
+#define REPETITION_INTERVAL_SERVO_COMMUNICATION_TASK_IN_US (int64_t)10000
+
+
+#ifdef RUN_IN_CACHE
+  // equal task priority --> round robin 
+  #define TASK_PRIORITY_PEDAL_UPDATE_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_JOYSTICKOUTPUT_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_LOADCELL_READING_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_SERIALCOMMUNICATION_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_SERIALCOMMUNICATION_TX_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_ESPNOW_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_OTA_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_SERVO_COMMUNICATION_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_CONFIG_HANDLING_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_PROFILER_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_MISC_TASK (UBaseType_t)1
+#else
+  #define TASK_PRIORITY_PEDAL_UPDATE_TASK (UBaseType_t)3
+  #define TASK_PRIORITY_JOYSTICKOUTPUT_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_LOADCELL_READING_TASK (UBaseType_t)2
+  #define TASK_PRIORITY_SERIALCOMMUNICATION_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_SERIALCOMMUNICATION_TX_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_ESPNOW_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_OTA_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_SERVO_COMMUNICATION_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_CONFIG_HANDLING_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_PROFILER_TASK (UBaseType_t)1
+  #define TASK_PRIORITY_MISC_TASK (UBaseType_t)1
+#endif
+
+
+// alias to serial stream, thus it can dynamically switch depending on board
+extern Stream *ActiveSerial;
+
+#define BAUDRATE 3000000

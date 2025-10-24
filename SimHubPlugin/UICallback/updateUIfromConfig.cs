@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
+using User.PluginSdkDemo.UIFunction;
 
 namespace User.PluginSdkDemo
 {
@@ -31,6 +34,7 @@ namespace User.PluginSdkDemo
                         {
                             Plugin._calculations.PedalAvailability[i] = false;
                             Plugin._calculations.PedalFirmwareVersion[i, 2] = 0;
+                            Plugin._calculations.ServoStatus[i] = 0;
                         }
                     }
                     Plugin._calculations.BridgeFirmwareVersion[2] = 0;
@@ -38,6 +42,13 @@ namespace User.PluginSdkDemo
                 for (int i = 0; i < 3; i++)
                 {
                     Plugin._calculations.PedalSerialAvailability[i] = Plugin._serialPort[indexOfSelectedPedal_u].IsOpen;
+                    if (!Plugin.Settings.Pedal_ESPNow_Sync_flag[i])
+                    {
+                        if (!Plugin._serialPort[indexOfSelectedPedal_u].IsOpen)
+                        {
+                            Plugin._calculations.ServoStatus[i] = 0;
+                        }
+                    }
                 }
             }
 
@@ -47,15 +58,15 @@ namespace User.PluginSdkDemo
         {
 
             CheckSerialAvailability();
-
+            
             if (Plugin != null)
             {
                 var tmp_struct = dap_config_st[indexOfSelectedPedal_u];
                 Misc_Tab.dap_config_st = tmp_struct;
                 KF_Tab.dap_config_st = tmp_struct;
-                ControlStrategy_Tab.dap_config_st = tmp_struct;
-                PID_Tab.dap_config_st = tmp_struct;
-                MPC_tab.dap_config_st = tmp_struct;
+                //ControlStrategy_Tab.dap_config_st = tmp_struct;
+                //PID_Tab.dap_config_st = tmp_struct;
+                //MPC_tab.dap_config_st = tmp_struct;
                 EffectsABS_Tab.dap_config_st = tmp_struct;
                 EffectsRPM_Tab.dap_config_st = tmp_struct;
                 EffectsBitePoint_Tab.dap_config_st = tmp_struct;
@@ -65,6 +76,9 @@ namespace User.PluginSdkDemo
                 EffectsCustom1_tab.dap_config_st = tmp_struct;
                 EffectsCustom2_Tab.dap_config_st = tmp_struct;
                 PedalForceTravel_Tab.dap_config_st = tmp_struct;
+                PedalJoystick_Tab.dap_config_st= tmp_struct;
+                GlobalEffects_Tab.dap_config_st=tmp_struct;
+                Servo_Tab.dap_config_st = tmp_struct;
                 PedalKinematics_Tab.dap_config_st = tmp_struct;
                 PedalSettingsSection.dap_config_st = tmp_struct;
                 var tmp_rudder = dap_config_st_rudder;
@@ -81,17 +95,22 @@ namespace User.PluginSdkDemo
                 EffectsRoadImpact_Tab.Settings = Plugin.Settings;
                 EffectsCustom1_tab.Settings = Plugin.Settings;
                 EffectsCustom2_Tab.Settings = Plugin.Settings;
+
                 PedalForceTravel_Tab.Settings = Plugin.Settings;
                 PedalKinematics_Tab.Settings = Plugin.Settings;
                 PedalSettingsSection.Settings = Plugin.Settings;
                 EffectsRPMRudder_Tab.Settings = Plugin.Settings;
+                CurveRudderForce_Tab.Settings = Plugin.Settings;
                 EffectRudderACC_Tab.Settings = Plugin.Settings;
+                RudderSetting_Tab.Settings = Plugin.Settings;
                 SystemProfile_Tab.Settings = Plugin.Settings;
-                SettingOTA_Tab.Settings = Plugin.Settings;
+                //SettingOTA_Tab.Settings = Plugin.Settings;
                 SystemLicense_Tab.Settings = Plugin.Settings;
                 SystemSetting_Section.Settings = Plugin.Settings;
                 SystemInfo.Settings = Plugin.Settings;
                 PedalInfo.Settings = Plugin.Settings;
+                RudderSettingSection.Settings = Plugin.Settings;
+
 
                 EffectsABS_Tab.calculation = Plugin._calculations;
                 EffectsBitePoint_Tab.calculation = Plugin._calculations;
@@ -102,17 +121,21 @@ namespace User.PluginSdkDemo
                 PedalSettingsSection.calculation = Plugin._calculations;
                 CurveRudderForce_Tab.calculation = Plugin._calculations;
                 SystemProfile_Tab.calculation = Plugin._calculations;
-                SettingOTA_Tab.calculation = Plugin._calculations;
+                //SettingOTA_Tab.calculation = Plugin._calculations;
                 SystemInfo.calculation = Plugin._calculations;
                 PedalInfo.calculation = Plugin._calculations;
                 RudderInfo.calculation = Plugin._calculations;
-
+                RudderSettingSection.calculation = Plugin._calculations;
                 EffectsCustom1_tab.Plugin = Plugin;
                 EffectsCustom2_Tab.Plugin = Plugin;
 
 
                 btn_SendConfig.Content = Plugin._calculations.btn_SendConfig_Content;
                 btn_SendConfig.ToolTip = Plugin._calculations.btn_SendConfig_tooltip;
+                if (!SystemSetting_Section.isVjoyAsigned)
+                {
+                    SystemSetting_Section.asignVjoyJoystickPtr(Plugin._calculations._joystick);
+                }
             }
 
 
@@ -120,7 +143,14 @@ namespace User.PluginSdkDemo
             if (Plugin != null)
             {
 
-
+                if (Plugin.Settings.Pedal_ESPNow_Sync_flag[indexOfSelectedPedal_u])
+                {
+                    btn_Assignment.IsEnabled = true;
+                }
+                else
+                {
+                    btn_Assignment.IsEnabled = false;
+                }
 
                 if (Plugin.Sync_esp_connection_flag)
                 {
@@ -134,10 +164,11 @@ namespace User.PluginSdkDemo
 
             //// Select serial port accordingly
             string tmp = (string)Plugin._serialPort[indexOfSelectedPedal_u].PortName;
+            
             try
             {
                 SerialPortSelection.SelectedValue = tmp;
-                TextBox_debugOutput.Text = "Serial port selected: " + SerialPortSelection.SelectedValue;
+                //TextBox_debugOutput.Text = "Serial port selected: " + SerialPortSelection.SelectedValue;
 
             }
             catch (Exception caughtEx)
@@ -148,12 +179,12 @@ namespace User.PluginSdkDemo
             if (Plugin._serialPort[indexOfSelectedPedal_u].IsOpen == true)
             {
                 ConnectToPedal.IsChecked = true;
-                btn_pedal_connect.Content = "Disconnect From Pedal";
+                btn_pedal_connect.Content = "Disconnect";
             }
             else
             {
                 ConnectToPedal.IsChecked = false;
-                btn_pedal_connect.Content = "Connect To Pedal";
+                btn_pedal_connect.Content = "Connect";
             }
 
 
@@ -187,6 +218,38 @@ namespace User.PluginSdkDemo
                     Checkbox_auto_remove_serial_line_bridge.IsChecked = false;
                 }
 
+            }
+
+
+            //verison check
+            if (Plugin._calculations.versionCheck_b)
+            {
+                if (Plugin._calculations.verisonCreate_b == false)
+                {
+                    if (Plugin.Settings.updateChannel == 0)
+                    {
+                        Plugin._calculations.updateVerison = new Version(Plugin._calculations.pluginVersionReading[0]);
+                    }
+                    else
+                    {
+                        Plugin._calculations.updateVerison = new Version(Plugin._calculations.pluginVersionReading[1]);
+                    }
+
+                    Plugin._calculations.pluginVersion = new Version(Constants.pluginVersion);
+                    Plugin._calculations.verisonCreate_b = true;
+                }
+
+                if (Plugin._calculations.updateVerison > Plugin._calculations.pluginVersion)
+                {
+                    string tmpUpdateChannel = Plugin.Settings.updateChannel == 0 ? "Stable release" : "Nightly build";
+
+                    textBox_VersionUpdate.Text = "New "+tmpUpdateChannel+" available:" + Plugin._calculations.updateVerison;
+                    textBox_VersionUpdate.Foreground=System.Windows.Media.Brushes.Red;
+                }
+                else
+                {
+                    textBox_VersionUpdate.Text = "";
+                }
             }
 
         }

@@ -78,16 +78,18 @@ namespace User.PluginSdkDemo
                                     Plugin.ESPsync_serialPort.Open();
                                     System.Threading.Thread.Sleep(200);
                                     // ESP32 S3
+                                    /*
                                     if (Plugin.Settings.Using_CDC_bridge)
                                     {
                                         Plugin.ESPsync_serialPort.RtsEnable = false;
                                         Plugin.ESPsync_serialPort.DtrEnable = true;
                                     }
+                                    */
                                     //SystemSounds.Beep.Play();
                                     Plugin.Sync_esp_connection_flag = true;
                                     btn_connect_espnow_port.Content = "Disconnect";
                                     ESP_host_serial_timer = new System.Windows.Forms.Timer();
-                                    ESP_host_serial_timer.Tick += new EventHandler(timerCallback_serial_esphost);
+                                    ESP_host_serial_timer.Tick += new EventHandler(timerCallback_serial_esphost_orig);
                                     ESP_host_serial_timer.Tag = 3;
                                     ESP_host_serial_timer.Interval = 8; // in miliseconds
                                     ESP_host_serial_timer.Start();
@@ -118,6 +120,7 @@ namespace User.PluginSdkDemo
                             for (int i = 0; i < 3; i++)
                             {
                                 Plugin.PedalConfigRead_b[i] = false;
+                                
                             }
 
                         }
@@ -185,6 +188,7 @@ namespace User.PluginSdkDemo
                                 Plugin.Settings.connect_status[pedalIdx] = 0;
                                 Plugin.PedalConfigRead_b[pedalIdx] = false;
                                 Plugin._calculations.PedalSerialAvailability[pedalIdx] = false;
+                                Plugin._calculations.ServoStatus[pedalIdx] = 0;
                                 updateTheGuiFromConfig();
                             }
 

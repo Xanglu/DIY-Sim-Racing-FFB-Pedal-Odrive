@@ -1,10 +1,10 @@
 #include "Modbus.h"
 #include <Arduino.h>
+#include "Main.h"
 
 Modbus::Modbus()
 {
     this->s = NULL;
-    this->mode_ = -1;
 }
 Modbus::Modbus(HardwareSerial &st)
 {
@@ -12,13 +12,9 @@ Modbus::Modbus(HardwareSerial &st)
 }
 
 
-bool Modbus::init(int mode, bool en_log)
+bool Modbus::init(bool en_log)
 {
-     this->mode_ =  mode;
      this->log   =  en_log;
-     //pinMode(mode_,OUTPUT);
-     //digitalWrite(mode_, 0);  
-     
      return true;
 }
 
@@ -81,12 +77,16 @@ void Modbus::readParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress)
   uint8_t raw2[2];
   uint8_t len;
   int16_t regArray[4];
+  regArray[0] = -1;
+  regArray[1] = -1;
+  regArray[2] = -1;
+  regArray[3] = -1;
 
   // read the four registers simultaneously
   if(requestFrom(slaveId_local_u16, 0x03, parameterAdress,  2) > 0)
   {
     RxRaw(raw2,  len);
-    regArray[0] = uint16(0);
+    regArray[0] = int16(0);
   }
   
   // write to public variables
@@ -95,10 +95,10 @@ void Modbus::readParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress)
 
 
   // if value is not target value --> overwrite value
-  Serial.print("Parameter address: ");
-  Serial.print(parameterAdress);
-  Serial.print(",    actual:");
-  Serial.println(returnValue);
+  ActiveSerial->print("Parameter address: ");
+  ActiveSerial->print(parameterAdress);
+  ActiveSerial->print(",    actual:");
+  ActiveSerial->println(returnValue);
 
 
   delay(50);
@@ -106,12 +106,10 @@ void Modbus::readParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress)
 
 
 // check target values at register address. If target value was already present, return 0. If target value has to be set, return 1.
-bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t parameterAdress, long value) {
+bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, int16_t parameterAdress, long value) {
 
   bool registerWritten_b = false;
   bool registerValueAsTarget_b = false;
-
-  
 
   // check and set the register at maximum N times
   for (uint8_t tryIdx_u8 = 0; tryIdx_u8 < 10; tryIdx_u8++)
@@ -129,12 +127,16 @@ bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t param
     uint8_t raw2[2];
     uint8_t len;
     int16_t regArray[4];
-
+    regArray[0] = -1;
+    regArray[1] = -1;
+    regArray[2] = -1;
+    regArray[3] = -1;
+    
     // read the four registers simultaneously
     if(requestFrom(slaveId_local_u16, 0x03, parameterAdress,  2) > 0)
     {
       RxRaw(raw2,  len);
-      regArray[0] = uint16(0);
+      regArray[0] = int16(0);
     }
     
     // write to public variables
@@ -147,12 +149,12 @@ bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t param
     {
 
       delay(30);
-      Serial.print("Parameter adresse: ");
-      Serial.print(parameterAdress);
-      Serial.print(",    actual: ");
-      Serial.print(returnValue);
-      Serial.print(",    target: ");
-      Serial.println(targetValue_l);
+      ActiveSerial->print("Parameter adresse: ");
+      ActiveSerial->print(parameterAdress);
+      ActiveSerial->print(",    actual: ");
+      ActiveSerial->print(returnValue);
+      ActiveSerial->print(",    target: ");
+      ActiveSerial->println(targetValue_l);
 
       holdingRegisterWrite(slaveId_local_u16, parameterAdress, targetValue_l); 
 
@@ -162,7 +164,6 @@ bool Modbus::checkAndReplaceParameter(uint16_t slaveId_local_u16, uint16_t param
     {
       registerValueAsTarget_b = true;
     }
-
   }
 
   return registerWritten_b;
@@ -237,23 +238,17 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
     txout[6] = crc ;
     txout[7] = crc >> 8;
  
-     
-    if(log){
-      Serial.print("TX: ");
-       for(int i =0; i < 8; i++)
-            {
-                Serial.printf("%02X ",txout[i] );
-            }
-            Serial.print("\t");
-     }
-
-    //digitalWrite(mode_,1);
-    //delay(1);
+    size_t bufferCapacity = this->s->availableForWrite();
     this->s->write(txout,8);
-    this->s->flush();
-    //digitalWrite(mode_,0);
-    //delay(1);
-    uint32_t t = millis();
+    delay(1);
+    uint8_t timeOutInMs_u8 = 10;
+    while( (bufferCapacity != this->s->availableForWrite() ) && (timeOutInMs_u8 > 0) ) 
+    { 
+      delay(1);
+      timeOutInMs_u8--;
+    }
+
+    unsigned long t = millis();
     lenRx   = 0;
     datalen = 0;
     int ll = 0;
@@ -262,11 +257,14 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
 
     bool allDataReceived_b = false;
     while( (false == allDataReceived_b) && ((millis() - t) < timeout_)){
-       if(this->s->available())
+        // delay for certain time to allow a context switch
+       delay(1);
+       
+       while(this->s->available())
        {
-        rx = this->s->read();
         t = millis();
-        
+        rx = this->s->read();
+
         if(found == 0)
         {
           if(txout[ll] == rx){ll++;}else{ll = 0;}
@@ -307,37 +305,37 @@ int Modbus::requestFrom(int slaveId, int type, int address, int nb)
 
     }
 
-    if(log){
-        Serial.print("RX: ");
-        for(int i =0; i < lenRx; i++)
-            {
-             Serial.printf("%02X ",rawRx[i] );
-            }
-            Serial.println();
-     }
+    // if(log){
+    //     ActiveSerial->print("RX: ");
+    //     for(int i =0; i < lenRx; i++)
+    //         {
+    //          ActiveSerial->printf("%02X ",rawRx[i] );
+    //         }
+    //         ActiveSerial->println();
+    //  }
 
-    /*Serial.print(lenRx);
-    Serial.println();*/
+    /*ActiveSerial->print(lenRx);
+    ActiveSerial->println();*/
 
 
     if(lenRx > 2){
         int crc1 = rawRx[lenRx - 1] <<8 | rawRx[lenRx - 2];
         int crc2 = CheckCRC(rawRx, lenRx - 2);
-        //Serial.printf("CRC1: %04X CRC2: %04X\n",crc1, crc2);
+        //ActiveSerial->printf("CRC1: %04X CRC2: %04X\n",crc1, crc2);
 
 
-        /*Serial.print("CRC1: ");
-        Serial.print(crc1);
-        Serial.print(",   CRC2: ");
-        Serial.print(crc2);
-        Serial.println();*/
+        /*ActiveSerial->print("CRC1: ");
+        ActiveSerial->print(crc1);
+        ActiveSerial->print(",   CRC2: ");
+        ActiveSerial->print(crc2);
+        ActiveSerial->println();*/
 
          if(crc1 == crc2)
           {
             datalen = rawRx[2];
-            /*Serial.print("Datalen: ");
-            Serial.print(datalen);
-            Serial.println();*/
+            /*ActiveSerial->print("Datalen: ");
+            ActiveSerial->print(datalen);
+            ActiveSerial->println();*/
             return datalen;
           }
           else
@@ -427,34 +425,44 @@ int Modbus::ReadInputReg(int slaveId, int add, int nbyte)
     return 0;
 }
 
-int8_t Modbus::uint8(int add)
-{
-    return rawRx[add*2+3];
-}
+// int8_t Modbus::uint8(int add)
+// {
+//     return rawRx[add*2+3];
+// }
 
 
 
 
-uint16_t Modbus::uint16(int add)
+// uint16_t Modbus::uint16(int add)
+// {
+//     int add_ = (add)*2 + 3;
+ 
+//     return (rawRx[add_] << 8 | rawRx[add_+1]);
+// }
+
+
+int16_t Modbus::int16(int add)
 {
     int add_ = (add)*2 + 3;
  
-    return (rawRx[add_] << 8 | rawRx[add_+1]);
+    // return (int16_t)((uint8_t)rawRx[add_] << 8 | (uint8_t)rawRx[add_+1]);
+    return (int16_t)(((int16_t)rawRx[add_] << 8) | rawRx[add_+1]);
+
 }
 
-uint32_t Modbus::uint32(int add, bool byteHL)
-{
-    uint32_t val ;
-    if (byteHL)
-    {
-      val = uint16(add) << 16 | uint16(add+1);
-    }
-    else
-    {
-      val = uint16(add+1)<< 16 | uint16(add);
-    }
-    return val;
-}
+// uint32_t Modbus::uint32(int add, bool byteHL)
+// {
+//     uint32_t val ;
+//     if (byteHL)
+//     {
+//       val = uint16(add) << 16 | uint16(add+1);
+//     }
+//     else
+//     {
+//       val = uint16(add+1)<< 16 | uint16(add);
+//     }
+//     return val;
+// }
 
 void Modbus::RxRaw(uint8_t*raw, uint8_t &rlen)
 {
@@ -465,12 +473,12 @@ void Modbus::RxRaw(uint8_t*raw, uint8_t &rlen)
       raw[i] = rawRx[i];
       //  if(rawRx[i] < 16)
       //    {
-      //      Serial.print("0");
+      //      ActiveSerial->print("0");
       //     }
-      //     Serial.print(rawRx[i],HEX);
+      //     ActiveSerial->print(rawRx[i],HEX);
     }
      rlen = this->lenRx;
-    //  Serial.println(rlen);
+    //  ActiveSerial->println(rlen);
 }
 
 
@@ -483,12 +491,12 @@ void Modbus::TxRaw(uint8_t*raw, uint8_t &rlen)
       raw[i] = txout[i];
       //  if(rawRx[i] < 16)
       //    {
-      //      Serial.print("0");
+      //      ActiveSerial->print("0");
       //     }
-      //     Serial.print(rawRx[i],HEX);
+      //     ActiveSerial->print(rawRx[i],HEX);
     }
      rlen = 8;
-    //  Serial.println(rlen);
+    //  ActiveSerial->println(rlen);
 }
 
 
@@ -532,27 +540,33 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
     txout[7] = crc >> 8;
 	
 	// send signal
-	digitalWrite(mode_,1);
+  size_t bufferCapacity = this->s->availableForWrite();
   delay(1);
   this->s->write(txout,8);
-  this->s->flush();
-  digitalWrite(mode_,0);
+  delay(1);
+  uint8_t timeOutInMs_u8 = 10;
+  while( (bufferCapacity != this->s->availableForWrite() ) && (timeOutInMs_u8 > 0) ) 
+  { 
+    delay(1);
+    timeOutInMs_u8--;
+  }
+
   delay(1);
 
   // verify return signal
   // should be identical to transmit signal, otherwise error
 
-  uint32_t t = millis();
+  unsigned long t = millis();
   int ll = 0;
   int rx;
   
   bool returnSignalIsCopyOfTransmittedSignal_b = false;
-  while((millis() - t) < timeout_){
-      if(this->s->available())
+  while( ( (millis() - t) < timeout_)  && (false == returnSignalIsCopyOfTransmittedSignal_b)) {
+      delay(1);
+      t = millis();
+      while(this->s->available())
       {
         rx = this->s->read();
-        t = millis();
-        
         if(txout[ll] == rx){ll++;}else{ll = 0;}
 
         if (ll == 8)
@@ -560,20 +574,11 @@ int Modbus::holdingRegisterWrite(int id, int address, uint16_t value)
           returnSignalIsCopyOfTransmittedSignal_b = true;
           break;
         }
-
       }
+      
   }
-
-  // Serial.print("Returnsignal: ");
-  // Serial.print(returnSignalIsCopyOfTransmittedSignal_b);
-  // Serial.print(",    Adress: ");
-  // Serial.print(address);
-  // Serial.print(",    value: ");
-  // Serial.println(value);
-	
 
   delay(5);
 
   return returnSignalIsCopyOfTransmittedSignal_b;
-
 }

@@ -10,7 +10,7 @@ namespace User.PluginSdkDemo
     public class DIYFFBPedalSettings
     {
         //should change the variable name after array size change to updtae the config setting
-        public int SpeedWarningLevel = 100;
+        //public int SpeedWarningLevel = 100;
         public int[] selectedJsonIndexLast = new int[3] { 0, 3, 6 };
         public string[] selectedComPortNames = { "COM1", "COM1", "COM1" };
         public string[] autoconnectComPortNames = { "NA", "NA", "NA" };
@@ -38,7 +38,7 @@ namespace User.PluginSdkDemo
         public double kinematicDiagram_zeroPos_OX = 100;
         public double kinematicDiagram_zeroPos_OY = 20;
         public double kinematicDiagram_zeroPos_scale = 1.5;
-        public bool[] USING_ESP32S3 = new bool[3] { true, true, true };
+        //public bool[] USING_ESP32S3 = new bool[3] { false, false, false };
         public bool[] CV1_enable_flag = new bool[3] { false, false, false };
         public int[] CV1_trigger = new int[3] { 0, 0, 0 };
         public string[] CV1_bindings = new string[3] { "", "", "" };
@@ -51,7 +51,7 @@ namespace User.PluginSdkDemo
         public bool Serial_auto_clean = false; //clean serial monitor
         public bool Serial_auto_clean_bridge = false; //clean serial monitor bridge
         public bool Using_CDC_bridge = false;
-        public byte[] Pedal_action_interval = new byte[3] { 50, 51, 53 };
+        public byte[] Pedal_action_fps = new byte[3] { 20, 20, 20 };
         public bool Rudder_RPM_effect_b = false;
         public bool Rudder_ACC_effect_b = false;
         public bool Rudder_ACC_WindForce = false;
@@ -60,6 +60,20 @@ namespace User.PluginSdkDemo
         public string SSID_string = "";
         public string PASS_string = "";
         public bool[] LivePreview = new bool[3] { false, false, false };
+        public float rudderMaxForce = 10;
+        public float rudderMinForce = 1;
+        public byte rudderMaxTravel = 95;
+        public byte rudderMinTravel = 5;
+        public byte[] rudderForce=new byte[11] { 0, 20, 40, 60, 80, 100, 0, 0, 0, 0, 0 };
+        public byte[] rudderTravel = new byte[11] { 0, 20, 40, 60, 80, 100, 0, 0, 0, 0, 0 };
+        public byte rudderControlQuantity = 6;
+        public byte rudderDamping = 0;
+        public byte rudderRPMAmp = 1;
+        public byte rudderRPMMaxFrequency = 40;
+        public byte rudderRPMMinFrequency = 15;
+        public uint rudderMode = 0;
+        public int updateChannel = 0;
+
     }
         
 

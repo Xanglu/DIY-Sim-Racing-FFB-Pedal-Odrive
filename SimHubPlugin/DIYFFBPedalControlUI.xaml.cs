@@ -84,8 +84,8 @@ namespace User.PluginSdkDemo
         public uint indexOfSelectedPedal_u = 1;
         public uint profile_select = 0;
         public DIY_FFB_Pedal Plugin { get; }
-        public static DAP_config_st[] dap_config_st = new DAP_config_st[3];
-        public static DAP_config_st dap_config_st_rudder;
+        public DAP_config_st[] dap_config_st = new DAP_config_st[3];
+        public DAP_config_st dap_config_st_rudder;
 
 
         public DAP_bridge_state_st dap_bridge_state_st;
@@ -158,7 +158,9 @@ namespace User.PluginSdkDemo
             InitializeComponent();
             
             //setting drawing color with Simhub theme workaround
-            SolidColorBrush buttonBackground_ = btn_update.Background as SolidColorBrush;
+            //SolidColorBrush buttonBackground_ = btn_update.Background as SolidColorBrush;
+            SolidColorBrush buttonBackground_ = btn_SendConfig.Background as SolidColorBrush;
+            
 
             Color color = Color.FromArgb(150, buttonBackground_.Color.R, buttonBackground_.Color.G, buttonBackground_.Color.B);
             Color color_2 = Color.FromArgb(200, buttonBackground_.Color.R, buttonBackground_.Color.G, buttonBackground_.Color.B);
@@ -177,7 +179,8 @@ namespace User.PluginSdkDemo
             color_RSSI_3 = new SolidColorBrush(Color.FromArgb(210, buttonBackground_.Color.R, buttonBackground_.Color.G, buttonBackground_.Color.B));
             color_RSSI_4 = new SolidColorBrush(Color.FromArgb(255, buttonBackground_.Color.R, buttonBackground_.Color.G, buttonBackground_.Color.B));
             Red_Warning = new SolidColorBrush(Color.FromArgb(255, 244, 67, 67));
-            White_Default = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));           
+            White_Default = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
+            CheckForUpdateAsync();
         }
 
 
@@ -241,12 +244,119 @@ namespace User.PluginSdkDemo
         double[] timeCollector = { 0, 0, 0,0 };
 
 
-        
-        
+
+        private void SerialPortSelection_DropDownOpened(object sender, EventArgs e)
+        {
+            // 1. Store the currently selected value, if any.
+            var currentSelectedValue = SerialPortSelection.SelectedValue;
+
+            // 2. Your logic to get the updated list of items.
+            //    For example, querying for available serial ports.
+            var updatedPortList = GetAvailableSerialPorts(); // This is your custom method.
+
+            //UpdateSerialPortList_click();
+
+            // 3. Assign the new list to the ComboBox's ItemsSource.
+            SerialPortSelection.ItemsSource = updatedPortList;
+
+            // 4. (Optional but recommended) Restore the previous selection 
+            //    if it still exists in the new list.
+            if (currentSelectedValue != null)
+            {
+                SerialPortSelection.SelectedValue = currentSelectedValue;
+            }
+        }
+
+        private void ESPNow_SerialPortSelection_DropDownOpened(object sender, EventArgs e)
+        {
+            // 1. Store the currently selected value, if any.
+            var currentSelectedValue = SerialPortSelection.SelectedValue;
+
+            // 2. Your logic to get the updated list of items.
+            //    For example, querying for available serial ports.
+            var updatedPortList = GetAvailableSerialPorts(); // This is your custom method.
+
+            //UpdateSerialPortList_click();
+
+            // 3. Assign the new list to the ComboBox's ItemsSource.
+            SerialPortSelection_ESPNow.ItemsSource = updatedPortList;
+
+            // 4. (Optional but recommended) Restore the previous selection 
+            //    if it still exists in the new list.
+            if (currentSelectedValue != null)
+            {
+                SerialPortSelection_ESPNow.SelectedValue = currentSelectedValue;
+            }
+        }
+
+        // The method that gets called from the DropDownOpened event
+        private List<SerialPortChoice> GetAvailableSerialPorts()
+        {
+            // This is the list we will return
+            var portChoices = new List<SerialPortChoice>();
+
+            // Your logic starts here:
+            //string[] comPorts = System.IO.Ports.SerialPort.GetPortNames();
+
+            // After (guaranteed to be unique)
+            string[] comPorts = System.IO.Ports.SerialPort.GetPortNames().Distinct().ToArray();
+
+            // 🌟 MODIFIED SECTION STARTS HERE 🌟
+            // Use LINQ to sort the COM ports numerically.
+            comPorts = comPorts
+                .Select(port => new
+                {
+                    Name = port,
+                    // Use Regex to extract the number from the string (e.g., "COM17" -> 17)
+                    Number = int.TryParse(
+                        System.Text.RegularExpressions.Regex.Match(port, @"\d+").Value,
+                        out int num) ? num : int.MaxValue
+                })
+                // Order by the extracted number
+                .OrderBy(p => p.Number)
+                // Select just the port name string back
+                .Select(p => p.Name)
+                .ToArray();
+            // 🌟 MODIFIED SECTION ENDS HERE 🌟
+
+            if (comPorts.Length > 0)
+            {
+                // Use a simple loop, Distinct() is good but GetPortNames()
+                // usually doesn't return duplicates anyway.
+                foreach (string portName in comPorts)
+                {
+                    // Get additional details about the port (your helper method)
+                    // Example: ComPortHelper.GetVidPidFromComPort(portName) might return
+                    // an object with a DeviceName property like "USB-SERIAL CH340".
+                    var parseResult = ComPortHelper.GetVidPidFromComPort(portName);
+
+                    // Create a user-friendly display name, e.g., "COM3 USB-SERIAL CH340"
+                    string friendlyName = $"{portName} ({parseResult.DeviceName})";
+
+                    // Add the new object to our list.
+                    // The first parameter is what the user sees.
+                    // The second parameter is the value used by the program.
+                    portChoices.Add(new SerialPortChoice(friendlyName, portName));
+                }
+            }
+            else
+            {
+                // Handle the case where no ports are found
+                portChoices.Add(new SerialPortChoice("No ports found", "NA"));
+            }
+
+            return portChoices;
+        }
+
+
+        // NOTE: You will also need your ComPortHelper class and any other
+        // dependencies like the `Plugin.comportList` if you still need it for other purposes.
 
         public void SerialPortSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string tmp = (string)SerialPortSelection.SelectedValue;
+            //string tmp_2= Plugin.comportList[SerialPortSelection.SelectedIndex].ComPortName;
+            //System.Windows.MessageBox.Show("connect to " + tmp_2);
             //Plugin._serialPort[indexOfSelectedPedal_u].PortName = tmp;
 
 
@@ -268,32 +378,19 @@ namespace User.PluginSdkDemo
                     Plugin.Settings.selectedComPortNames[indexOfSelectedPedal_u] = tmp;
                     Plugin._serialPort[indexOfSelectedPedal_u].PortName = tmp;
                 }
-                TextBox_debugOutput.Text = "COM port selected: " + Plugin.Settings.selectedComPortNames[indexOfSelectedPedal_u];
+                //TextBox_debugOutput.Text = "COM port selected: " + Plugin.Settings.selectedComPortNames[indexOfSelectedPedal_u];
 
             }
             catch (Exception caughtEx)
             {
                 string errorMessage = caughtEx.Message;
-                TextBox_debugOutput.Text = errorMessage;
+                TextBox2.Text = errorMessage;
             }
         }
 
         public void ESPNow_SerialPortSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string tmp = (string)SerialPortSelection_ESPNow.SelectedValue;
-            //Plugin._serialPort[indexOfSelectedPedal_u].PortName = tmp;
-
-
-            //try 
-            //{
-            //    TextBox_debugOutput.Text = "Debug: " + Plugin.Settings.selectedComPortNames[indexOfSelectedPedal_u];
-            //}
-            //catch (Exception caughtEx)
-            //{
-            //    string errorMessage = caughtEx.Message;
-            //    TextBox_debugOutput.Text = errorMessage;
-            //}
-
             try
             {
                 //if (Plugin.Settings.connect_status[indexOfSelectedPedal_u] == 0)
@@ -302,13 +399,13 @@ namespace User.PluginSdkDemo
                     Plugin.Settings.ESPNow_port = tmp;
                     Plugin.ESPsync_serialPort.PortName = tmp;
                 }
-                TextBox_debugOutput.Text = "COM port selected: " + Plugin.Settings.ESPNow_port;
+                //TextBox_debugOutput.Text = "COM port selected: " + Plugin.Settings.ESPNow_port;
 
             }
             catch (Exception caughtEx)
             {
                 string errorMessage = caughtEx.Message;
-                TextBox_debugOutput.Text = errorMessage;
+                TextBox2.Text = errorMessage;
             }
 
 
@@ -386,9 +483,31 @@ namespace User.PluginSdkDemo
 
         private void SystemLicense_Tab_btn_test_Click_event(object sender, EventArgs e)
         {
-            ToastNotification("Debug", "Print All parameter in Serial log");
-            PrintUnknownStructParameters(dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_);
+            ToastNotification("Debug", "Print All parameter and available com portin Serial log");
+            
+            //readRudderSettingToConfig();
+            //PrintUnknownStructParameters(dap_config_st_rudder.payloadPedalConfig_);
+            if (_serial_monitor_window != null)
+            {
+                PrintUnknownStructParameters(dap_config_st[indexOfSelectedPedal_u].payloadPedalConfig_);
+                _serial_monitor_window.TextBox_SerialMonitor.Text += "\nCom port count: " + Plugin.comportList.Count;
+                foreach (var items in Plugin.comportList)
+                {              
+                    _serial_monitor_window.TextBox_SerialMonitor.Text += "\ndevice name:" + items.DeviceName + "\nVID:" + items.Vid + " PID:" + items.Pid;
+                }
+            }
+            /*
+            ConfigUpdateWIndow sideWindow = new ConfigUpdateWIndow(Plugin);
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            sideWindow.Left = screenWidth / 2 - sideWindow.Width / 2;
+            sideWindow.Top = screenHeight / 2 - sideWindow.Height / 2;
+            sideWindow.Show();
+            */
+
+
         }
+
 
     }
     

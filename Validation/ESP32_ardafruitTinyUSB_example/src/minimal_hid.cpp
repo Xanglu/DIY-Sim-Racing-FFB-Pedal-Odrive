@@ -1,0 +1,158 @@
+/*********************************************************************
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
+ products from Adafruit!
+
+ MIT license, check LICENSE for more information
+ Copyright (c) 2021 NeKuNeKo for Adafruit Industries
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
+#include "Adafruit_TinyUSB.h"
+
+/* This sketch demonstrates USB HID gamepad use.
+ * This sketch is only valid on boards which have native USB support
+ * and compatibility with Adafruit TinyUSB library.
+ * For example SAMD21, SAMD51, nRF52840.
+ *
+ * Make sure you select the TinyUSB USB stack if you have a SAMD board.
+ * You can test the gamepad on a Windows system by pressing WIN+R, writing Joy.cpl and pressing Enter.
+ */
+
+// HID report descriptor for a joystick with two 16-bit axes (e.g., throttle and brake)
+uint8_t const desc_hid_report[] = {
+    0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x04,        // Usage (Joystick)
+    0xA1, 0x01,        // Collection (Application)
+    
+    // Define two 16-bit axes (X and Y)
+    0x09, 0x30,        //   Usage (X) - Mapped to throttle
+    0x09, 0x31,        //   Usage (Y) - Mapped to brake
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x26, 0xFF, 0xFF,  //   Logical Maximum (65535)
+    0x75, 0x10,        //   Report Size (16)
+    0x95, 0x02,        //   Report Count (2)
+    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    
+    0xC0,              // End Collection
+};
+
+
+// USB HID object
+Adafruit_USBD_HID usb_hid;
+
+// Report payload for the two axes
+typedef struct {
+  uint16_t throttle;
+  uint16_t brake;
+} hid_report_t;
+
+hid_report_t hid_report = {0, 0};
+
+// #define USE_CDC_INSTEAD_OF_UART
+
+// alias to serial stream, thus it can dynamically switch depending on board
+Stream *ActiveSerial;
+
+void setup() {
+
+  int PID=0x8216;
+  // Set VID and PID
+  TinyUSBDevice.setID(0x3035, PID);
+  TinyUSBDevice.setProductDescriptor("DIY FFB pedal");
+  TinyUSBDevice.setManufacturerDescriptor("OpenSource");
+
+  // Manual begin() is required on core without built-in support e.g. mbed rp2040
+  if (!TinyUSBDevice.isInitialized()) {
+    TinyUSBDevice.begin(0);
+  }
+
+  // #if ARDUINO_USB_CDC_ON_BOOT == 1
+  #ifdef USE_CDC_INSTEAD_OF_UART
+    Serial.begin(3000000);
+    ActiveSerial = &Serial;
+  #else
+    Serial1.begin(3000000, SERIAL_8N1, 44, 43);
+    ActiveSerial = &Serial1;
+  #endif
+  
+
+  // Setup HID
+  usb_hid.setPollInterval(0);
+  usb_hid.setReportDescriptor(desc_hid_report, sizeof(desc_hid_report));
+  usb_hid.begin();
+
+
+  // If already enumerated, additional class driverr begin() e.g msc, hid, midi won't take effect until re-enumeration
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+    TinyUSBDevice.attach();
+  }
+
+  ActiveSerial->println("Adafruit TinyUSB HID Single Axis example");
+}
+
+void loop() {
+  #ifdef TINYUSB_NEED_POLLING_TASK
+  // Manual call tud_task since it isn't called by Core's background
+  TinyUSBDevice.task();
+  #endif
+  
+  // not enumerated()/mounted() yet: nothing to do
+  if (!TinyUSBDevice.mounted()) {
+    return;
+  }
+
+  if (!usb_hid.ready()) return;
+
+  // Ramp up the axis values for demonstration
+  hid_report.throttle += 50;
+  hid_report.brake = 65535 - hid_report.throttle; // Example for brake, make it move opposite to throttle
+
+  // // For CDC instance 0 (the default one)
+  // #ifdef USE_CDC_INSTEAD_OF_UART
+  //   static bool prev_dtr_state = false;
+  //   bool dtr = tud_cdc_connected();       // true if host has opened the port (DTR asserted)
+  //   bool rts = tud_cdc_get_line_state() & 2; // bit1 = RTS, bit0 = DTR
+  //   if (dtr) {
+  //     if (!prev_dtr_state) {
+  //       Serial.println("Host connected (DTR asserted)");
+  //     }
+  //   Serial.print("Sending throttle: ");
+  //   Serial.print(hid_report.throttle);
+  //   Serial.print(" brake: ");
+  //   Serial.println(hid_report.brake);
+  //   } else {
+  //     if (prev_dtr_state) {
+  //       Serial.println("Host disconnected (DTR de-asserted)");
+  //     }
+  //   }
+  //   prev_dtr_state = dtr;
+  // #else
+  //   ActiveSerial->print("Sending throttle: ");
+  //   ActiveSerial->print(hid_report.throttle);
+  //   ActiveSerial->print(" brake: ");
+  //   ActiveSerial->println(hid_report.brake);
+  // #endif
+
+  static unsigned long last_micros = 0;
+  unsigned long current_micros = micros();
+  unsigned long delta_micros = current_micros - last_micros;
+  last_micros = current_micros;
+
+  // if (delta_micros > 2000)
+  {
+    ActiveSerial->print("Sending throttle: ");
+    ActiveSerial->print(hid_report.throttle);
+    ActiveSerial->print(" brake: ");
+    ActiveSerial->print(hid_report.brake);
+    ActiveSerial->print("     (Delta: ");
+    ActiveSerial->print(delta_micros);
+    ActiveSerial->println(" us)");
+  }
+  
+
+  usb_hid.sendReport(0, &hid_report, sizeof(hid_report));
+}

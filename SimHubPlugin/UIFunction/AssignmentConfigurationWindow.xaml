@@ -1,0 +1,36 @@
+﻿<Window x:Class="User.PluginSdkDemo.UIFunction.AssignmentConfigurationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:User.PluginSdkDemo.UIFunction"
+        xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins" mc:Ignorable="d" 
+        xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        Title="Assignment Configuration" Height="210" Width="430" Background="{x:Null}" WindowStyle="ToolWindow" ResizeMode="NoResize">
+    <Grid x:Name="MainContentGrid">
+        <Border x:Name="MainBoard" Background="#7F4E4E4E"  CornerRadius="5,5,5,5" BorderThickness="0,2,0,0" >
+            <StackPanel>
+                <StackPanel>
+                    <Label Content="Pedal Wireless Assignment" Height="30" FontSize="15" Padding="0,0,0,0" VerticalContentAlignment="Center" FontFamily="Arial Black" HorizontalAlignment="Left"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Label x:Name="Label_DetectedPedal" Content="Detected Pedal:" FontFamily="Arial" FontSize="10" Padding="0,0,0,0" VerticalContentAlignment="Center" Width="76"/>
+                        <ComboBox x:Name="ComboBoxUnassignedPedal" SelectionChanged="ComboBoxUnassignedPedal_SelectionChanged" Height="25" Padding="2,0,2,0" MinHeight="25" FontFamily="Arial" BorderThickness="0,0,0,0" HorizontalContentAlignment="Center" Width="200" FontSize="10"/>
+                    </StackPanel>
+
+                    <Label x:Name="Label_Role" Content="Set as" VerticalContentAlignment="Center" Padding="0,0,0,0" Height="25" FontFamily="Arial" HorizontalAlignment="Center"/>
+                    
+
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <styles:SHButtonPrimary x:Name="Btn_Beep" Click="Btn_Beep_Click" Width="78" Content="Beep" Height="25" Margin="0,0,0,0" HorizontalAlignment="Center" Padding="0,0,0,0" VerticalContentAlignment="Center" FontSize="10" />
+                    <styles:SHButtonPrimary x:Name="Btn_VibrationOn" Click="Btn_VibrationOn_Click" Width="78" Content="Vibration: On" Height="25" Margin="2,0,0,0" HorizontalAlignment="Left" Padding="0,0,0,0" VerticalContentAlignment="Center" FontSize="10" />
+                    <styles:SHButtonPrimary x:Name="Btn_VibrationOff" Click="Btn_VibrationOff_Click" Width="78" Content="Vibration: Off" Height="25" Margin="2,0,0,0" HorizontalAlignment="Left" Padding="0,0,0,0" VerticalContentAlignment="Center" FontSize="10" />
+                    <styles:SHButtonPrimary x:Name="Btn_Assign" Click="Btn_Assign_Click" Width="78" Content="Assign" Height="25" Margin="2,0,0,0" HorizontalAlignment="Left" Padding="0,0,0,0" VerticalContentAlignment="Center" VerticalAlignment="Center" FontSize="10" />
+                    <styles:SHButtonPrimary x:Name="Btn_AssignmentClear" Click="Btn_AssignmentClear_Click" Width="78" Content="Clear" Height="25" Margin="2,0,0,0" HorizontalAlignment="Left" Padding="0,0,0,0" VerticalContentAlignment="Center" VerticalAlignment="Center" FontSize="10" />
+                </StackPanel>
+                <Label x:Name="Label_debug" FontFamily="Arial" VerticalAlignment="Center"/>
+                <Label x:Name="Label_debug2" FontFamily="Arial" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

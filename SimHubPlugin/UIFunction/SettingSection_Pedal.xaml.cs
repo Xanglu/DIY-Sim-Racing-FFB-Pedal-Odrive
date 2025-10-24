@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -59,6 +60,7 @@ namespace User.PluginSdkDemo.UIFunction
             set
             {
                 SetValue(Settings_Property, value);
+                /*
                 if (Settings.vjoy_output_flag == 1)
                 {
                     Vjoy_out_check.IsChecked = true;
@@ -75,6 +77,7 @@ namespace User.PluginSdkDemo.UIFunction
                 {
                     Vjoy_out_check.IsChecked = false;
                 }
+                */
 
 
                 updateUI();
@@ -106,8 +109,8 @@ namespace User.PluginSdkDemo.UIFunction
             {
                 if (Settings != null)
                 {
-                    Label_Pedal_interval_trigger.Content = "Action Interval: " + Settings.Pedal_action_interval[Settings.table_selected] + "ms";
-                    Slider_Pedal_interval_trigger.Value = Settings.Pedal_action_interval[Settings.table_selected];
+                    Label_Pedal_interval_trigger.Content = "Effects Update Rate:" + Settings.Pedal_action_fps[Settings.table_selected]+"Hz";
+                    Slider_Pedal_interval_trigger.Value = Settings.Pedal_action_fps[Settings.table_selected];
                     if (Settings.reading_config == 1)
                     {
                         checkbox_pedal_read.IsChecked = true;
@@ -144,14 +147,6 @@ namespace User.PluginSdkDemo.UIFunction
                         CheckBox_Pedal_ESPNow_SyncFlag.IsChecked = false;
                     }
 
-                    if (Settings.USING_ESP32S3[Settings.table_selected] == true)
-                    {
-                        CheckBox_USINGESP32S3.IsChecked = true;
-                    }
-                    else
-                    {
-                        CheckBox_USINGESP32S3.IsChecked = false;
-                    }
                     if (Settings.auto_connect_flag[Settings.table_selected] == 1)
                     {
                         checkbox_auto_connect.IsChecked = true;
@@ -160,7 +155,7 @@ namespace User.PluginSdkDemo.UIFunction
                     {
                         checkbox_auto_connect.IsChecked = false;
                     }
-                    Label_vjoy_order.Content = Settings.vjoy_order;
+                    //Label_vjoy_order.Content = Settings.vjoy_order;
                 }
 
             }
@@ -248,8 +243,8 @@ namespace User.PluginSdkDemo.UIFunction
 
         private void Slider_Pedal_interval_trigger_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            Settings.Pedal_action_interval[Settings.table_selected] = (byte)e.NewValue;
-            Label_Pedal_interval_trigger.Content = "Action Interval: " + Settings.Pedal_action_interval[Settings.table_selected] + "ms";
+            Settings.Pedal_action_fps[Settings.table_selected] = (byte)e.NewValue;
+            Label_Pedal_interval_trigger.Content = "Effects Update Rate:" + Settings.Pedal_action_fps[Settings.table_selected]+"Hz";
             SettingsChangedEvent(Settings);
         }
 
@@ -349,17 +344,6 @@ namespace User.PluginSdkDemo.UIFunction
             SettingsChangedEvent(Settings);
         }
 
-        private void CheckBox_USINGESP32S3_Checked(object sender, RoutedEventArgs e)
-        {
-            Settings.USING_ESP32S3[Settings.table_selected] = true;
-            SettingsChangedEvent(Settings);
-        }
-
-        private void CheckBox_USINGESP32S3_Unchecked(object sender, RoutedEventArgs e)
-        {
-            Settings.USING_ESP32S3[Settings.table_selected] = false;
-            SettingsChangedEvent(Settings);
-        }
 
         private void dump_pedal_response_to_file_Checked(object sender, RoutedEventArgs e)
         {
@@ -392,6 +376,7 @@ namespace User.PluginSdkDemo.UIFunction
 
         private void btn_plus_Click(object sender, RoutedEventArgs e)
         {
+            /*
             _joystick.RelinquishVJD(Settings.vjoy_order);
 
             Settings.vjoy_order += 1;
@@ -450,10 +435,12 @@ namespace User.PluginSdkDemo.UIFunction
                         return;
                 };
             }
+            */
         }
 
         private void btn_minus_Click(object sender, RoutedEventArgs e)
         {
+            /*
             _joystick.RelinquishVJD(Settings.vjoy_order);
 
             Settings.vjoy_order -= 1;
@@ -511,6 +498,13 @@ namespace User.PluginSdkDemo.UIFunction
                         return;
                 };
             }
+            */
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
         }
     }
 }
