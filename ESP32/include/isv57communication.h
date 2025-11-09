@@ -33,7 +33,6 @@ public:
     bool setPositionSmoothingFactor(uint16_t posSmoothingFactor_u16);
     bool setRatioOfInertia(uint8_t ratiOfInertia_u8);
 
-    // Axis / position control
     void clearServoUnitPosition();
     void disableAxis();
     void enableAxis();
@@ -43,21 +42,17 @@ public:
     int16_t getZeroPos();
     int16_t getPosFromMin();
 
-    // Registers
     int16_t regArray[4];
     int16_t slaveId = 63; 
 
-    // Dynamic state
     isv57dynamicStates isv57dynamicStates_;
     bool isv57_update_parameter_b = false;
 
   private:
-    // Internal tracking
     int16_t zeroPos = 0;
     int32_t encoderCpr = 8192; // default CPR
     Stream *ActiveSerialForServoCommunication = nullptr;
 
-    // Optional profiling / debug
     bool printProfilingFlag_b = false;
 
 };
