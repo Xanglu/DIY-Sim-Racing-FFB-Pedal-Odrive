@@ -26,7 +26,7 @@
 class FunctionProfiler {
 public:
     static const int MAX_TIMERS = 16;
-    string taskName = "default";
+    String taskName = "default";
     uint32_t nmbCalls_u32 = 3000;
 
     FunctionProfiler() {
@@ -44,7 +44,7 @@ public:
             0); // Core 1
     }
 
-    void setName(string name) {
+    void setName(String name) {
         taskName = name;
     }
 

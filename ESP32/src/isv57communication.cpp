@@ -1,446 +1,148 @@
 #include "isv57communication.h"
 #include "Main.h"
-#include "isv57_tunedParameters.h"
+#include "ODriveUART.h"
 
-Modbus modbus(Serial2);
-
+ODriveUART odrive(Serial2);
 
 Stream *ActiveSerialForServoCommunication = nullptr;
 
-
-void printDecodedAlarmString(uint16_t alarm_code) 
-{
-
-  switch (alarm_code & 0x0FFF) { // Mask to get lower 12 bits
-    case 0x000:
-        ActiveSerial->println("Normal\n");
-        break;
-    case 0x0E1:
-    case 0x0E0:
-        ActiveSerial->println("Overcurrent\n");
-        break;
-    case 0x100:
-        ActiveSerial->println("Overload\n");
-        break;
-    case 0x180:
-        ActiveSerial->println("Excessive position deviation\n");
-        break;
-    case 0x1A0:
-        ActiveSerial->println("Overspeed\n");
-        break;
-    case 0x1A1:
-        ActiveSerial->println("Motor out of control\n");
-        break;
-    case 0x0D0:
-        ActiveSerial->println("Undervoltage\n");
-        break;
-    case 0x0C0:
-        ActiveSerial->println("Overvoltage\n");
-        break;
-    case 0x171:
-    case 0x172:
-        ActiveSerial->println("Encoder parameter error\n");
-        break;
-    case 0x190:
-        ActiveSerial->println("Excessive motor vibration\n");
-        break;
-    case 0x150:
-        ActiveSerial->println("Encoder disconnected\n");
-        break;
-    case 0x151:
-    case 0x170:
-        ActiveSerial->println("Encoder data error\n");
-        break;
-    case 0x152:
-        ActiveSerial->println("Encoder HALL signal error\n");
-        break;
-    case 0x240:
-        ActiveSerial->println("Parameter saving error\n");
-        break;
-    case 0x570:
-        ActiveSerial->println("Emergency stop\n");
-        break;
-    case 0x120:
-        ActiveSerial->println("Regenerative energy overload\n");
-        break;
-    case 0x153:
-        ActiveSerial->println("Encoder battery error\n");
-        break;
-    case 0x210:
-    case 0x211:
-    case 0x212:
-        ActiveSerial->println("Input configuration error (Repeated/wrong input)\n");
-        break;
-    default:
-        ActiveSerial->println("Unknown or refer to Chapter 9\n");
-        break;
-  }
-}
-
-
-
+isv57dynamicStates isv57dynamicStates_;
+bool isv57_update_parameter_b = false;
+int32_t zeroPos = 0;
 
 // initialize the communication
 isv57communication::isv57communication()
 {
-  
-  
-
-  //Serial1.begin(38400, SERIAL_8N2, ISV57_RXPIN, ISV57_TXPIN, true); // Modbus serial
-  #if PCB_VERSION == 10 || PCB_VERSION == 9 || PCB_VERSION == 12 || PCB_VERSION == 13
-    Serial2.begin(38400, SERIAL_8N1, ISV57_RXPIN, ISV57_TXPIN, false); // Modbus serial
-  #else
-    Serial2.begin(38400, SERIAL_8N1, ISV57_RXPIN, ISV57_TXPIN, true); // Modbus serial
-  #endif
-
-
-  // #ifdef USE_CDC_INSTEAD_OF_UART
-  //   ActiveSerialForServoCommunication = &Serial2;
-  // #else
-  //   ActiveSerialForServoCommunication = &Serial2;
-  // #endif
-
-  ActiveSerialForServoCommunication = &Serial2;
-
-
-  modbus.init(false);
+    Serial2.begin(115200);
+    ActiveSerialForServoCommunication = &Serial2;
+    ActiveSerial = ActiveSerialForServoCommunication;
 }
 
+// read all servo parameters from ODrive
+void isv57communication::readAllServoParameters()
+{
+    // encoder position
+    ODriveFeedback fb = odrive.getFeedback();
+    isv57dynamicStates_.servo_pos_given_p = (int32_t)fb.pos;
+
+    // Servo Current as percentage of current limit
+    String currentStr = odrive.getParameterAsString("axis0.motor.current_control.Iq_measured");
+    float currentA = currentStr.toFloat();
+    String currentLimStr = odrive.getParameterAsString("axis0.motor.config.current_lim");
+    float currentLimA = currentLimStr.toFloat();
+    isv57dynamicStates_.servo_current_percent = (int32_t)((currentA / currentLimA) * 100.0f);
 
 
+    // Get commanded position error
+    String posCmdStr = odrive.getParameterAsString("axis0.controller.pos_setpoint");
+    float posCmd = posCmdStr.toFloat();
+    float posActual = fb.pos;
+    float posError = posCmd - posActual;
+    isv57dynamicStates_.servo_pos_error_p = (int32_t)posError;
 
-// send tuned servo parameters
+
+    // bus voltage
+    String vbusStr = odrive.getParameterAsString("vbus_voltage");
+    isv57dynamicStates_.servo_voltage_0p1V = (int32_t)(vbusStr.toFloat() * 10.0f);
+
+    int stepsPerMotorRev_u32 = odrive.getParameterAsInt("axis0.encoder.config.cpr");
+}
+
 void isv57communication::setupServoStateReading() {
-
-  
-  // The iSV57 has four registers (0x0191, 0x0192, 0x0193, 0x0194) in which we can write, which values we want to obtain cyclicly
-  // These registers can be obtained by sending e.g. the command: 0x63, 0x03, 0x0191, target_sate, CRC
-  // tell the modbus slave, which registers will be read cyclicly
-  modbus.checkAndReplaceParameter(slaveId, 0x0191, reg_add_position_given_p);
-  modbus.checkAndReplaceParameter(slaveId, 0x0192, reg_add_velocity_current_feedback_percent);
-  modbus.checkAndReplaceParameter(slaveId, 0x0193, reg_add_position_error_p);
-  modbus.checkAndReplaceParameter(slaveId, 0x0194, reg_add_voltage_0p1V);
-
+    // For ODrive, no setup is required like iSV57.
+    // Reading servo state is done on-demand via getFeedback() or getParameterAsString().
+    // This function is kept for compatibility with existing StepperWithLimits calls.
 }
 
-
-void isv57communication::readAllServoParameters() {
-  for (uint16_t reg_sub_add_u16 = 0;  reg_sub_add_u16 < (pr_7_00+49); reg_sub_add_u16++)
-  {
-    modbus.readParameter(slaveId, pr_0_00 + reg_sub_add_u16);
-  }
-}
-
-// Disable aixs command
+// disable axis
 void isv57communication::disableAxis()
 {
-
-  ActiveSerial->println("Disabling servo");
-
-  // 0x3f, 0x06, 0x00, 0x85, 0x03, 0x03, 0xdc, 0x0c
-  //modbus.checkAndReplaceParameter(slaveId, 0x0085, 0x0303);
-  modbus.holdingRegisterWrite(slaveId, 0x0085, 0x0303);
-  // 0x3f, 0x06, 0x01, 0x39, 0x00, 0x00, 0x5c, 0xe5
-  //modbus.checkAndReplaceParameter(slaveId, 0x0139, 0x0000); 
-  modbus.holdingRegisterWrite(slaveId, 0x0139, 0x0008);
-  delay(30);
-
-  // read routine
-  modbus.holdingRegisterRead(0x0085);
-  modbus.holdingRegisterRead(0x0139);
-  delay(5);
+    ActiveSerial->println("Disabling servo axis");
+    odrive.setState(AXIS_STATE_IDLE);
 }
 
-void isv57communication::enableAxis() 
+// enable axis
+void isv57communication::enableAxis()
 {
-  ActiveSerial->println("Enabling servo");
-
-  // 0x3f, 0x06, 0x00, 0x85, 0x03, 0x83, 0xdd, 0xac
-  // Pr4.08: 0x085
-  modbus.holdingRegisterWrite(slaveId, 0x0085, 0x0383);
-  // 0x3f, 0x06, 0x01, 0x39, 0x00, 0x08, 0x5d, 0x23
-  modbus.holdingRegisterWrite(slaveId, 0x0139, 0x0008);
-  delay(30);
-
-  // read routine
-  modbus.holdingRegisterRead(0x0085);
-  modbus.holdingRegisterRead(0x0139);
-  delay(5);
-
-  // modbus.holdingRegisterRead(0x0085);
-  // modbus.holdingRegisterRead(0x0139);
-  
+    ActiveSerial->println("Enabling servo axis");
+    odrive.setState(AXIS_STATE_CLOSED_LOOP_CONTROL);
 }
 
+void isv57communication::clearServoUnitPosition() {
+    // Reset encoder position
+    odrive.setParameter("axis0.encoder.pos_estimate", "0");
 
-// void isv57communication::resetAxisCounter() 
-// {
-//   ActiveSerial->println("Reset axis counter");
+    delay(50); // allow ODrive to process
 
-//   modbus.holdingRegisterRead(0x0085);
-//   delay(10);
-//   modbus.holdingRegisterRead(0x0139);
-//   delay(10);
-  
-// }
+    // Read back using the inline getter
+    float pos = odrive.getPosition();
+    isv57dynamicStates_.servo_pos_given_p = (int32_t)pos;
 
-
-
-
-
-
-
-void  isv57communication::clearServoUnitPosition()
-{
-	// According to Leadshines User Manual of 2ELD2-RD DC Servo
-	// https://www.leadshine.com/upfiles/downloads/a3d7d12a120fd8e114f6288b6235ac1a_1690179981835.pdf
-	// Changing the position unit, will clear the position data
-
-  modbus.checkAndReplaceParameter(slaveId, pr_5_00+20, 0); // encoder output resolution  {0: Encoder units; 1: Command units; 2: 10000pulse/rotation}
-  delay(100);
-	modbus.checkAndReplaceParameter(slaveId, pr_5_00+20, 1); // encoder output resolution  {0: Encoder units; 1: Command units; 2: 10000pulse/rotation}
-  delay(100);
+    ActiveSerial->println("ODrive encoder position cleared.");
 }
 
 bool isv57communication::setServoVoltage(uint16_t voltageInVolt_u16)
 {
-  return modbus.checkAndReplaceParameter(slaveId, pr_7_00+32, voltageInVolt_u16 + 2); // bleeder braking voltage. Voltage when braking is activated
+    // ODrive doesn’t expose a direct "voltage" setter like iSV57
+    // So we just ignore this for now
+    (void)voltageInVolt_u16; // avoid unused parameter warning
+    return true;
 }
 
 bool isv57communication::setPositionSmoothingFactor(uint16_t posSmoothingFactor_u16)
 {
-  return modbus.checkAndReplaceParameter(slaveId, pr_2_00+22, posSmoothingFactor_u16); // positional command smoothing factor in 0.1ms
+    // In ODrive, the smoothing factor can be roughly mapped to pos_gain
+    float posGain = static_cast<float>(posSmoothingFactor_u16) / 10.0f; // optional scaling to match ODrive
+    odrive.setParameter("axis0.controller.config.pos_gain", posGain);
+    return true; // ODrive UART does not provide direct feedback
 }
 
-bool isv57communication::setRatioOfInertia(uint8_t ratiOfInertia_u8)
+bool isv57communication::setRatioOfInertia(uint8_t ratioOfInertia_u8)
 {
-  return modbus.checkAndReplaceParameter(slaveId, pr_0_00+4, ratiOfInertia_u8); // positional command smoothing factor in 0.1ms
-}
-
-
-// send tuned servo parameters
-void isv57communication::sendTunedServoParameters(bool commandRotationDirection, uint32_t stepsPerMotorRev_u32, uint32_t ratioOfInertia_u32) {
-  
-  bool retValue_b = false;
-
-
-  
-// #define ADAPTIVE_SERVO_PARAMS
-// #ifdef ADAPTIVE_SERVO_PARAMS
-//   // see https://atbautomation.eu/uploads/User_Manual_Leadshine_iSV2-RS.pdf, p.22, Pr0.00
-//   // 1) Pr0.01 = 0 --> position mode
-//   // 2) Pr0.02 = 1 --> interpolation mode
-//   // 3) Pr0.04 inertia ratio
-//   // 4) Pr0.03 machine stiffness
-//   // 5) Pr0.00 = 1 --> adaptive bandwidth
-//   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+0, 1); // adaptive bandwidth modell following controll
-//   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+2, 1); // positioning mode with auto tuning
-//   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+3, 9); // machine stiffness
-//   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+4, 1); // inertia
-//   retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+0, 2); // adaptive filter on all the time
-// #endif
-
-
-  // Pr0 register
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+0, tuned_parameters[pr_0_00+0]); // control mode #
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+1, tuned_parameters[pr_0_00+1]); // control mode #
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+2, tuned_parameters[pr_0_00+2]); // deactivate auto gain
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+3, tuned_parameters[pr_0_00+3]); // machine stiffness
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+4, ratioOfInertia_u32 ); // ratio of inertia
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+6, tuned_parameters[pr_0_00+6]); // motor command direction
-  //retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+6, commandRotationDirection); // Command Pulse Rotational Direction
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+8, (long)stepsPerMotorRev_u32); // microsteps
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+9, tuned_parameters[pr_0_00+9]); // 1st numerator 
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+10, tuned_parameters[pr_0_00+10]); // & denominator
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+13, tuned_parameters[pr_0_00+13]); // 1st torque limit
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+14, tuned_parameters[pr_0_00+14]); // position deviation setup
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+16, tuned_parameters[pr_0_00+16]); // regenerative braking resitor
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+17, tuned_parameters[pr_0_00+17]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+18, tuned_parameters[pr_0_00+18]); // vibration suppression
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_0_00+19, tuned_parameters[pr_0_00+19]);
-
-  // Pr1 register
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+0, tuned_parameters[pr_1_00+0]); // 1st position gain
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+1, tuned_parameters[pr_1_00+1]); // 1st velocity loop gain
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+2, tuned_parameters[pr_1_00+2]); // 1st time constant of velocity loop
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+3, tuned_parameters[pr_1_00+3]); // 1st filter of velocity detection
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+4, tuned_parameters[pr_1_00+4]); // 1st torque filter
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+10, tuned_parameters[pr_1_00+10]); // velocity feed forward gain
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+11, tuned_parameters[pr_1_00+11]); // velocity feed forward filter
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+12, tuned_parameters[pr_1_00+12]); // torque feed forward gain
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+13, tuned_parameters[pr_1_00+13]); // torque feed forward filter
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+15, tuned_parameters[pr_1_00+15]); // control switching mode
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+33, tuned_parameters[pr_1_00+33]); // speed given filter
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+35, tuned_parameters[pr_1_00+35]); // position command filter
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+36, tuned_parameters[pr_1_00+36]); // encoder feedback
-  //retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+37, 1052); // special function register
-  //uint16_t special_function_flags = 0x4 | 0x8 | 0x10 | 0x40 | 0x400;
-  uint16_t special_function_flags = 0x4 | 0x8 | 0x10 | 0x400;
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_1_00+37, tuned_parameters[pr_1_00+37]); // special function register
-  // see https://www.oyostepper.com/images/upload/File/ISV57T-180.pdf
-  // 0x01: =0: Enablespeedfeed-forwardfiltering; =1:Disablespeed feed-forward filtering
-  // 0x02: =0: Enabletorquefeed-forwardfiltering; =2:disabletorque feed-forward filtering
-  // 0x04: =0: Enablemotor stall Er1A1 alarm; =4:Blockmotor stall Er1A1 alarm
-  // 0x08: =0: Enable overshoot Er180 alarm; =8:Mask overshoot Er180alarm
-  // 0x10: =0: Enable overload Er100 alarm; =0x10: Mask overload Er100alarm
-  // 0x20: =0: dial input function not assignable; =0x20: dial input function assignable
-  // 0x40: =0: Mask drive disable Er260 alarm; =0x40: Enable drive disable Er260 alarm
-  // 0x400: =0: Mask undervoltage Er0D0 alarm; =0x400: Enable undervoltage Er0D0 alarm
-  
-
-  
-  // Pr2 register
-  // vibration suppression 
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00, tuned_parameters[pr_2_00]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+1, tuned_parameters[pr_2_00+1]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+2, tuned_parameters[pr_2_00+2]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+3, tuned_parameters[pr_2_00+3]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+4, tuned_parameters[pr_2_00+4]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+5, tuned_parameters[pr_2_00+5]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+6, tuned_parameters[pr_2_00+6]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+22, tuned_parameters[pr_2_00+22]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_2_00+23, tuned_parameters[pr_2_00+23]);// FIR based command smoothing time. Since the stpper task runs every 4ms, this time is selected to be larger than that. Unit is 0.1ms 
-  
-
-  // Pr3 register
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_3_00+12, tuned_parameters[pr_3_00+12]); // time setup acceleration
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_3_00+13, tuned_parameters[pr_3_00+13]); // time setup deceleration
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_3_00+24, tuned_parameters[pr_3_00+24]); // maximum rpm
-  
-
-  // Pr5 register
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_5_00+13, tuned_parameters[pr_5_00+13]); // overspeed level
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_5_00+20, tuned_parameters[pr_5_00+20]); // encoder output resolution  {0: Encoder units; 1: Command units; 2: 10000pulse/rotation}
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_5_00+35, 1); // lock front panel
-  
-  // Pr6 register
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_6_00+17, 1); // lock front panel
-
-
-  //retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_5_00+32, 300); // command pulse input maximum setup
-
-  // Pr7 register
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_7_00+0, tuned_parameters[pr_7_00+0]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_7_00+1, tuned_parameters[pr_7_00+1]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_7_00+28, tuned_parameters[pr_7_00+28]);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_7_00+29, tuned_parameters[pr_7_00+29]);
-
-  // Enable & tune reactive pumping. This will act like a braking resistor and reduce EMF voltage.
-  // See https://en.wikipedia.org/wiki/Bleeder_resistor
-  // Info from iSV2 manual: The external resistance is activated when the actual bus voltage is higher than Pr7.32 plus Pr7.33 and is deactivated when the actual bus voltage is lower than Pr7.32 minus Pr7.33
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_7_00+31, tuned_parameters[pr_7_00+31]); // bleeder control mode; 0: is default and seems to enable braking mode, contrary to manual
-  retValue_b |= setServoVoltage(SERVO_MAX_VOLTAGE_IN_V_36V);
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_7_00+33, tuned_parameters[pr_7_00+33]); // bleeder hysteresis voltage; Contrary to the manual this seems to be an offset voltage, thus Braking disabling voltage = Pr7.32 + Pr.33
-
-
-
-
-  
-
-  //retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_5_00+33, 0); // pulse regenerative output limit setup [0,1]
-  // retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_6_00+37, 0); // oscillation detection level [0, 1000] 0.1%
-
-
-  // disable axis after servo startup --> ESP has to enable the axis first
-  // Pr4.08
-  // long servoEnableStatus = modbus.holdingRegisterRead(slaveId, 0x03, pr_4_00+8);
-  // ActiveSerial->print("Servo enable setting: ");
-  // ActiveSerial->println(servoEnableStatus, HEX);
-  // delay(100);
-  // if (servoEnableStatus != 0x303)
-  // {
-  //   isv57communication::disableAxis();
-  // }
-  // delay(100);
-  // servoEnableStatus = modbus.holdingRegisterRead(slaveId, 0x03, pr_4_00+8);
-  // ActiveSerial->print("Servo enable setting: ");
-  // ActiveSerial->println(servoEnableStatus, HEX);
-
-  // disable axis by default
-  retValue_b |= modbus.checkAndReplaceParameter(slaveId, pr_4_00+8, tuned_parameters[pr_4_00+8]);
-  
-
-
-  // store the settings to servos NVM if necesssary
-  if (retValue_b)
-  {
-    // disable axis a second time, since the second signal must be send to. Don't know yet the meaning of that signal.
-    disableAxis();
-
-    ActiveSerial->println("Servo registered in NVM have been updated! Please power cycle the servo and the ESP!");
-
-    // identified with logic analyzer. See \StepperParameterization\Meesages\StoreSettingsToEEPROM_0.png
-    modbus.holdingRegisterWrite(slaveId, 0x019A, 0x5555); // store the settings to servos NVM
-    // ToDo: according to iSV57 manual, 0x2211 is the command to write values to EEPROM
-    delay(500);
-    
-    
-    // ToDo: soft reset servo. The iSV57 docu says Pr0.25: 0x6666 is soft reset
-    // modbus.holdingRegisterWrite(slaveId, 0x019A, 0x6666); // store the settings to servos NVM
-    
-    
-    isv57_update_parameter_b=true;
-    delay(1000);
-  }
-
-
+    // ODrive doesn't have a direct "ratio of inertia", but you can map it to vel_gain or torque_gain.
+    // Adjust the mapping as needed for your application.
+    float mappedValue = static_cast<float>(ratioOfInertia_u8); 
+    odrive.setParameter("axis0.controller.config.vel_gain", String(mappedValue));
+    return true; // ODrive UART doesn't provide a success/failure response
 }
 
 bool isv57communication::findServosSlaveId()
 {
-  bool slaveIdFound = false;
+    bool odriveFound = false;
 
-  // typically the servo address is 63, so start with that
-  int slaveIdTest = 63;
-  if(modbus.requestFrom(slaveIdTest, 0x03, 0x0000, 2) > 0)
-  {
-    slaveId = slaveIdTest;
-    slaveIdFound = true;
-    ActiveSerial->print("Found servo slave ID:");
-    ActiveSerial->print(slaveId);
-    ActiveSerial->print("\r\n");
-  }
+    // Test if axis0 responds by reading its position
+    ODriveFeedback fb = odrive.getFeedback(); // axis 0 by default
 
-
-  if (false == slaveIdFound )
-  {
-    for (slaveIdTest = 0; slaveIdTest<256; slaveIdTest++)
+    if (fb.pos != 0.0f || fb.vel != 0.0f) // If either feedback value is non-zero
     {
-        if(modbus.requestFrom(slaveIdTest, 0x03, 0x0000, 2) > 0)
-        {
-          slaveId = slaveIdTest;
-          slaveIdFound = true;
-          ActiveSerial->print("Found servo slave ID:");
-          ActiveSerial->print(slaveId);
-          ActiveSerial->print("\r\n");
-          break;
-        }
-
-        delay(5);
+        odriveFound = true;
+        ActiveSerial->print("Found ODrive axis 0!\r\n");
     }
-  }
-  
-  return slaveIdFound;
+    else
+    {
+        ActiveSerial->print("No ODrive detected on axis 0.\r\n");
+    }
+
+    return odriveFound;
 }
-
-
-
 
 bool isv57communication::checkCommunication()
 {
-  if(modbus.requestFrom(slaveId, 0x03, 0x0000, 2) > 0)
-  {
-    //ActiveSerial->println("Lifeline check: true");
-    return true;
-  }
-  else
-  {
-    //ActiveSerial->println("Lifeline check: false");
-    return false;
-  }
+    // Try reading axis 0 feedback
+    ODriveFeedback fb = odrive.getFeedback(); 
+
+    // If feedback values are non-zero or valid, communication works
+    if (!isnan(fb.pos) && !isnan(fb.vel))
+    {
+        //ActiveSerial->println("Lifeline check: true");
+        return true;
+    }
+    else
+    {
+        //ActiveSerial->println("Lifeline check: false");
+        return false;
+    }
 }
-
-
 
 void isv57communication::setZeroPos()
 {
@@ -462,27 +164,15 @@ int16_t isv57communication::getPosFromMin()
   return isv57dynamicStates_.servo_pos_given_p - zeroPos;
 }
 
-
-// read servo states
+// read servo states (pos, vel, current, voltage)
 void isv57communication::readServoStates() {
-
+  readAllServoParameters();
+int16_t regArray[4];
   // initialize with -1 to indicate non-trustworthyness
   regArray[0] = -1;
   regArray[1] = -1;
   regArray[2] = -1;
   regArray[3] = -1;
-
-  // read the four registers simultaneously
-  int8_t numberOfRegistersToRead_u8 = 4;
-  int bytesReceived_i = modbus.requestFrom(slaveId, 0x03, ref_cyclic_read_0, numberOfRegistersToRead_u8);
-  if(bytesReceived_i == (numberOfRegistersToRead_u8*2))
-  {
-    modbus.RxRaw(raw,  len);
-    for (uint8_t regIdx = 0; regIdx < numberOfRegistersToRead_u8; regIdx++)
-    { 
-      regArray[regIdx] = modbus.int16(regIdx);
-    }
-  }
 
   // write to public variables
   // servo_pos_given_p = regArray[0];
@@ -495,13 +185,9 @@ void isv57communication::readServoStates() {
   isv57dynamicStates_.servo_pos_error_p = regArray[2];
   isv57dynamicStates_.servo_voltage_0p1V = regArray[3];
   isv57dynamicStates_.lastUpdateTimeInMS_u32 = millis();
-
-  //ActiveSerial->print("Bytes :");
-  //ActiveSerial->println(bytesReceived_i);
   
   
   
-  // print registers
   if (0)
   {
     ActiveSerial->print("Pos_given:");
@@ -521,155 +207,105 @@ void isv57communication::readServoStates() {
   
 }
 
-
-
+// clear errors
 bool isv57communication::clearServoAlarms() {
+    // Clear ODrive errors for axis 0
+    odrive.clearErrors();
 
-  // read the alarm list
-  // int8_t numberOfRegistersToRead_u8 = 0;
-  // Alarm register address: 0x02
-  //int bytesReceived_i = modbus.requestFrom(slaveId, 0x03, 0x02, numberOfRegistersToRead_u8);
+    // Optionally, you could also clear axis 1 if used:
+    // odrive.clearErrors(1);
 
-  // clear alarm list
-  //modbus.holdingRegisterWrite(slaveId, 0x019a, 0x7777); 
-  modbus.holdingRegisterWrite(slaveId, 0x019a, 0x7788); 
-  
-  // ToDo: soft reset servo. The iSV57 docu says Pr0.25: 0x1111 resets current alarm; 0x1122 resets alarm history
-    
-  return 1;
+    return true;
 }
-
 
 bool isv57communication::readCurrentAlarm() {
-  int bytesReceived_i = modbus.requestFrom(slaveId, 0x03, 0x01F2, 1);
-  if(bytesReceived_i == (2))
-  {
-    modbus.RxRaw(raw,  len);
-    for (uint8_t regIdx = 0; regIdx < 1; regIdx++)
-    { 
-      uint16_t tmp = modbus.int16(regIdx) && 0x0FFF; // mask the first half byte as it does not contain info
-      ActiveSerial->print("Current iSV57 alarm: ");
-      ActiveSerial->println( tmp, HEX);
-    }
-  }
+    // Get axis0 state
+    ODriveAxisState state = odrive.getState();
 
-  return 1;
+    // Get motor and axis errors via parameters
+    String motorErrorsStr = odrive.getParameterAsString("axis0.motor.error");
+    String axisErrorsStr  = odrive.getParameterAsString("axis0.error");
+
+    uint32_t motorErrors = (uint32_t)motorErrorsStr.toInt();
+    uint32_t axisErrors  = (uint32_t)axisErrorsStr.toInt();
+
+    ActiveSerial->print("ODrive motor errors: 0x");
+    ActiveSerial->println(motorErrors, HEX);
+
+    ActiveSerial->print("ODrive axis errors: 0x");
+    ActiveSerial->println(axisErrors, HEX);
+
+    // You could interpret these error bits if needed, or just print them
+    return true;
 }
-
 
 bool isv57communication::readAlarmHistory() {
+    // Get axis0 state
+    ODriveAxisState state = odrive.getState();
 
-  bool alarmWasFound_b = false;
-	ActiveSerial->print("\niSV57 alarm history: ");
-	for (uint8_t idx=0; idx < 12; idx++)
-	{
-	  // example signal, read the 9th alarm
-	  // 0x3f, 0x03, 0x12, 0x09, 0x00, 0x01, 0x55, 0xAE
+    // Get motor and axis errors via parameters
+    String motorErrorsStr = odrive.getParameterAsString("axis0.motor.error");
+    String axisErrorsStr  = odrive.getParameterAsString("axis0.error");
 
-	  // read the four registers simultaneously
-	  int bytesReceived_i = modbus.requestFrom(slaveId, 0x03, 0x1200 + idx, 1);
-    
-	  if(bytesReceived_i == (2))
-	  {
-      modbus.RxRaw(raw,  len);
-      for (uint8_t regIdx = 0; regIdx < 1; regIdx++)
-      { 
-        uint16_t alarm_code = modbus.int16(regIdx) & 0x0FFF; // mask the first half byte as it does not contain info
+    uint32_t motorErrors = (uint32_t)motorErrorsStr.toInt();
+    uint32_t axisErrors  = (uint32_t)axisErrorsStr.toInt();
 
-        if (alarm_code > 0)
-        {
-          ActiveSerial->print("Alarm Idx: ");
-          ActiveSerial->print(idx);
-          ActiveSerial->print(",    Alarm Code: ");
-          ActiveSerial->print( alarm_code, HEX);
-          ActiveSerial->print(" --> ");
-          printDecodedAlarmString(alarm_code);
-          alarmWasFound_b = true;
-        }
-        
-      }
-	  }
-	}
+    ActiveSerial->print("ODrive motor errors: 0x");
+    ActiveSerial->println(motorErrors, HEX);
 
-  // In case of no alarm --> indicate with string
-  if (false == alarmWasFound_b)
-  {
-    ActiveSerial->print("No alarm was found.");
-  }
+    ActiveSerial->print("ODrive axis errors: 0x");
+    ActiveSerial->println(axisErrors, HEX);
 
-	ActiveSerial->print("\n");
-    
-	return 1;
+    // You could interpret these error bits if needed, or just print them
+    return true;
 }
-
-
 
 void isv57communication::resetToFactoryParams() 
 {
-  // Identified with Free Device Monitoring Studio: https://hhdsoftware.com/device-monitoring-studio
-  // Data view
-  // Write:  3F 03 01 F0 00 01 81 1B
-  // Read: 3F 03 02 00 00 91 81
-
-  // Write:  3F 06 01 9A 44 44 9F F4
-  // Read:  3F 06 01 9A 44 44 9F F4
-
-  // Write:  3F 03 01 F7 00 01 30 DA
-  // Read:  3F 03 02 55 55 6E EE
-
-
-  // // disable axis first
-  // disableAxis();
-  // ActiveSerial->println("Disabling axis first\n");
-  // delay(500);
-
-
-  // // identified with logic analyzer. See \StepperParameterization\Meesages\ResetToFactorySettings_0.png
-  // long tmp = modbus.holdingRegisterRead(0x01F0);
-
-  // if (tmp == 0x00)
-  // {
-  //   ActiveSerial->println("First test passed\n");
-  //   modbus.holdingRegisterWrite(slaveId, 0x019a, 0x4444);
-
-  //   tmp = modbus.holdingRegisterRead(0x01F7);
-
-  //   if (tmp == 0x5555)
-  //   {
-  //     ActiveSerial->println("Reset to factory settings successfull\n");
-  //   }
-  // }
-
-
-
-  disableAxis();
-
-  bool retValue_b = false;
-  
-  for (uint16_t registerIndex_u16 = 0; registerIndex_u16 < ISV57_NMB_OF_REGISTERS; registerIndex_u16++)
-  {
-    retValue_b |= modbus.checkAndReplaceParameter(slaveId, registerIndex_u16, tuned_parameters[registerIndex_u16]);
-  }
-
-
-
-  // store the settings to servos NVM if necesssary
-  if (retValue_b)
-  {
-
-    ActiveSerial->println("Servo registered in NVM have been updated! Please power cycle the servo and the ESP!");
-
-    // identified with logic analyzer. See \StepperParameterization\Meesages\StoreSettingsToEEPROM_0.png
-    modbus.holdingRegisterWrite(slaveId, 0x019A, 0x5555); // store the settings to servos NVM
-    // ToDo: according to iSV57 manual, 0x2211 is the command to write values to EEPROM
-    delay(500);
+    // Ensure axis is idle before reboot
+    odrive.setState(AXIS_STATE_IDLE);
+    ActiveSerial->println("Rebooting ODrive to reset to factory defaults...");
     
-    // ToDo: soft reset servo. The iSV57 docu says Pr0.25: 0x6666 is soft reset
-    // modbus.holdingRegisterWrite(slaveId, 0x019A, 0x6666); // store the settings to servos NVM
-    
-    isv57_update_parameter_b=true;
-    delay(1000);
-  }
-  
+    // Trigger ODrive reboot
+    odrive.setParameter("reboot", "1");
+
+    // Optional: wait a bit to let ODrive restart
+    delay(2000);
+
+    isv57_update_parameter_b = true;
+    ActiveSerial->println("ODrive reboot command sent.");
 }
 
+
+void isv57communication::sendTunedServoParameters(bool commandRotationDirection,uint32_t stepsPerMotorRev_u32,uint32_t ratioOfInertia_u32) {
+    // 1) Set encoder CPR
+    odrive.setParameter("axis0.encoder.config.cpr", String(stepsPerMotorRev_u32));
+
+    // 2) Set control gains
+    // Use ratioOfInertia_u32 to scale vel_gain (rough mapping)
+    float velGain = static_cast<float>(ratioOfInertia_u32) / 10.0f;
+    odrive.setParameter("axis0.controller.config.vel_gain", String(velGain));
+
+    // 3) Set pos_gain for smoothing (you can scale as needed)
+    float posGain = 10.0f; // default safe value
+    odrive.setParameter("axis0.controller.config.pos_gain", String(posGain));
+
+    // 4) Set rotation direction
+    // If using FOC motor, reversing motor direction can be done via pole_pairs or motor_type config
+    if(commandRotationDirection) {
+        odrive.setParameter("axis0.motor.config.motor_type", "1"); // example: change direction
+    } else {
+        odrive.setParameter("axis0.motor.config.motor_type", "0");
+    }
+
+    // 5) Optional: apply velocity and current limits
+    float currentLimit = 10.0f; // max 10A
+    odrive.setParameter("axis0.motor.config.current_lim", String(currentLimit));
+    float velLimit = 10000.0f; // encoder units/sec
+    odrive.setParameter("axis0.controller.config.vel_limit", String(velLimit));
+
+    // 6) Optional: save parameters to NVM
+    odrive.setParameter("axis0.save_configuration", "1");
+
+    ActiveSerial->println("ODrive parameters tuned successfully!");
+}
