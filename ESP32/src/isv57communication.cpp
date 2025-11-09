@@ -10,7 +10,6 @@ isv57dynamicStates isv57dynamicStates_;
 bool isv57_update_parameter_b = false;
 int32_t zeroPos = 0;
 
-// initialize the communication
 isv57communication::isv57communication()
 {
     Serial2.begin(115200);
@@ -18,10 +17,8 @@ isv57communication::isv57communication()
     ActiveSerial = ActiveSerialForServoCommunication;
 }
 
-// read all servo parameters from ODrive
 void isv57communication::readAllServoParameters()
 {
-    // encoder position
     ODriveFeedback fb = odrive.getFeedback();
     isv57dynamicStates_.servo_pos_given_p = (int32_t)fb.pos;
 
@@ -54,14 +51,12 @@ void isv57communication::setupServoStateReading() {
     // This function is kept for compatibility with existing StepperWithLimits calls.
 }
 
-// disable axis
 void isv57communication::disableAxis()
 {
     ActiveSerial->println("Disabling servo axis");
     odrive.setState(AXIS_STATE_IDLE);
 }
 
-// enable axis
 void isv57communication::enableAxis()
 {
     ActiveSerial->println("Enabling servo axis");
@@ -69,12 +64,11 @@ void isv57communication::enableAxis()
 }
 
 void isv57communication::clearServoUnitPosition() {
-    // Reset encoder position
+    // Reset encoder position, need to investigate 
     odrive.setParameter("axis0.encoder.pos_estimate", "0");
 
-    delay(50); // allow ODrive to process
+    delay(50);
 
-    // Read back using the inline getter
     float pos = odrive.getPosition();
     isv57dynamicStates_.servo_pos_given_p = (int32_t)pos;
 
@@ -91,29 +85,28 @@ bool isv57communication::setServoVoltage(uint16_t voltageInVolt_u16)
 
 bool isv57communication::setPositionSmoothingFactor(uint16_t posSmoothingFactor_u16)
 {
-    // In ODrive, the smoothing factor can be roughly mapped to pos_gain
+    // Pos gain for now, looks like there is something better, config.input_filter_bandwith
     float posGain = static_cast<float>(posSmoothingFactor_u16) / 10.0f; // optional scaling to match ODrive
     odrive.setParameter("axis0.controller.config.pos_gain", posGain);
-    return true; // ODrive UART does not provide direct feedback
+    return true;
 }
 
 bool isv57communication::setRatioOfInertia(uint8_t ratioOfInertia_u8)
 {
-    // ODrive doesn't have a direct "ratio of inertia", but you can map it to vel_gain or torque_gain.
-    // Adjust the mapping as needed for your application.
+    // Look into config.interia
     float mappedValue = static_cast<float>(ratioOfInertia_u8); 
     odrive.setParameter("axis0.controller.config.vel_gain", String(mappedValue));
-    return true; // ODrive UART doesn't provide a success/failure response
+    return true;
 }
 
 bool isv57communication::findServosSlaveId()
 {
     bool odriveFound = false;
 
-    // Test if axis0 responds by reading its position
-    ODriveFeedback fb = odrive.getFeedback(); // axis 0 by default
+    // Cant do much, just make sure communication to the axis is good
+    ODriveFeedback fb = odrive.getFeedback();
 
-    if (fb.pos != 0.0f || fb.vel != 0.0f) // If either feedback value is non-zero
+    if (fb.pos != 0.0f || fb.vel != 0.0f)
     {
         odriveFound = true;
         ActiveSerial->print("Found ODrive axis 0!\r\n");
@@ -128,10 +121,8 @@ bool isv57communication::findServosSlaveId()
 
 bool isv57communication::checkCommunication()
 {
-    // Try reading axis 0 feedback
     ODriveFeedback fb = odrive.getFeedback(); 
 
-    // If feedback values are non-zero or valid, communication works
     if (!isnan(fb.pos) && !isnan(fb.vel))
     {
         //ActiveSerial->println("Lifeline check: true");
@@ -164,7 +155,7 @@ int16_t isv57communication::getPosFromMin()
   return isv57dynamicStates_.servo_pos_given_p - zeroPos;
 }
 
-// read servo states (pos, vel, current, voltage)
+
 void isv57communication::readServoStates() {
   readAllServoParameters();
 int16_t regArray[4];
@@ -207,22 +198,16 @@ int16_t regArray[4];
   
 }
 
-// clear errors
-bool isv57communication::clearServoAlarms() {
-    // Clear ODrive errors for axis 0
-    odrive.clearErrors();
 
-    // Optionally, you could also clear axis 1 if used:
-    // odrive.clearErrors(1);
+bool isv57communication::clearServoAlarms() {
+    odrive.clearErrors();
 
     return true;
 }
 
 bool isv57communication::readCurrentAlarm() {
-    // Get axis0 state
     ODriveAxisState state = odrive.getState();
 
-    // Get motor and axis errors via parameters
     String motorErrorsStr = odrive.getParameterAsString("axis0.motor.error");
     String axisErrorsStr  = odrive.getParameterAsString("axis0.error");
 
@@ -235,15 +220,12 @@ bool isv57communication::readCurrentAlarm() {
     ActiveSerial->print("ODrive axis errors: 0x");
     ActiveSerial->println(axisErrors, HEX);
 
-    // You could interpret these error bits if needed, or just print them
     return true;
 }
 
 bool isv57communication::readAlarmHistory() {
-    // Get axis0 state
     ODriveAxisState state = odrive.getState();
 
-    // Get motor and axis errors via parameters
     String motorErrorsStr = odrive.getParameterAsString("axis0.motor.error");
     String axisErrorsStr  = odrive.getParameterAsString("axis0.error");
 
@@ -256,20 +238,16 @@ bool isv57communication::readAlarmHistory() {
     ActiveSerial->print("ODrive axis errors: 0x");
     ActiveSerial->println(axisErrors, HEX);
 
-    // You could interpret these error bits if needed, or just print them
     return true;
 }
 
 void isv57communication::resetToFactoryParams() 
 {
-    // Ensure axis is idle before reboot
     odrive.setState(AXIS_STATE_IDLE);
     ActiveSerial->println("Rebooting ODrive to reset to factory defaults...");
     
-    // Trigger ODrive reboot
     odrive.setParameter("reboot", "1");
 
-    // Optional: wait a bit to let ODrive restart
     delay(2000);
 
     isv57_update_parameter_b = true;
@@ -278,33 +256,25 @@ void isv57communication::resetToFactoryParams()
 
 
 void isv57communication::sendTunedServoParameters(bool commandRotationDirection,uint32_t stepsPerMotorRev_u32,uint32_t ratioOfInertia_u32) {
-    // 1) Set encoder CPR
     odrive.setParameter("axis0.encoder.config.cpr", String(stepsPerMotorRev_u32));
 
-    // 2) Set control gains
-    // Use ratioOfInertia_u32 to scale vel_gain (rough mapping)
     float velGain = static_cast<float>(ratioOfInertia_u32) / 10.0f;
     odrive.setParameter("axis0.controller.config.vel_gain", String(velGain));
 
-    // 3) Set pos_gain for smoothing (you can scale as needed)
     float posGain = 10.0f; // default safe value
     odrive.setParameter("axis0.controller.config.pos_gain", String(posGain));
 
-    // 4) Set rotation direction
-    // If using FOC motor, reversing motor direction can be done via pole_pairs or motor_type config
     if(commandRotationDirection) {
-        odrive.setParameter("axis0.motor.config.motor_type", "1"); // example: change direction
+        odrive.setParameter("axis0.motor.config.motor_type", "1"); // Most likely wrong, will look into later
     } else {
         odrive.setParameter("axis0.motor.config.motor_type", "0");
     }
 
-    // 5) Optional: apply velocity and current limits
     float currentLimit = 10.0f; // max 10A
     odrive.setParameter("axis0.motor.config.current_lim", String(currentLimit));
     float velLimit = 10000.0f; // encoder units/sec
     odrive.setParameter("axis0.controller.config.vel_limit", String(velLimit));
 
-    // 6) Optional: save parameters to NVM
     odrive.setParameter("axis0.save_configuration", "1");
 
     ActiveSerial->println("ODrive parameters tuned successfully!");
